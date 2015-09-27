@@ -1,10 +1,14 @@
 function round(num)
-     if num >= 0 then return math.floor(num+.5)
-     else return math.ceil(num-.5) end
- end
+   if num >= 0 then
+     return math.floor(num+.5)
+   else
+     return math.ceil(num-.5)
+   end
+end
 
 function love.load()
-  love.window.setMode(256*2, 240*2)
+  Scale = {x=2, y=2}
+  love.window.setMode(256 * Scale.x, 240 * Scale.y)
 
   Critters = love.graphics.newImage('assets/critters.png')
   Critters:setFilter("nearest", "nearest")
@@ -34,7 +38,7 @@ function love.update(dt)
 end
 
 function love.draw()
-  love.graphics.scale(2, 2)
+  love.graphics.scale(Scale.x, Scale.y)
   love.graphics.draw(Critters, DudeQuad, round(DudePos[1]), round(DudePos[2]))
 end
 
