@@ -7,15 +7,15 @@ function Player:init()
   self.speed = 20
   self.actions = {}
 
-  self.image = love.graphics.newImage('assets/critters.png')
+  self.image = love.graphics.newImage('assets/human.png')
   self.image:setFilter("nearest", "nearest")
-  local w, h = 32, 32
+  local w, h = 16, 16
   local tw, th = self.image:getWidth(), self.image:getHeight()
   self.quads = {
-    down = love.graphics.newQuad(0, 64, w, h, tw, th),
-    up = love.graphics.newQuad(0, 96, w, h, tw, th),
-    right = love.graphics.newQuad(0, 128, w, h, tw, th),
-    left = love.graphics.newQuad(0, 160, w, h, tw, th),
+    down = love.graphics.newQuad(0, 0, w, h, tw, th),
+    left = love.graphics.newQuad(0, 16, w, h, tw, th),
+    up = love.graphics.newQuad(0, 32, w, h, tw, th),
+    right = love.graphics.newQuad(0, 48, w, h, tw, th),
   }
   self.quad = self.quads.down
 end
