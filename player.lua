@@ -13,32 +13,42 @@ function Player:init()
   local tw, th = self.image:getWidth(), self.image:getHeight()
   self.quads = {
     down = love.graphics.newQuad(0, 0, w, h, tw, th),
-    left = love.graphics.newQuad(0, 16, w, h, tw, th),
-    up = love.graphics.newQuad(0, 32, w, h, tw, th),
-    right = love.graphics.newQuad(0, 48, w, h, tw, th),
+    downleft = love.graphics.newQuad(0, 16, w, h, tw, th),
+    left = love.graphics.newQuad(0, 32, w, h, tw, th),
+    upleft = love.graphics.newQuad(0, 48, w, h, tw, th),
+    up = love.graphics.newQuad(0, 64, w, h, tw, th),
+    upright = love.graphics.newQuad(0, 80, w, h, tw, th),
+    right = love.graphics.newQuad(0, 96, w, h, tw, th),
+    downright = love.graphics.newQuad(0, 112, w, h, tw, th),
   }
   self.quad = self.quads.down
 end
 
+function Player:updateQuad()
+  local quadKey = ""
+  if self.actions.up then
+    quadKey = "up"
+  elseif self.actions.down then
+    quadKey = "down"
+  end
+  if self.actions.left then
+    quadKey = quadKey .. "left"
+  elseif self.actions.right then
+    quadKey = quadKey .. "right"
+  end
+  if self.quads[quadKey] then
+    self.quad = self.quads[quadKey]
+  end
+end
+
 function Player:controlStart(action)
   self.actions[action] = true
-
-  if self.quads[action] then
-    self.quad = self.quads[action]
-  end
+  self:updateQuad()
 end
 
 function Player:controlStop(action)
   self.actions[action] = nil
-
-  if self.quads[action] then
-    for action, v in pairs(self.actions) do
-      if self.quads[action] then
-        self.quad = self.quads[action]
-        break
-      end
-    end
-  end
+  self:updateQuad()
 end
 
 function Player:update(dt)
