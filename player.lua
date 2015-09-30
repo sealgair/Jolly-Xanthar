@@ -4,8 +4,8 @@ Player = class('Player')
 
 function Player:init()
   self.position = {x=10, y=10}
-  self.speed = 10
-  self.velocity = {x=0, y=0}
+  self.speed = 20
+  self.actions = {}
 
   self.image = love.graphics.newImage('assets/critters.png')
   self.image:setFilter("nearest", "nearest")
@@ -21,31 +21,39 @@ function Player:init()
 end
 
 function Player:controlStart(action)
-  if action == "up" then
-    self.velocity.y = -self.speed
-  elseif action == "down" then
-    self.velocity.y = self.speed
-  elseif action == "left" then
-    self.velocity.x = -self.speed
-  elseif action == "right" then
-    self.velocity.x = self.speed
-  end
+  self.actions[action] = true
+
   if self.quads[action] then
     self.quad = self.quads[action]
   end
 end
 
 function Player:controlStop(action)
-  if action == "up" or action == "down" then
-    self.velocity.y = 0
-  elseif action == "left" or action == "right" then
-    self.velocity.x = 0
+  self.actions[action] = nil
+
+  if self.quads[action] then
+    for action, v in pairs(self.actions) do
+      if self.quads[action] then
+        self.quad = self.quads[action]
+        break
+      end
+    end
   end
 end
 
 function Player:update(dt)
-  self.position.x = self.position.x + dt * self.velocity.x
-  self.position.y = self.position.y + dt * self.velocity.y
+  local distance = dt * self.speed
+  for action, v in pairs(self.actions) do
+    if action == "up" then
+      self.position.y = self.position.y - distance
+    elseif action == "down" then
+      self.position.y = self.position.y + distance
+    elseif action == "left" then
+      self.position.x = self.position.x - distance
+    elseif action == "right" then
+      self.position.x = self.position.x + distance
+    end
+  end
 end
 
 function Player:draw()
