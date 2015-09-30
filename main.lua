@@ -1,49 +1,28 @@
-function round(num)
-   if num >= 0 then
-     return math.floor(num+.5)
-   else
-     return math.ceil(num-.5)
-   end
-end
+require 'playerController'
+require 'player'
+require 'utils'
 
 function love.load()
-  Scale = {x=2, y=2}
+  Scale = {x=4, y=4}
   love.window.setMode(256 * Scale.x, 240 * Scale.y)
-
-  Critters = love.graphics.newImage('assets/critters.png')
-  Critters:setFilter("nearest", "nearest")
-  local w, h = 32, 32
-  local tw, th = Critters:getWidth(), Critters:getHeight()
-  DudeQuads = {
-    down = love.graphics.newQuad(0, 64, w, h, tw, th),
-    up = love.graphics.newQuad(0, 96, w, h, tw, th),
-    right = love.graphics.newQuad(0, 128, w, h, tw, th),
-    left = love.graphics.newQuad(0, 160, w, h, tw, th),
-  }
-  DudeQuad = DudeQuads.down
-  DudePos = {10, 10}
+  PlayerController:load()
+  Dude = Player()
+  PlayerController:register(Dude)
 end
 
 function love.update(dt)
-  local dpos = dt*20
-  if love.keyboard.isDown("up") then
-    DudePos[2] = DudePos[2] - dpos
-  elseif love.keyboard.isDown("down") then
-    DudePos[2] = DudePos[2] + dpos
-  elseif love.keyboard.isDown("left") then
-    DudePos[1] = DudePos[1] - dpos
-  elseif love.keyboard.isDown("right") then
-    DudePos[1] = DudePos[1] + dpos
-  end
+  Dude:update(dt)
 end
 
 function love.draw()
   love.graphics.scale(Scale.x, Scale.y)
-  love.graphics.draw(Critters, DudeQuad, round(DudePos[1]), round(DudePos[2]))
+  Dude:draw()
 end
 
 function love.keypressed(key)
-  if DudeQuads[key] then
-    DudeQuad = DudeQuads[key]
-  end
+  PlayerController:keypressed(key)
+end
+
+function love.keyreleased(key)
+  PlayerController:keyreleased(key)
 end
