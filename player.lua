@@ -2,7 +2,7 @@ class = require 'lib/30log/30log'
 require 'utils'
 
 Player = class('Player')
-AnimateInterval = 0.1 --seconds
+AnimateInterval = 0.15 --seconds
 
 function Player:init()
   self.position = {x=10, y=10}
@@ -37,6 +37,7 @@ function Player:init()
   self.animationQueue = {}
   self.direction = 'down'
   self.animDelay = 0
+  self.animLength = 1
 end
 
 function Player:updateQuad()
@@ -72,6 +73,7 @@ function Player:updateQuad()
         break
       end
     end
+    self.animLength = # self.animationQueue
   end
 end
 
@@ -98,7 +100,7 @@ function Player:update(dt)
   self.animDelay = self.animDelay - dt
   if self.animDelay <= 0 then
     self:advanceDir()
-    self.animDelay = AnimateInterval
+    self.animDelay = AnimateInterval / self.animLength
   end
   local distance = dt * self.speed
   for action, v in pairs(self.actions) do
