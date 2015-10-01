@@ -1,6 +1,8 @@
 class = require 'lib/30log/30log'
+require 'utils'
 
 Player = class('Player')
+AnimateInterval = 0.1 --seconds
 
 function Player:init()
   self.position = {x=10, y=10}
@@ -21,23 +23,52 @@ function Player:init()
     right = love.graphics.newQuad(0, 96, w, h, tw, th),
     downright = love.graphics.newQuad(0, 112, w, h, tw, th),
   }
-  self.quad = self.quads.down
+  self.clockwise = {
+    down = 'downleft',
+    downleft = 'left',
+    left = 'upleft',
+    upleft = 'up',
+    up = 'upright',
+    upright = 'right',
+    right = 'downright',
+    downright = 'down'
+  }
+  self.counterclockwise = invert(self.clockwise)
+  self.animationQueue = {}
+  self.direction = 'down'
+  self.animDelay = 0
 end
 
 function Player:updateQuad()
-  local quadKey = ""
+  local nextDir = ""
   if self.actions.up then
-    quadKey = "up"
+    nextDir = "up"
   elseif self.actions.down then
-    quadKey = "down"
+    nextDir = "down"
   end
   if self.actions.left then
-    quadKey = quadKey .. "left"
+    nextDir = nextDir .. "left"
   elseif self.actions.right then
-    quadKey = quadKey .. "right"
+    nextDir = nextDir .. "right"
   end
-  if self.quads[quadKey] then
-    self.quad = self.quads[quadKey]
+
+  if nextDir ~= "" then
+    local iDir = self.direction
+    self.animationQueue = {}
+    self.animDelay = 0
+    while iDir ~= nextDir do
+      iDir = self.clockwise[iDir]
+      table.insert(self.animationQueue, iDir)
+    end
+  end
+end
+
+function Player:advanceDir()
+  if self.animationQueue then
+    local newDir = table.remove(self.animationQueue, 1)
+    if newDir then
+      self.direction = newDir
+    end
   end
 end
 
@@ -52,6 +83,11 @@ function Player:controlStop(action)
 end
 
 function Player:update(dt)
+  self.animDelay = self.animDelay - dt
+  if self.animDelay <= 0 then
+    self:advanceDir()
+    self.animDelay = AnimateInterval
+  end
   local distance = dt * self.speed
   for action, v in pairs(self.actions) do
     if action == "up" then
@@ -67,5 +103,11 @@ function Player:update(dt)
 end
 
 function Player:draw()
-  love.graphics.draw(self.image, self.quad, round(self.position.x), round(self.position.y))
+  local quad = self.quads[self.direction]
+  if quad then
+  love.graphics.draw(
+    self.image, quad,
+    round(self.position.x), round(self.position.y)
+  )
+  end
 end

@@ -2,7 +2,8 @@ require 'playerController'
 require 'player'
 require 'utils'
 
-function love.load()
+function love.load(arg)
+  if arg[#arg] == "-debug" then require("mobdebug").start() end
   Scale = {x=4, y=4}
   love.window.setMode(256 * Scale.x, 240 * Scale.y)
   PlayerController:load()
