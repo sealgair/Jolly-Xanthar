@@ -52,13 +52,25 @@ function Player:updateQuad()
     nextDir = nextDir .. "right"
   end
 
-  if nextDir ~= "" then
-    local iDir = self.direction
-    self.animationQueue = {}
+  if nextDir ~= "" and nextDir ~= self.direction then
+    local ldir = self.direction
+    local rdir = self.direction
+    local lqueue = {}
+    local rqueue = {}
     self.animDelay = 0
-    while iDir ~= nextDir do
-      iDir = self.clockwise[iDir]
-      table.insert(self.animationQueue, iDir)
+    while true do
+      ldir = self.clockwise[ldir]
+      rdir = self.counterclockwise[rdir]
+      table.insert(lqueue, ldir)
+      table.insert(rqueue, rdir)
+      if ldir == nextDir then
+        self.animationQueue = lqueue
+        break
+      end
+      if rdir == nextDir then
+        self.animationQueue = rqueue
+        break
+      end
     end
   end
 end
