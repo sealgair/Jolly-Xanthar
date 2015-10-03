@@ -16,6 +16,17 @@ function PlayerController:load()
   print(controlData)
   self.controls = controlData()
   self.actions = {}
+  self.waningActions = {}
+end
+
+function PlayerController:update(dt)
+  for action, time in pairs(self.waningActions) do
+    if time > dt then
+      self.waningActions[action] = time - dt
+    else
+      self.waningActions[action] = nil
+    end
+  end
 end
 
 function PlayerController:keypressed(key)
@@ -38,6 +49,7 @@ function PlayerController:keyreleased(key)
   action = self.controls[key]
   if action then
     self.actions[action] = nil
+    self.waningActions[action] = 0.2
 
     if diretionsMap[action] then
       self:notifyDirection()
@@ -49,15 +61,24 @@ function PlayerController:keyreleased(key)
   end
 end
 
-function PlayerController:notifyDirection()
-  local direction = Direction(0,0)
-  for control, _ in pairs(self.actions) do
-    local ctlDir = diretionsMap[control]
-    if ctlDir then
-      direction = direction:add(ctlDir)
+function PlayerController:directionFromActions(actions)
+    local direction = Direction(0,0)
+    for control, _ in pairs(actions) do
+      local ctlDir = diretionsMap[control]
+      if ctlDir then
+        direction = direction:add(ctlDir)
+      end
     end
-  end
+    return direction
+end
+
+function PlayerController:notifyDirection()
+  local direction = self:directionFromActions(self.actions)
   for key, listener in pairs(self.listeners) do
+    if direction == Direction(0, 0) then
+        local waningDirection = self:directionFromActions(self.waningActions)
+        listener:setDirection(waningDirection)
+    end
     listener:setDirection(direction)
   end
 end

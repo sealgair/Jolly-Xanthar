@@ -12,6 +12,7 @@ function love.load(arg)
 end
 
 function love.update(dt)
+  PlayerController:update(dt)
   Dude:update(dt)
 end
 

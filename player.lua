@@ -45,6 +45,7 @@ function Player:setDirection(newDirection)
   if newDirection ~= Direction(0, 0) then
     local oldDirectionKey = invert(self.quads)[self.quad]
     local oldDirection = Direction[oldDirectionKey]
+    if oldDirection == newDirection then return end
 
     local ldir = oldDirection
     local rdir = oldDirection
