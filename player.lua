@@ -1,5 +1,6 @@
 class = require 'lib/30log/30log'
 require 'utils'
+require 'direction'
 
 Player = class('Player')
 AnimateInterval = 0.15 --seconds
@@ -23,52 +24,43 @@ function Player:init()
     right = love.graphics.newQuad(0, 96, w, h, tw, th),
     downright = love.graphics.newQuad(0, 112, w, h, tw, th),
   }
-  self.clockwise = {
-    down = 'downleft',
-    downleft = 'left',
-    left = 'upleft',
-    upleft = 'up',
-    up = 'upright',
-    upright = 'right',
-    right = 'downright',
-    downright = 'down'
-  }
-  self.counterclockwise = invert(self.clockwise)
+  self.direction = Direction(0, 0)
   self.animationQueue = {}
-  self.direction = 'down'
+  self.quad = self.quads.down
   self.animDelay = 0
   self.animLength = 1
 end
 
-function Player:updateQuad()
-  local nextDir = ""
-  if self.actions.up then
-    nextDir = "up"
-  elseif self.actions.down then
-    nextDir = "down"
+function Player:advanceQuad()
+  if self.animationQueue then
+    local newQuad = table.remove(self.animationQueue, 1)
+    if newQuad and self.quads[newQuad] then
+      self.quad = self.quads[newQuad]
+    end
   end
-  if self.actions.left then
-    nextDir = nextDir .. "left"
-  elseif self.actions.right then
-    nextDir = nextDir .. "right"
-  end
+end
 
-  if nextDir ~= "" and nextDir ~= self.direction then
-    local ldir = self.direction
-    local rdir = self.direction
+function Player:setDirection(newDirection)
+  self.direction = newDirection
+  if newDirection ~= Direction(0, 0) then
+    local oldDirectionKey = invert(self.quads)[self.quad]
+    local oldDirection = Direction[oldDirectionKey]
+
+    local ldir = oldDirection
+    local rdir = oldDirection
     local lqueue = {}
     local rqueue = {}
     self.animDelay = 0
     while true do
-      ldir = self.clockwise[ldir]
-      rdir = self.counterclockwise[rdir]
-      table.insert(lqueue, ldir)
-      table.insert(rqueue, rdir)
-      if ldir == nextDir then
+      ldir = ldir:turnLeft()
+      rdir = rdir:turnRight()
+      table.insert(lqueue, ldir:key())
+      table.insert(rqueue, rdir:key())
+      if ldir == newDirection then
         self.animationQueue = lqueue
         break
       end
-      if rdir == nextDir then
+      if rdir == newDirection then
         self.animationQueue = rqueue
         break
       end
@@ -77,51 +69,30 @@ function Player:updateQuad()
   end
 end
 
-function Player:advanceDir()
-  if self.animationQueue then
-    local newDir = table.remove(self.animationQueue, 1)
-    if newDir then
-      self.direction = newDir
-    end
-  end
-end
-
 function Player:controlStart(action)
   self.actions[action] = true
-  self:updateQuad()
 end
 
 function Player:controlStop(action)
   self.actions[action] = nil
-  self:updateQuad()
 end
 
 function Player:update(dt)
   self.animDelay = self.animDelay - dt
+
   if self.animDelay <= 0 then
-    self:advanceDir()
+    self:advanceQuad()
     self.animDelay = AnimateInterval / self.animLength
   end
   local distance = dt * self.speed
-  for action, v in pairs(self.actions) do
-    if action == "up" then
-      self.position.y = self.position.y - distance
-    elseif action == "down" then
-      self.position.y = self.position.y + distance
-    elseif action == "left" then
-      self.position.x = self.position.x - distance
-    elseif action == "right" then
-      self.position.x = self.position.x + distance
-    end
-  end
+
+  self.position.x = self.position.x + (self.direction.x * distance)
+  self.position.y = self.position.y + (self.direction.y * distance)
 end
 
 function Player:draw()
-  local quad = self.quads[self.direction]
-  if quad then
   love.graphics.draw(
-    self.image, quad,
+    self.image, self.quad,
     round(self.position.x), round(self.position.y)
   )
-  end
 end
