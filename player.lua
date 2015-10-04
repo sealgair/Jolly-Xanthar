@@ -5,8 +5,8 @@ require 'direction'
 Player = class('Player')
 AnimateInterval = 0.15 --seconds
 
-function Player:init()
-  self.position = {x=10, y=10}
+function Player:init(x, y)
+  self.position = {x=x, y=x}
   self.speed = 20
   self.actions = {}
 

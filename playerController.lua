@@ -108,5 +108,6 @@ function PlayerController:notifyDirection(player)
 end
 
 function PlayerController:register(listener, player)
+  setDefault(self.listeners, player, {})
   table.insert(self.listeners[player], listener)
 end
