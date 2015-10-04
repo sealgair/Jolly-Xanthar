@@ -40,3 +40,11 @@ end
 function love.keyreleased(key)
   PlayerController:keyreleased(key)
 end
+
+function love.gamepadpressed(joystick, button)
+  PlayerController:gamepadpressed(joystick, button)
+end
+
+function love.gamepadreleased(joystick, button)
+  PlayerController:gamepadreleased(joystick, button)
+end

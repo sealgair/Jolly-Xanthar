@@ -36,6 +36,11 @@ function PlayerController:actionsForKey(key)
   return actions
 end
 
+function PlayerController:actionsForButton(joystick, button)
+  local key = "joy" .. joystick:getID() .. ":" .. button
+  return self:actionsForKey(key)
+end
+
 function PlayerController:update(dt)
   for player, waning in pairs(self.waningActions) do
     for action, time in pairs(waning) do
@@ -48,9 +53,7 @@ function PlayerController:update(dt)
   end
 end
 
-function PlayerController:keypressed(key)
-  local playerActions = self:actionsForKey(key)
-
+function PlayerController:startActions(playerActions)
   for player, actions in pairs(playerActions) do
     for _, action in pairs(actions) do
       self.actions[player][action] = 1
@@ -66,9 +69,7 @@ function PlayerController:keypressed(key)
   end
 end
 
-function PlayerController:keyreleased(key)
-  local playerActions = self:actionsForKey(key)
-
+function PlayerController:stopActions(playerActions)
   for player, actions in pairs(playerActions) do
     for _, action in pairs(actions) do
       self.actions[player][action] = nil
@@ -83,6 +84,26 @@ function PlayerController:keyreleased(key)
       end
     end
   end
+end
+
+function PlayerController:keypressed(key)
+  local playerActions = self:actionsForKey(key)
+  self:startActions(playerActions)
+end
+
+function PlayerController:keyreleased(key)
+  local playerActions = self:actionsForKey(key)
+  self:stopActions(playerActions)
+end
+
+function PlayerController:gamepadpressed(joystick, button)
+  local playerActions = self:actionsForButton(joystick, button)
+  self:startActions(playerActions)
+end
+
+function PlayerController:gamepadreleased(joystick, button)
+  local playerActions = self:actionsForButton(joystick, button)
+  self:stopActions(playerActions)
 end
 
 function PlayerController:directionFromActions(actions)

@@ -11,10 +11,10 @@ return {
     pause = 'return',
   },
   {
-    up = 'w',
-    down = 's',
-    left = 'a',
-    right = 'd',
+    up = 'joy1:y',
+    down = 'joy1:a',
+    left = 'joy1:x',
+    right = 'joy1:b',
 
     attack = 'f',
     defend = 'g',
@@ -22,10 +22,10 @@ return {
     pause = 'y',
   },
   {
-    up = 'u',
-    down = 'j',
-    left = 'h',
-    right = 'k',
+    up = 'joy1:dpup',
+    down = 'joy1:dpdown',
+    left = 'joy1:dpleft',
+    right = 'joy1:dpright',
 
     attack = 'l',
     defend = ';',
