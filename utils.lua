@@ -17,3 +17,9 @@ end
 function last(t)
   return t[# t]
 end
+
+function setDefault(t, key, value)
+  if t[key] == nil then
+    t[key] = value
+  end
+end

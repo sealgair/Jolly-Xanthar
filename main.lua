@@ -8,7 +8,7 @@ function love.load(arg)
   love.window.setMode(256 * Scale.x, 240 * Scale.y)
   PlayerController:load()
   Dude = Player()
-  PlayerController:register(Dude)
+  PlayerController:register(Dude, 1)
 end
 
 function love.update(dt)
