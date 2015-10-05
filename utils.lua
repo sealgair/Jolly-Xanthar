@@ -23,3 +23,15 @@ function setDefault(t, key, value)
     t[key] = value
   end
 end
+
+function string:startsWith(substring)
+  return self:sub(1 , substring:len()) == substring
+end
+
+function string:endsWith(substring)
+  return substring == '' or self:sub(-substring:len()) == substring
+end
+
+function string:contains(substring)
+  return self:find(substring) ~= nil
+end

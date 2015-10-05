@@ -4,6 +4,7 @@ PlayerController = {
   listeners = {},
   actions = {},
   waningActions = {},
+  dirSticks = {},
 }
 
 local directionsMap = {
@@ -16,10 +17,16 @@ local directionsMap = {
 function PlayerController:load()
   local controlData = love.filesystem.load('controls.lua')
   self.playerControls = controlData()
-  for player, _ in pairs(self.playerControls) do
+  for player, controls in pairs(self.playerControls) do
     self.actions[player] = {}
     self.waningActions[player] = {}
     self.listeners[player] = {}
+
+    for action, key in pairs(controls) do
+      if key:contains("stick") then
+        self.dirSticks[key] = 1
+      end
+    end
   end
 end
 
@@ -50,6 +57,10 @@ function PlayerController:update(dt)
         waning[action] = nil
       end
     end
+  end
+
+  for key, _ in pairs(self.dirSticks) do
+    self:notifyStickDirection(key)
   end
 end
 
@@ -115,6 +126,20 @@ function PlayerController:directionFromActions(actions)
       end
     end
     return direction
+end
+
+function PlayerController:notifyStickDirection(key)
+    local pad, stick = key:match("joy(%d+):stick(%d+)")
+    pad, stick = tonumber(pad), tonumber(stick)
+    stick = (((stick-1)*3)+1)
+    local joystick = love.joystick.getJoysticks()[pad]
+    local x, y = joystick:getAxis(stick), joystick:getAxis(stick+1)
+    local dir = Direction(x, y)
+    for player, _ in pairs(self:actionsForKey(key)) do
+      for _, listener in pairs(self.listeners[player]) do
+        listener:setDirection(dir)
+      end
+    end
 end
 
 function PlayerController:notifyDirection(player)

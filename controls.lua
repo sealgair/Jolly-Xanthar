@@ -1,9 +1,9 @@
 return {
   {
-    up = 'up',
-    down = 'down',
-    left = 'left',
-    right = 'right',
+    up = 'joy1:stick1',
+    down = 'joy1:stick1',
+    left = 'joy1:stick1',
+    right = 'joy1:stick1',
 
     attack = ',',
     defend = '.',
@@ -11,10 +11,10 @@ return {
     pause = 'return',
   },
   {
-    up = 'joy1:y',
-    down = 'joy1:a',
-    left = 'joy1:x',
-    right = 'joy1:b',
+    up = 'joy1:stick2',
+    down = 'joy1:stick2',
+    left = 'joy1:stick2',
+    right = 'joy1:stick2',
 
     attack = 'f',
     defend = 'g',

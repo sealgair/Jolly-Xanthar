@@ -41,6 +41,10 @@ function Player:advanceQuad()
 end
 
 function Player:setDirection(newDirection)
+  if newDirection == self.direction or newDirection == nil then
+    return
+  end
+
   self.direction = newDirection
   if newDirection ~= Direction(0, 0) then
     local oldDirectionKey = invert(self.quads)[self.quad]
