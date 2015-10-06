@@ -17,6 +17,7 @@ local directionsMap = {
 function PlayerController:load()
   local controlData = love.filesystem.load('controls.lua')
   self.playerControls = controlData()
+  self.listeners[0] = {}
   for player, controls in pairs(self.playerControls) do
     self.actions[player] = {}
     self.waningActions[player] = {}
@@ -72,7 +73,7 @@ function PlayerController:startActions(playerActions)
       if directionsMap[action] then
         self:notifyDirection(player)
       else
-        for _, listener in pairs(self.listeners[player]) do
+        for _, listener in pairs(self:getListeners(player)) do
           listener:controlStart(action)
         end
       end
@@ -89,7 +90,7 @@ function PlayerController:stopActions(playerActions)
       if directionsMap[action] then
         self:notifyDirection(player)
       else
-        for _, listener in pairs(self.listeners[player]) do
+        for _, listener in pairs(self:getListeners(player)) do
           listener:controlStop(action)
         end
       end
@@ -137,7 +138,7 @@ function PlayerController:notifyStickDirection(key)
       local y = joystick:getGamepadAxis(stick .. 'y')
       local dir = Direction(x, y)
       for player, _ in pairs(self:actionsForKey(key)) do
-        for _, listener in pairs(self.listeners[player]) do
+        for _, listener in pairs(self.listeners(player)) do
           listener:setDirection(dir)
         end
       end
@@ -146,7 +147,7 @@ end
 
 function PlayerController:notifyDirection(player)
   local direction = self:directionFromActions(self.actions[player])
-  for _, listener in pairs(self.listeners[player]) do
+  for _, listener in pairs(self:getListeners(player)) do
     if direction == Direction(0, 0) then
         local waningDirection = self:directionFromActions(self.waningActions[player])
         listener:setDirection(waningDirection)
@@ -156,6 +157,18 @@ function PlayerController:notifyDirection(player)
 end
 
 function PlayerController:register(listener, player)
-  setDefault(self.listeners, player, {})
+  if self.actions[player] == nil then
+    player = 0
+  end
   table.insert(self.listeners[player], listener)
+end
+
+function PlayerController:getListeners(player)
+  local listeners = {}
+  for _, p in pairs({player, 0}) do
+    for _, l in pairs(self.listeners[p]) do
+      table.insert(listeners, l)
+    end
+  end
+  return listeners
 end

@@ -1,3 +1,6 @@
+require "PlayerController"
+require "direction"
+
 Menu = {
   items = {
     'start',
@@ -20,17 +23,31 @@ function Menu:load()
     }
   end
 
-  self.active = 'start'
+  self.active = 1
+  PlayerController:register(self)
+  self.controlDirection = Direction(0, 0)
 end
 
 function Menu:update(dt)
+end
+
+function Menu:setDirection(direction)
+  if direction ~= self.controlDirection then
+    self.controlDirection = direction
+    self.active = self.active + self.controlDirection.y
+    if self.active < 1 then
+      self.active = 1
+    elseif self.active > # self.items then
+      self.active = # self.items
+    end
+  end
 end
 
 function Menu:draw()
   love.graphics.draw(self.background, 0, 0)
   for i, quads in ipairs(self.menuQuads) do
     local state = 'inactive'
-    if self.active == self.items[i] then
+    if self.active == i then
       state = 'active'
     end
     i = i - 1
