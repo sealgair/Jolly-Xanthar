@@ -1,36 +1,34 @@
 require 'playerController'
 require 'player'
 require 'utils'
+require 'world'
+require 'menu'
 
 function love.load(arg)
   if arg[#arg] == "-debug" then require("mobdebug").start() end
   Scale = {x=3, y=3}
   love.window.setMode(256 * Scale.x, 240 * Scale.y)
+  love.graphics.setDefaultFilter("nearest", "nearest")
 
   PlayerController:load()
-
-  players = {
-    Player(10, 10),
-    Player(50, 50),
-    Player(100, 100),
+  States = {
+    world = World,
+    menu = Menu,
   }
-  for i, player in ipairs(players) do
-    PlayerController:register(player, i)
+  States.current = States.world
+  for k, state in pairs(States) do
+    state:load()
   end
 end
 
 function love.update(dt)
   PlayerController:update(dt)
-  for i, dude in ipairs(players) do
-    dude:update(dt)
-  end
+  States.current:update(dt)
 end
 
 function love.draw()
   love.graphics.scale(Scale.x, Scale.y)
-  for i, dude in ipairs(players) do
-    dude:draw()
-  end
+  States.current:draw(dt)
 end
 
 function love.keypressed(key)

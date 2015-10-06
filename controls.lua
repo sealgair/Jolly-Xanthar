@@ -31,5 +31,16 @@ return {
     defend = ';',
     switch = 'o',
     pause = 'p',
+  },
+  {
+    up = 'up',
+    down = 'down',
+    left = 'left',
+    right = 'right',
+
+    attack = 'l',
+    defend = ';',
+    switch = 'o',
+    pause = 'p',
   }
 }

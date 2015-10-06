@@ -132,12 +132,14 @@ function PlayerController:notifyStickDirection(key)
     local pad, stick = key:match("joy(%d+):(%w+)Stick")
     pad = tonumber(pad)
     local joystick = love.joystick.getJoysticks()[pad]
-    local x = joystick:getGamepadAxis(stick .. 'x')
-    local y = joystick:getGamepadAxis(stick .. 'y')
-    local dir = Direction(x, y)
-    for player, _ in pairs(self:actionsForKey(key)) do
-      for _, listener in pairs(self.listeners[player]) do
-        listener:setDirection(dir)
+    if joystick then
+      local x = joystick:getGamepadAxis(stick .. 'x')
+      local y = joystick:getGamepadAxis(stick .. 'y')
+      local dir = Direction(x, y)
+      for player, _ in pairs(self:actionsForKey(key)) do
+        for _, listener in pairs(self.listeners[player]) do
+          listener:setDirection(dir)
+        end
       end
     end
 end

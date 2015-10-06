@@ -6,12 +6,11 @@ Player = class('Player')
 AnimateInterval = 0.15 --seconds
 
 function Player:init(x, y)
-  self.position = {x=x, y=x}
+  self.position = {x=x, y=y}
   self.speed = 20
   self.actions = {}
 
   self.image = love.graphics.newImage('assets/human.png')
-  self.image:setFilter("nearest", "nearest")
   local w, h = 16, 16
   local tw, th = self.image:getWidth(), self.image:getHeight()
   self.quads = {
