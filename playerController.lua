@@ -23,7 +23,7 @@ function PlayerController:load()
     self.listeners[player] = {}
 
     for action, key in pairs(controls) do
-      if key:contains("stick") then
+      if key:contains("Stick") then
         self.dirSticks[key] = 1
       end
     end
@@ -129,11 +129,11 @@ function PlayerController:directionFromActions(actions)
 end
 
 function PlayerController:notifyStickDirection(key)
-    local pad, stick = key:match("joy(%d+):stick(%d+)")
-    pad, stick = tonumber(pad), tonumber(stick)
-    stick = (((stick-1)*3)+1)
+    local pad, stick = key:match("joy(%d+):(%w+)Stick")
+    pad = tonumber(pad)
     local joystick = love.joystick.getJoysticks()[pad]
-    local x, y = joystick:getAxis(stick), joystick:getAxis(stick+1)
+    local x = joystick:getGamepadAxis(stick .. 'x')
+    local y = joystick:getGamepadAxis(stick .. 'y')
     local dir = Direction(x, y)
     for player, _ in pairs(self:actionsForKey(key)) do
       for _, listener in pairs(self.listeners[player]) do
