@@ -5,10 +5,10 @@ return {
     left = 'joy1:leftStick',
     right = 'joy1:leftStick',
 
-    attack = ',',
-    defend = '.',
-    switch = 'rshift',
-    pause = 'return',
+    attack = 'joy1:a',
+    defend = 'joy1:b',
+    switch = 'joy1:back',
+    pause = 'joy1:start',
   },
   {
     up = 'joy1:rightStick',
@@ -38,9 +38,9 @@ return {
     left = 'left',
     right = 'right',
 
-    attack = 'l',
-    defend = ';',
-    switch = 'o',
-    pause = 'p',
+    attack = 'n',
+    defend = 'm',
+    switch = ',',
+    pause = '.',
   }
 }

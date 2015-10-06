@@ -4,6 +4,18 @@ require 'utils'
 require 'world'
 require 'menu'
 
+local StateMachine = {
+  states = {}
+}
+
+function StateMachine:advance(option)
+  if self.current == self.states.menu then
+    if option == 'start' then
+      self.current = self.states.world
+    end
+  end
+end
+
 function love.load(arg)
   if arg[#arg] == "-debug" then require("mobdebug").start() end
   Scale = {x=3, y=3}
@@ -11,24 +23,25 @@ function love.load(arg)
   love.graphics.setDefaultFilter("nearest", "nearest")
 
   PlayerController:load()
-  States = {
+  StateMachine.states = {
     world = World,
     menu = Menu,
   }
-  States.current = States.menu
-  for k, state in pairs(States) do
-    state:load()
+  StateMachine.current = StateMachine.states.menu
+
+  for k, state in pairs(StateMachine.states) do
+    state:load(StateMachine)
   end
 end
 
 function love.update(dt)
   PlayerController:update(dt)
-  States.current:update(dt)
+  StateMachine.current:update(dt)
 end
 
 function love.draw()
   love.graphics.scale(Scale.x, Scale.y)
-  States.current:draw()
+  StateMachine.current:draw()
 end
 
 function love.keypressed(key)

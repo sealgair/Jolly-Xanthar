@@ -9,7 +9,8 @@ Menu = {
   menuQuads = {}
 }
 
-function Menu:load()
+function Menu:load(fsm)
+  self.fsm = fsm
   self.background = love.graphics.newImage('assets/Splash.png')
   self.menuImg = love.graphics.newImage('assets/Menu.png')
 
@@ -39,6 +40,17 @@ function Menu:setDirection(direction)
       self.active = 1
     elseif self.active > # self.items then
       self.active = # self.items
+    end
+  end
+end
+
+function Menu:controlStart(action)
+end
+
+function Menu:controlStop(action)
+  if action == 'attack' or action == 'pause' then
+    if self.items[self.active] == 'start' then
+      self.fsm:advance('start')
     end
   end
 end
