@@ -15,7 +15,7 @@ function love.load(arg)
     world = World,
     menu = Menu,
   }
-  States.current = States.world
+  States.current = States.menu
   for k, state in pairs(States) do
     state:load()
   end
@@ -28,7 +28,7 @@ end
 
 function love.draw()
   love.graphics.scale(Scale.x, Scale.y)
-  States.current:draw(dt)
+  States.current:draw()
 end
 
 function love.keypressed(key)
