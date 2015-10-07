@@ -5,13 +5,21 @@ require 'world'
 require 'menu'
 
 local StateMachine = {
-  states = {}
+  states = {},
+  transitions = {},
+  current = "none"
 }
 
-function StateMachine:advance(option)
-  if self.current == self.states.menu then
-    if option == 'start' then
-      self.current = self.states.world
+function StateMachine:currentState()
+  return self.states[self.current]
+end
+
+function StateMachine:advance(input, options)
+  local transition = self.transitions[self.current]
+  if transition then
+    next = transition[input]
+    if self.states[next] then
+      self.current = next
     end
   end
 end
@@ -27,7 +35,12 @@ function love.load(arg)
     world = World,
     menu = Menu,
   }
-  StateMachine.current = StateMachine.states.menu
+  StateMachine.transitions = {
+    menu = {
+      start = "world"
+    }
+  }
+  StateMachine.current = "menu"
 
   for k, state in pairs(StateMachine.states) do
     state:load(StateMachine)
@@ -36,12 +49,12 @@ end
 
 function love.update(dt)
   PlayerController:update(dt)
-  StateMachine.current:update(dt)
+  StateMachine:currentState():update(dt)
 end
 
 function love.draw()
   love.graphics.scale(Scale.x, Scale.y)
-  StateMachine.current:draw()
+  StateMachine:currentState():draw()
 end
 
 function love.keypressed(key)
