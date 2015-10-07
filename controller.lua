@@ -23,9 +23,11 @@ function Controller:load()
     self.waningActions[player] = {}
     self.listeners[player] = {}
 
-    for action, key in pairs(controls) do
-      if key:contains("Stick") then
-        self.dirSticks[key] = 1
+    for action, keySet in pairs(controls) do
+      for key, _ in pairs(keySet) do
+        if key:contains("Stick") then
+          self.dirSticks[key] = 1
+        end
       end
     end
   end
@@ -34,8 +36,8 @@ end
 function Controller:actionsForKey(key)
   actions = {}
   for player, controls in ipairs(self.playerControls) do
-    for action, k in pairs(controls) do
-      if k == key then
+    for action, keySet in pairs(controls) do
+      if keySet[key] then
         setDefault(actions, player, {})
         table.insert(actions[player], action)
       end
@@ -142,7 +144,7 @@ function Controller:notifyStickDirection(key)
       local y = joystick:getGamepadAxis(stick .. 'y')
       local dir = Direction(x, y)
       for player, _ in pairs(self:actionsForKey(key)) do
-        for _, listener in pairs(self.listeners(player)) do
+        for _, listener in pairs(self.listeners[player]) do
           if listener.active and listener.setDirection then
             listener:setDirection(dir)
           end
@@ -157,7 +159,6 @@ function Controller:notifyDirection(player)
     if direction == Direction(0, 0) then
         local waningDirection = self:directionFromActions(self.waningActions[player])
         if listener.active and listener.setDirection then
-          print(listener)
           listener:setDirection(waningDirection)
         end
     end

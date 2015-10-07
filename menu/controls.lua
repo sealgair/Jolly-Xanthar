@@ -44,6 +44,19 @@ function Controls:load(fsm)
   self.direction = Direction(0, 0)
 
   Controller:register(self)
+
+  self.controlLocations = {
+    up =    {x=21, y=59, w=46, h=46},
+    down =  {x=77, y=59, w=46, h=46},
+    left =  {x=133, y=59, w=46, h=46},
+    right = {x=189, y=59, w=46, h=46},
+
+    select = {x=21, y=129, w=46, h=46},
+    start =  {x=77, y=129, w=46, h=46},
+    a =      {x=133, y=129, w=46, h=46},
+    b =      {x=189, y=129, w=46, h=46},
+  }
+  self.controlFont = love.graphics.newFont(7)
 end
 
 function Controls:selectedItem()
@@ -60,7 +73,7 @@ function Controls:setDirection(direction)
 end
 
 function Controls:controlStop(action)
-  if action == 'attack' or action == 'pause' then
+  if action == 'a' or action == 'start' then
     if self:selectedItem() == 'done' then
       self.fsm:advance('done')
     end
@@ -74,4 +87,13 @@ function Controls:draw()
   qx, qy, qw, qh = selectedQuad:getViewport()
   qx = qx - ww
   love.graphics.draw(self.image, selectedQuad, qx, qy)
+  love.graphics.setFont(self.controlFont)
+  for action, keyset in pairs(Controller.playerControls[1]) do
+    local loc = self.controlLocations[action]
+    local ystart = loc.y
+    for key, _ in pairs(keyset) do
+      love.graphics.printf(key, loc.x, ystart, loc.w, "center")
+      ystart = ystart + self.controlFont:getHeight()
+    end
+  end
 end

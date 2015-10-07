@@ -2,7 +2,7 @@ require 'controller'
 World = {}
 
 World.__newindex = function(self, key, value)
-  print "got it!!! :D :D :D"
+  -- TODO: get this working...
   rawset(self, key, value)
   if key == 'active' then
     self._props[key] = value

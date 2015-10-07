@@ -40,7 +40,7 @@ function Splash:setDirection(direction)
 end
 
 function Splash:controlStop(action)
-  if action == 'attack' or action == 'pause' then
+  if action == 'a' or action == 'start' then
     self.fsm:advance(self.items[self.activeItem])
   end
 end
