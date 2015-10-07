@@ -43,6 +43,10 @@ function ChangeControls:load(fsm)
   PlayerController:register(self)
 end
 
+function ChangeControls:selectedItem()
+  return self.items[self.selected.y][self.selected.x]
+end
+
 function ChangeControls:setDirection(direction)
   if self.direction ~= direction then
     self.direction = direction
@@ -52,9 +56,17 @@ function ChangeControls:setDirection(direction)
   end
 end
 
+function ChangeControls:controlStop(action)
+  if action == 'attack' or action == 'pause' then
+    if self:selectedItem() == 'done' then
+      self.fsm:advance('done')
+    end
+  end
+end
+
 function ChangeControls:draw()
   love.graphics.draw(self.image, self.screenQuad, 0, 0)
-  local selectedItem = self.items[self.selected.y][self.selected.x]
+  local selectedItem = self:selectedItem()
   local selectedQuad = self.selectedQuads[selectedItem]
   qx, qy, qw, qh = selectedQuad:getViewport()
   qx = qx - ww
