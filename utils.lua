@@ -51,9 +51,9 @@ function wrapping(value, max, min)
     min = 1
   end
   if value < min then
-    return min
-  elseif value > max then
     return max
+  elseif value > max then
+    return min
   else
     return value
   end

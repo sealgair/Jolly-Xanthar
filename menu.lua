@@ -35,12 +35,7 @@ end
 function Menu:setDirection(direction)
   if direction ~= self.controlDirection then
     self.controlDirection = direction
-    self.active = self.active + self.controlDirection.y
-    if self.active < 1 then
-      self.active = 1
-    elseif self.active > # self.items then
-      self.active = # self.items
-    end
+    self.active = wrapping(self.active + self.controlDirection.y, # self.items)
   end
 end
 
