@@ -1,15 +1,15 @@
-require "PlayerController"
+require "controller"
 require "direction"
 
-Menu = {
+Splash = {
   items = {
     'start',
     'controls'
   },
-  menuQuads = {}
+  SplashQuads = {}
 }
 
-function Menu:load(fsm)
+function Splash:load(fsm)
   self.fsm = fsm
   self.background = love.graphics.newImage('assets/Splash.png')
   self.menuImg = love.graphics.newImage('assets/Menu.png')
@@ -18,36 +18,36 @@ function Menu:load(fsm)
   local w, h = 64, 16
   for i, item in ipairs(self.items) do
     y = (i - 1) * h
-    self.menuQuads[i] = {
+    self.SplashQuads[i] = {
       inactive = love.graphics.newQuad(0, y, w, h, sw, sh),
       active   = love.graphics.newQuad(w, y, w, h, sw, sh)
     }
   end
 
   self.activeItem = 1
-  PlayerController:register(self)
+  Controller:register(self)
   self.controlDirection = Direction(0, 0)
 end
 
-function Menu:update(dt)
+function Splash:update(dt)
 end
 
-function Menu:setDirection(direction)
+function Splash:setDirection(direction)
   if direction ~= self.controlDirection then
     self.controlDirection = direction
     self.activeItem = wrapping(self.activeItem + self.controlDirection.y, # self.items)
   end
 end
 
-function Menu:controlStop(action)
+function Splash:controlStop(action)
   if action == 'attack' or action == 'pause' then
     self.fsm:advance(self.items[self.activeItem])
   end
 end
 
-function Menu:draw()
+function Splash:draw()
   love.graphics.draw(self.background, 0, 0)
-  for i, quads in ipairs(self.menuQuads) do
+  for i, quads in ipairs(self.SplashQuads) do
     local state = 'inactive'
     if self.activeItem == i then
       state = 'active'

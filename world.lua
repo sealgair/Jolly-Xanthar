@@ -1,4 +1,4 @@
-require 'playerController'
+require 'controller'
 World = {}
 
 World.__newindex = function(self, key, value)
@@ -20,7 +20,7 @@ function World:load()
     Player(224, 208),
   }
   for i, player in ipairs(self.players) do
-    PlayerController:register(player, i)
+    Controller:register(player, i)
   end
 end
 

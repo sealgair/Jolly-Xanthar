@@ -1,6 +1,6 @@
 require "direction"
 
-PlayerController = {
+Controller = {
   listeners = {},
   actions = {},
   waningActions = {},
@@ -14,7 +14,7 @@ local directionsMap = {
   right = Direction(1, 0),
 }
 
-function PlayerController:load()
+function Controller:load()
   local controlData = love.filesystem.load('controls.lua')
   self.playerControls = controlData()
   self.listeners[0] = {}
@@ -31,7 +31,7 @@ function PlayerController:load()
   end
 end
 
-function PlayerController:actionsForKey(key)
+function Controller:actionsForKey(key)
   actions = {}
   for player, controls in ipairs(self.playerControls) do
     for action, k in pairs(controls) do
@@ -44,12 +44,12 @@ function PlayerController:actionsForKey(key)
   return actions
 end
 
-function PlayerController:actionsForButton(joystick, button)
+function Controller:actionsForButton(joystick, button)
   local key = "joy" .. joystick:getID() .. ":" .. button
   return self:actionsForKey(key)
 end
 
-function PlayerController:update(dt)
+function Controller:update(dt)
   for player, waning in pairs(self.waningActions) do
     for action, time in pairs(waning) do
       if time > dt then
@@ -65,7 +65,7 @@ function PlayerController:update(dt)
   end
 end
 
-function PlayerController:startActions(playerActions)
+function Controller:startActions(playerActions)
   for player, actions in pairs(playerActions) do
     for _, action in pairs(actions) do
       self.actions[player][action] = 1
@@ -83,7 +83,7 @@ function PlayerController:startActions(playerActions)
   end
 end
 
-function PlayerController:stopActions(playerActions)
+function Controller:stopActions(playerActions)
   for player, actions in pairs(playerActions) do
     for _, action in pairs(actions) do
       self.actions[player][action] = nil
@@ -102,27 +102,27 @@ function PlayerController:stopActions(playerActions)
   end
 end
 
-function PlayerController:keypressed(key)
+function Controller:keypressed(key)
   local playerActions = self:actionsForKey(key)
   self:startActions(playerActions)
 end
 
-function PlayerController:keyreleased(key)
+function Controller:keyreleased(key)
   local playerActions = self:actionsForKey(key)
   self:stopActions(playerActions)
 end
 
-function PlayerController:gamepadpressed(joystick, button)
+function Controller:gamepadpressed(joystick, button)
   local playerActions = self:actionsForButton(joystick, button)
   self:startActions(playerActions)
 end
 
-function PlayerController:gamepadreleased(joystick, button)
+function Controller:gamepadreleased(joystick, button)
   local playerActions = self:actionsForButton(joystick, button)
   self:stopActions(playerActions)
 end
 
-function PlayerController:directionFromActions(actions)
+function Controller:directionFromActions(actions)
     local direction = Direction(0,0)
     for control, _ in pairs(actions) do
       local ctlDir = directionsMap[control]
@@ -133,7 +133,7 @@ function PlayerController:directionFromActions(actions)
     return direction
 end
 
-function PlayerController:notifyStickDirection(key)
+function Controller:notifyStickDirection(key)
     local pad, stick = key:match("joy(%d+):(%w+)Stick")
     pad = tonumber(pad)
     local joystick = love.joystick.getJoysticks()[pad]
@@ -151,7 +151,7 @@ function PlayerController:notifyStickDirection(key)
     end
 end
 
-function PlayerController:notifyDirection(player)
+function Controller:notifyDirection(player)
   local direction = self:directionFromActions(self.actions[player])
   for _, listener in pairs(self:getListeners(player)) do
     if direction == Direction(0, 0) then
@@ -165,14 +165,14 @@ function PlayerController:notifyDirection(player)
   end
 end
 
-function PlayerController:register(listener, player)
+function Controller:register(listener, player)
   if self.actions[player] == nil then
     player = 0
   end
   table.insert(self.listeners[player], listener)
 end
 
-function PlayerController:getListeners(player)
+function Controller:getListeners(player)
   local listeners = {}
   for _, p in pairs({player, 0}) do
     for _, l in pairs(self.listeners[p]) do

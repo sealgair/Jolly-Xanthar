@@ -1,7 +1,7 @@
 
-ChangeControls = class('ChangeControls')
+Controls = class('Controls')
 
-function ChangeControls:load(fsm)
+function Controls:load(fsm)
   self.fsm = fsm
   self.image = love.graphics.newImage('assets/controls.png')
   ww, wh = 256, 240
@@ -43,14 +43,14 @@ function ChangeControls:load(fsm)
   self.selected = {x = 1, y = 1}
   self.direction = Direction(0, 0)
 
-  PlayerController:register(self)
+  Controller:register(self)
 end
 
-function ChangeControls:selectedItem()
+function Controls:selectedItem()
   return self.items[self.selected.y][self.selected.x]
 end
 
-function ChangeControls:setDirection(direction)
+function Controls:setDirection(direction)
   if self.direction ~= direction then
     self.direction = direction
     self.selected.y = wrapping(self.selected.y + direction.y, # self.items)
@@ -59,7 +59,7 @@ function ChangeControls:setDirection(direction)
   end
 end
 
-function ChangeControls:controlStop(action)
+function Controls:controlStop(action)
   if action == 'attack' or action == 'pause' then
     if self:selectedItem() == 'done' then
       self.fsm:advance('done')
@@ -67,7 +67,7 @@ function ChangeControls:controlStop(action)
   end
 end
 
-function ChangeControls:draw()
+function Controls:draw()
   love.graphics.draw(self.image, self.screenQuad, 0, 0)
   local selectedItem = self:selectedItem()
   local selectedQuad = self.selectedQuads[selectedItem]

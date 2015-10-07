@@ -1,9 +1,9 @@
-require 'playerController'
+require 'controller'
 require 'player'
 require 'utils'
 require 'world'
-require 'menu'
-require 'changeControls'
+require 'menu/splash'
+require 'menu/controls'
 
 local StateMachine = {
   states = {},
@@ -33,11 +33,11 @@ function love.load(arg)
   love.window.setMode(256 * Scale.x, 240 * Scale.y)
   love.graphics.setDefaultFilter("nearest", "nearest")
 
-  PlayerController:load()
+  Controller:load()
   StateMachine.states = {
     world = World,
-    menu = Menu,
-    controls = ChangeControls,
+    menu = Splash,
+    controls = Controls,
   }
   StateMachine.transitions = {
     menu = {
@@ -52,7 +52,7 @@ function love.load(arg)
     }
   }
   StateMachine.current = "menu"
-  Menu.active = true
+  Splash.active = true
 
   for k, state in pairs(StateMachine.states) do
     state:load(StateMachine)
@@ -60,7 +60,7 @@ function love.load(arg)
 end
 
 function love.update(dt)
-  PlayerController:update(dt)
+  Controller:update(dt)
   state = StateMachine:currentState()
   if state.update then
     state:update(dt)
@@ -76,17 +76,17 @@ function love.draw()
 end
 
 function love.keypressed(key)
-  PlayerController:keypressed(key)
+  Controller:keypressed(key)
 end
 
 function love.keyreleased(key)
-  PlayerController:keyreleased(key)
+  Controller:keyreleased(key)
 end
 
 function love.gamepadpressed(joystick, button)
-  PlayerController:gamepadpressed(joystick, button)
+  Controller:gamepadpressed(joystick, button)
 end
 
 function love.gamepadreleased(joystick, button)
-  PlayerController:gamepadreleased(joystick, button)
+  Controller:gamepadreleased(joystick, button)
 end
