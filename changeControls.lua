@@ -23,21 +23,24 @@ function ChangeControls:load(fsm)
   local ph = 46
   self.selectedQuads = {
     done =   selectQuad(0, 0, 64, 24),
-    up =     selectQuad(16, 36, cw, ch),
-    down =   selectQuad(73, 36, cw, ch),
+
+    up =     selectQuad(16,  36, cw, ch),
+    down =   selectQuad(73,  36, cw, ch),
     left =   selectQuad(129, 36, cw, ch),
     right =  selectQuad(185, 36, cw, ch),
-    select = selectQuad(16, 110, cw, ch),
-    start =  selectQuad(73, 110, cw, ch),
+
+    select = selectQuad(16,  110, cw, ch),
+    start =  selectQuad(73,  110, cw, ch),
     a =      selectQuad(129, 110, cw, ch),
     b =      selectQuad(185, 110, cw, ch),
-    p1 =     selectQuad(46, 182, pw, ph),
-    p2 =     selectQuad(88, 182, pw, ph),
+
+    p1 =     selectQuad(46,  182, pw, ph),
+    p2 =     selectQuad(88,  182, pw, ph),
     p3 =     selectQuad(142, 182, pw, ph),
     p4 =     selectQuad(188, 182, pw, ph),
   }
 
-  self.selected = {x = 1, y = 2}
+  self.selected = {x = 1, y = 1}
   self.direction = Direction(0, 0)
 
   PlayerController:register(self)

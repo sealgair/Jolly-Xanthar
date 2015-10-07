@@ -20,7 +20,9 @@ function StateMachine:advance(input, options)
   if transition then
     next = transition[input]
     if self.states[next] then
+      self:currentState().active = nil
       self.current = next
+      self:currentState().active = true
     end
   end
 end
@@ -50,6 +52,7 @@ function love.load(arg)
     }
   }
   StateMachine.current = "menu"
+  Menu.active = true
 
   for k, state in pairs(StateMachine.states) do
     state:load(StateMachine)

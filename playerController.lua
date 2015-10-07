@@ -74,7 +74,7 @@ function PlayerController:startActions(playerActions)
         self:notifyDirection(player)
       else
         for _, listener in pairs(self:getListeners(player)) do
-          if listener.controlStart then
+          if listener.active and listener.controlStart then
             listener:controlStart(action)
           end
         end
@@ -93,7 +93,7 @@ function PlayerController:stopActions(playerActions)
         self:notifyDirection(player)
       else
         for _, listener in pairs(self:getListeners(player)) do
-          if listener.controlStop then
+          if listener.active and listener.controlStop then
             listener:controlStop(action)
           end
         end
@@ -143,7 +143,7 @@ function PlayerController:notifyStickDirection(key)
       local dir = Direction(x, y)
       for player, _ in pairs(self:actionsForKey(key)) do
         for _, listener in pairs(self.listeners(player)) do
-          if listener.setDirection then
+          if listener.active and listener.setDirection then
             listener:setDirection(dir)
           end
         end
@@ -156,7 +156,8 @@ function PlayerController:notifyDirection(player)
   for _, listener in pairs(self:getListeners(player)) do
     if direction == Direction(0, 0) then
         local waningDirection = self:directionFromActions(self.waningActions[player])
-        if listener.setDirection then
+        if listener.active and listener.setDirection then
+          print(listener)
           listener:setDirection(waningDirection)
         end
     end

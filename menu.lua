@@ -24,7 +24,7 @@ function Menu:load(fsm)
     }
   end
 
-  self.active = 1
+  self.activeItem = 1
   PlayerController:register(self)
   self.controlDirection = Direction(0, 0)
 end
@@ -35,13 +35,13 @@ end
 function Menu:setDirection(direction)
   if direction ~= self.controlDirection then
     self.controlDirection = direction
-    self.active = wrapping(self.active + self.controlDirection.y, # self.items)
+    self.activeItem = wrapping(self.activeItem + self.controlDirection.y, # self.items)
   end
 end
 
 function Menu:controlStop(action)
   if action == 'attack' or action == 'pause' then
-    self.fsm:advance(self.items[self.active])
+    self.fsm:advance(self.items[self.activeItem])
   end
 end
 
@@ -49,7 +49,7 @@ function Menu:draw()
   love.graphics.draw(self.background, 0, 0)
   for i, quads in ipairs(self.menuQuads) do
     local state = 'inactive'
-    if self.active == i then
+    if self.activeItem == i then
       state = 'active'
     end
     i = i - 1

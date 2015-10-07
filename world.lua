@@ -1,6 +1,17 @@
 require 'playerController'
 World = {}
 
+World.__newindex = function(self, key, value)
+  print "got it!!! :D :D :D"
+  rawset(self, key, value)
+  if key == 'active' then
+    self._props[key] = value
+    for i, player in pairs(self.players) do
+      player.active = self.active
+    end
+  end
+end
+
 function World:load()
   self.players = {
     Player(16, 16),
