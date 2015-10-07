@@ -44,14 +44,9 @@ function Menu:setDirection(direction)
   end
 end
 
-function Menu:controlStart(action)
-end
-
 function Menu:controlStop(action)
   if action == 'attack' or action == 'pause' then
-    if self.items[self.active] == 'start' then
-      self.fsm:advance('start')
-    end
+    self.fsm:advance(self.items[self.active])
   end
 end
 

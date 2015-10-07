@@ -3,6 +3,7 @@ require 'player'
 require 'utils'
 require 'world'
 require 'menu'
+require 'changeControls'
 
 local StateMachine = {
   states = {},
@@ -34,10 +35,18 @@ function love.load(arg)
   StateMachine.states = {
     world = World,
     menu = Menu,
+    controls = ChangeControls,
   }
   StateMachine.transitions = {
     menu = {
-      start = "world"
+      start = "world",
+      controls = "controls"
+    },
+    controls = {
+      done = "menu"
+    },
+    world = {
+      quit = "menu"
     }
   }
   StateMachine.current = "menu"
@@ -49,12 +58,18 @@ end
 
 function love.update(dt)
   PlayerController:update(dt)
-  StateMachine:currentState():update(dt)
+  state = StateMachine:currentState()
+  if state.update then
+    state:update(dt)
+  end
 end
 
 function love.draw()
   love.graphics.scale(Scale.x, Scale.y)
-  StateMachine:currentState():draw()
+  state = StateMachine:currentState()
+  if state.draw then
+    state:draw()
+  end
 end
 
 function love.keypressed(key)

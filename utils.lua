@@ -35,3 +35,26 @@ end
 function string:contains(substring)
   return self:find(substring) ~= nil
 end
+
+function bounded(min, value, max)
+  if value < min then
+    return min
+  elseif value > max then
+    return max
+  else
+    return value
+  end
+end
+
+function wrapping(value, max, min)
+  if min == nil then
+    min = 1
+  end
+  if value < min then
+    return min
+  elseif value > max then
+    return max
+  else
+    return value
+  end
+end
