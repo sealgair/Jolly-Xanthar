@@ -1,5 +1,6 @@
 require "direction"
 defaultControls = require "defaultControls"
+local serialize = require "lib/Ser/ser"
 
 Controller = {
   listeners = {},
@@ -15,8 +16,15 @@ local directionsMap = {
   right = Direction(1, 0),
 }
 
+local saveFile = "customControls.lua"
+
 function Controller:load()
-  self.playerControls = defaultControls
+  local loaded = love.filesystem.load(saveFile)
+  if loaded then
+    self.playerControls = loaded()
+  else
+    self.playerControls = defaultControls
+  end
   self.listeners[0] = {}
   for player, controls in pairs(self.playerControls) do
     self.actions[player] = {}
@@ -34,8 +42,12 @@ function Controller:load()
 end
 
 function Controller:updatePlayerAction(player, action, keys)
-  print('update', player, action, keys)
   self.playerControls[player][action] = controls(keys)
+end
+
+function Controller:saveControls()
+  local data = serialize(self.playerControls)
+  love.filesystem.write(saveFile, data)
 end
 
 function Controller:actionsForKey(key)

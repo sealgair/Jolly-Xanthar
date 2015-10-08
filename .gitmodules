@@ -1,6 +1,6 @@
 [submodule "lib/30log"]
 	path = lib/30log
 	url = https://github.com/Yonaba/30log.git
-[submodule "lib/Smallfolk"]
-	path = lib/Smallfolk
-	url = https://github.com/gvx/Smallfolk
+[submodule "lib/Ser"]
+	path = lib/Ser
+	url = https://github.com/gvx/Ser.git

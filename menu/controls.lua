@@ -76,6 +76,7 @@ end
 function Controls:controlStop(action)
   if self:selectedItem() == 'done' then
     if action == 'a' or action == 'start' then
+      Controller:saveControls()
       self.fsm:advance('done')
     end
   elseif action == 'a' then
@@ -93,7 +94,9 @@ end
 
 function Controls:keyreleased(key)
   Controller:endForward(self)
-  Controller:updatePlayerAction(self.setKeyFor.player, self.setKeyFor.action, self.setKeyFor.key)
+  Controller:updatePlayerAction(self.setKeyFor.player,
+                                self.setKeyFor.action,
+                                self.setKeyFor.key)
   self.setKeyFor = nil
 end
 
