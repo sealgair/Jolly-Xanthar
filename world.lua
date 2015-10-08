@@ -1,16 +1,17 @@
 require 'controller'
+
 World = {}
 
-World.__newindex = function(self, key, value)
-  -- TODO: get this working...
-  rawset(self, key, value)
-  if key == 'active' then
-    self._props[key] = value
-    for i, player in pairs(self.players) do
-      player.active = self.active
+setmetatable(World, {
+  __newindex = function(self, key, value)
+    rawset(self, key, value)
+    if key == 'active' then
+      for i, player in pairs(self.players) do
+        player.active = self.active
+      end
     end
   end
-end
+})
 
 function World:load()
   self.players = {
