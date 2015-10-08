@@ -12,7 +12,6 @@ function Controls:load(fsm)
     {'done'},
     {'up', 'down', 'left', 'right'},
     {'select', 'start', 'a', 'b'},
-    {'p1', 'p2', 'p3', 'p4'},
   }
   function selectQuad(x, y, w, h)
     return love.graphics.newQuad(ww + x, y, w, h, sw, sh)
@@ -33,15 +32,17 @@ function Controls:load(fsm)
     start =  selectQuad(73,  110, cw, ch),
     a =      selectQuad(129, 110, cw, ch),
     b =      selectQuad(185, 110, cw, ch),
-
-    p1 =     selectQuad(46,  182, pw, ph),
-    p2 =     selectQuad(88,  182, pw, ph),
-    p3 =     selectQuad(142, 182, pw, ph),
-    p4 =     selectQuad(188, 182, pw, ph),
+  }
+  self.playerQuads = {
+    selectQuad(46,  182, pw, ph),
+    selectQuad(88,  182, pw, ph),
+    selectQuad(142, 182, pw, ph),
+    selectQuad(188, 182, pw, ph),
   }
 
   self.selected = {x = 1, y = 1}
   self.direction = Direction(0, 0)
+  self.selectedPlayer = 1
 
   Controller:register(self)
 
@@ -77,6 +78,8 @@ function Controls:controlStop(action)
     if self:selectedItem() == 'done' then
       self.fsm:advance('done')
     end
+  elseif action == 'select' then
+    self.selectedPlayer = wrapping(self.selectedPlayer + 1, 4)
   end
 end
 
@@ -84,11 +87,17 @@ function Controls:draw()
   love.graphics.draw(self.image, self.screenQuad, 0, 0)
   local selectedItem = self:selectedItem()
   local selectedQuad = self.selectedQuads[selectedItem]
+  local playerQuad = self.playerQuads[self.selectedPlayer]
   qx, qy, qw, qh = selectedQuad:getViewport()
   qx = qx - ww
   love.graphics.draw(self.image, selectedQuad, qx, qy)
+
+  qx, qy, qw, qh = playerQuad:getViewport()
+  qx = qx - ww
+  love.graphics.draw(self.image, playerQuad, qx, qy)
+
   love.graphics.setFont(self.controlFont)
-  for action, keyset in pairs(Controller.playerControls[1]) do
+  for action, keyset in pairs(Controller.playerControls[self.selectedPlayer]) do
     local loc = self.controlLocations[action]
     local ystart = loc.y
     for key, _ in pairs(keyset) do

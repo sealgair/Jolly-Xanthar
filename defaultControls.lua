@@ -2,7 +2,6 @@ function controls(...)
   local ctl = {}
   for i, c in ipairs({...}) do
     ctl[c] = 1
-    print(c, "ctl")
   end
   return ctl
 end
