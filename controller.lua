@@ -33,6 +33,11 @@ function Controller:load()
   end
 end
 
+function Controller:updatePlayerAction(player, action, keys)
+  print('update', player, action, keys)
+  self.playerControls[player][action] = controls(keys)
+end
+
 function Controller:actionsForKey(key)
   actions = {}
   for player, controls in ipairs(self.playerControls) do
@@ -105,13 +110,25 @@ function Controller:stopActions(playerActions)
 end
 
 function Controller:keypressed(key)
-  local playerActions = self:actionsForKey(key)
-  self:startActions(playerActions)
+  if self.forward then
+    if self.forward.keypressed then
+      self.forward:keypressed(key)
+    end
+  else
+    local playerActions = self:actionsForKey(key)
+    self:startActions(playerActions)
+  end
 end
 
 function Controller:keyreleased(key)
-  local playerActions = self:actionsForKey(key)
-  self:stopActions(playerActions)
+  if self.forward then
+    if self.forward.keyreleased then
+      self.forward:keyreleased(key)
+    end
+  else
+    local playerActions = self:actionsForKey(key)
+    self:stopActions(playerActions)
+  end
 end
 
 function Controller:gamepadpressed(joystick, button)
@@ -171,6 +188,14 @@ function Controller:register(listener, player)
     player = 0
   end
   table.insert(self.listeners[player], listener)
+end
+
+function Controller:forwardAll(to)
+  self.forward = to
+end
+
+function Controller:endForward(to)
+  self.forward = nil
 end
 
 function Controller:getListeners(player)

@@ -74,16 +74,31 @@ function Controls:setDirection(direction)
 end
 
 function Controls:controlStop(action)
-  if action == 'a' or action == 'start' then
-    if self:selectedItem() == 'done' then
+  if self:selectedItem() == 'done' then
+    if action == 'a' or action == 'start' then
       self.fsm:advance('done')
     end
-  elseif action == 'select' then
-    self.selectedPlayer = wrapping(self.selectedPlayer + 1, 4)
+  elseif action == 'a' then
+    Controller:forwardAll(self)
+    self.setKeyFor = {
+      player = self.selectedPlayer,
+      action = self:selectedItem(),
+    }
   end
 end
 
+function Controls:keypressed(key)
+  self.setKeyFor.key = key
+end
+
+function Controls:keyreleased(key)
+  Controller:endForward(self)
+  Controller:updatePlayerAction(self.setKeyFor.player, self.setKeyFor.action, self.setKeyFor.key)
+  self.setKeyFor = nil
+end
+
 function Controls:draw()
+  love.graphics.setColor(255, 255, 255)
   love.graphics.draw(self.image, self.screenQuad, 0, 0)
   local selectedItem = self:selectedItem()
   local selectedQuad = self.selectedQuads[selectedItem]
@@ -103,6 +118,25 @@ function Controls:draw()
     for key, _ in pairs(keyset) do
       love.graphics.printf(key, loc.x, ystart, loc.w, "center")
       ystart = ystart + self.controlFont:getHeight()
+    end
+  end
+
+  if self.setKeyFor then
+    local x, y, w, h = 85, 80, 85, 80
+    love.graphics.setColor(0, 0, 0)
+    love.graphics.rectangle("fill", x, y, w, h)
+    love.graphics.setColor(128, 0, 0)
+    love.graphics.setLineWidth(3)
+    love.graphics.rectangle("line", x, y, w, h)
+    love.graphics.setColor(255, 0, 0)
+    love.graphics.setLineWidth(1)
+    love.graphics.rectangle("line", x, y, w, h)
+    love.graphics.printf(self.setKeyFor.action:upper(),
+                         x, y + 5, w, "center")
+    if self.setKeyFor.key then
+      love.graphics.setColor(255, 255, 255)
+      love.graphics.printf(self.setKeyFor.key,
+                           x, y + (h/2), w, "center")
     end
   end
 end
