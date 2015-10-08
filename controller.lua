@@ -1,4 +1,5 @@
 require "direction"
+defaultControls = require "defaultControls"
 
 Controller = {
   listeners = {},
@@ -15,8 +16,7 @@ local directionsMap = {
 }
 
 function Controller:load()
-  local controlData = love.filesystem.load('controls.lua')
-  self.playerControls = controlData()
+  self.playerControls = defaultControls
   self.listeners[0] = {}
   for player, controls in pairs(self.playerControls) do
     self.actions[player] = {}
