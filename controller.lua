@@ -50,6 +50,10 @@ function Controller:saveControls()
   love.filesystem.write(saveFile, data)
 end
 
+function Controller:resetControls()
+  self.playerControls = defaultControls
+end
+
 function Controller:actionsForKey(key)
   actions = {}
   for player, controls in ipairs(self.playerControls) do
