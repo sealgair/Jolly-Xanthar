@@ -123,11 +123,12 @@ function Controls:draw()
 
   love.graphics.setFont(self.controlFont)
   for action, keyset in pairs(Controller.playerControls[self.selectedPlayer]) do
+    local fontHeight = self.controlFont:getHeight()
     local loc = self.controlLocations[action]
-    local ystart = loc.y
+    local ystart = loc.y + (loc.h - (fontHeight * keyCount(keyset)))/2
     for key, _ in pairs(keyset) do
       love.graphics.printf(key, loc.x, ystart, loc.w, "center")
-      ystart = ystart + self.controlFont:getHeight()
+      ystart = ystart + fontHeight
     end
   end
 

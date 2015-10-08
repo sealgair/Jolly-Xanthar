@@ -58,3 +58,11 @@ function wrapping(value, max, min)
     return value
   end
 end
+
+function keyCount(table)
+  local n = 0
+  for _, _ in pairs(table) do
+    n = n + 1
+  end
+  return n
+end
