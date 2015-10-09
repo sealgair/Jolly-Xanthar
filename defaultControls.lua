@@ -19,15 +19,15 @@ return {
     start = controls('joy1:start', '.', 'return'),
   },
   {
-    up = controls('joy2:leftStick', 'joy2:dpup'),
-    down = controls('joy2:leftStick', 'joy2:dpdown'),
-    left = controls('joy2:leftStick', 'joy2:dpleft'),
-    right = controls('joy2:leftStick', 'joy2:dpright'),
+    up = controls('joy2:leftStick', 'joy2:dpup', 'w'),
+    down = controls('joy2:leftStick', 'joy2:dpdown', 's'),
+    left = controls('joy2:leftStick', 'joy2:dpleft', 'a'),
+    right = controls('joy2:leftStick', 'joy2:dpright', 'd'),
 
-    a = controls('joy2:a', 'joy2:x'),
-    b = controls('joy2:b', 'joy2:y'),
-    select = controls('joy2:back'),
-    start = controls('joy2:start'),
+    a = controls('joy2:a', 'joy2:x', 'h'),
+    b = controls('joy2:b', 'joy2:y', 'j'),
+    select = controls('joy2:back', 'f'),
+    start = controls('joy2:start', 'g'),
   },
   {
     up = controls('joy3:leftStick', 'joy3:dpup'),

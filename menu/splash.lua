@@ -25,7 +25,7 @@ function Splash:load(fsm)
   end
 
   self.activeItem = 1
-  Controller:register(self)
+  Controller:register(self, 1)
   self.controlDirection = Direction(0, 0)
 end
 

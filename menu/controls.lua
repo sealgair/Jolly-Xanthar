@@ -45,7 +45,7 @@ function Controls:load(fsm)
   self.direction = Direction(0, 0)
   self.selectedPlayer = 1
 
-  Controller:register(self)
+  Controller:register(self, 1)
 
   self.controlLocations = {
     up =    {x=21, y=59, w=46, h=46},

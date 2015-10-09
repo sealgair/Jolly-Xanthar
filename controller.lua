@@ -200,9 +200,6 @@ function Controller:notifyDirection(player)
 end
 
 function Controller:register(listener, player)
-  if self.actions[player] == nil then
-    player = 0
-  end
   table.insert(self.listeners[player], listener)
 end
 
@@ -215,13 +212,5 @@ function Controller:endForward(to)
 end
 
 function Controller:getListeners(player)
-  local listeners = {}
-  for _, p in pairs({player, 0}) do
-    for _, l in pairs(self.listeners[p]) do
-      if l.active then
-        table.insert(listeners, l)
-      end
-    end
-  end
-  return listeners
+  return self.listeners[player]
 end
