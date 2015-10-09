@@ -29,8 +29,9 @@ end
 
 function love.load(arg)
   if arg[#arg] == "-debug" then require("mobdebug").start() end
+  Size = {w=256, h=240}
   Scale = {x=3, y=3}
-  love.window.setMode(256 * Scale.x, 240 * Scale.y)
+  love.window.setMode(Size.w * Scale.x, Size.h * Scale.y)
   love.graphics.setDefaultFilter("nearest", "nearest")
 
   Controller:load()

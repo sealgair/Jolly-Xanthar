@@ -11,23 +11,30 @@ function Player:init(x, y)
   self.actions = {}
 
   self.image = love.graphics.newImage('assets/human.png')
-  local w, h = 16, 16
+  self.w, self.h = 16, 16
   local tw, th = self.image:getWidth(), self.image:getHeight()
   self.quads = {
-    down = love.graphics.newQuad(0, 0, w, h, tw, th),
-    downleft = love.graphics.newQuad(0, 16, w, h, tw, th),
-    left = love.graphics.newQuad(0, 32, w, h, tw, th),
-    upleft = love.graphics.newQuad(0, 48, w, h, tw, th),
-    up = love.graphics.newQuad(0, 64, w, h, tw, th),
-    upright = love.graphics.newQuad(0, 80, w, h, tw, th),
-    right = love.graphics.newQuad(0, 96, w, h, tw, th),
-    downright = love.graphics.newQuad(0, 112, w, h, tw, th),
+    down = love.graphics.newQuad(0, 0, self.w, self.h, tw, th),
+    downleft = love.graphics.newQuad(0, 16, self.w, self.h, tw, th),
+    left = love.graphics.newQuad(0, 32, self.w, self.h, tw, th),
+    upleft = love.graphics.newQuad(0, 48, self.w, self.h, tw, th),
+    up = love.graphics.newQuad(0, 64, self.w, self.h, tw, th),
+    upright = love.graphics.newQuad(0, 80, self.w, self.h, tw, th),
+    right = love.graphics.newQuad(0, 96, self.w, self.h, tw, th),
+    downright = love.graphics.newQuad(0, 112, self.w, self.h, tw, th),
   }
   self.direction = Direction(0, 0)
   self.animationQueue = {}
   self.quad = self.quads.down
   self.animDelay = 0
   self.animLength = 1
+end
+
+function Player:center()
+  return {
+    x = self.position.x + round(self.w/2),
+    y = self.position.y + round(self.h/2),
+  }
 end
 
 function Player:advanceQuad()
