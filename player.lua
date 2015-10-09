@@ -7,7 +7,7 @@ AnimateInterval = 0.15 --seconds
 
 function Player:init(x, y)
   self.position = {x=x, y=y}
-  self.speed = 20
+  self.speed = 40
   self.actions = {}
 
   self.image = love.graphics.newImage('assets/human.png')
