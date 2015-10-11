@@ -42,7 +42,7 @@ function Controller:load()
 end
 
 function Controller:updatePlayerAction(player, action, keys)
-  self.playerControls[player][action] = controls(keys)
+  self.playerControls[player][action] = keys
 end
 
 function Controller:saveControls()

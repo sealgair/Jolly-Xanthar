@@ -2,6 +2,7 @@
 Controls = class('Controls')
 
 local keyTime = 1
+local controlTime = 1
 
 function Controls:load(fsm)
   self.fsm = fsm
@@ -90,33 +91,50 @@ function Controls:controlStop(action)
     end
   elseif action == 'a' then
     Controller:forwardAll(self)
-    self.setKeyFor = {
+    self.setKeysFor = {
       player = self.selectedPlayer,
       action = self:selectedItem(),
+      keys = {},
     }
   end
 end
 
 function Controls:keypressed(key)
-  self.setKeyFor.key = key
-  self.setKeyFor.timer = keyTime
+  self.setKeysFor.keys[key] = keyTime
+  self.setKeysFor.finalTimer = nil
 end
 
 function Controls:keyreleased(key)
-  if self.setKeyFor.timer < 0 then
-    Controller:endForward(self)
-    Controller:updatePlayerAction(self.setKeyFor.player,
-                                  self.setKeyFor.action,
-                                  self.setKeyFor.key)
-    self.setKeyFor = nil
-  else
-    self.setKeyFor.key = nil
+  if self.setKeysFor.keys[key] > 0 then
+    self.setKeysFor.keys[key] = nil
+  end
+  local n = 0
+  for k, t in pairs(self.setKeysFor.keys) do
+    if t <= 0 then
+      n = n + 1
+    end
+  end
+  if n > 0 then
+    self.setKeysFor.finalTimer = controlTime
   end
 end
 
 function Controls:update(dt)
-  if self.setKeyFor and self.setKeyFor.timer then
-    self.setKeyFor.timer = self.setKeyFor.timer - dt
+  if self.setKeysFor then
+    for key, time in pairs(self.setKeysFor.keys) do
+      self.setKeysFor.keys[key] = time - dt
+    end
+
+    if self.setKeysFor.finalTimer then
+      self.setKeysFor.finalTimer = self.setKeysFor.finalTimer - dt
+      if self.setKeysFor.finalTimer < 0 then
+        Controller:endForward(self)
+        Controller:updatePlayerAction(self.setKeysFor.player,
+                                      self.setKeysFor.action,
+                                      self.setKeysFor.keys)
+        self.setKeysFor = nil
+      end
+    end
   end
 end
 
@@ -145,7 +163,7 @@ function Controls:draw()
     end
   end
 
-  if self.setKeyFor then
+  if self.setKeysFor then
     local x, y, w, h = 85, 80, 85, 80
     local fontHeight = self.controlFont:getHeight()
     love.graphics.setColor(0, 0, 0)
@@ -156,15 +174,28 @@ function Controls:draw()
     love.graphics.setColor(255, 0, 0)
     love.graphics.setLineWidth(1)
     love.graphics.rectangle("line", x, y, w, h)
-    love.graphics.printf(self.setKeyFor.action:upper(),
-                         x, y + 5, w, "center")
-    if self.setKeyFor.key then
-      x = x + 2
-      y = y + 5 + fontHeight + 2
-      w = w - 4
-      if self.setKeyFor.timer > 0 then
-        local tw = w * (self.setKeyFor.timer/keyTime)
-        local th = fontHeight + 2
+    love.graphics.printf(self.setKeysFor.action:upper(), x, y + 5, w, "center")
+
+    x = x + 2
+    w = w - 4
+
+    local th = fontHeight + 2
+    if self.setKeysFor.finalTimer then
+      local ty =  y + h - th - 2
+      local tw = w * (self.setKeysFor.finalTimer/controlTime)
+      love.graphics.setColor(128, 0, 0)
+      love.graphics.rectangle("fill", x, ty, tw, th)
+      love.graphics.setColor(255, 255, 255)
+      love.graphics.rectangle("line", x, ty, w, th)
+      ty = ty + 1
+      love.graphics.printf("Finalizing...", x, ty, w, "center")
+    end
+
+    y = y + 5
+    for key, time in pairs(self.setKeysFor.keys) do
+      y = y + fontHeight + 2
+      if time > 0 then
+        local tw = w * (time/keyTime)
         love.graphics.setColor(128, 0, 0)
         love.graphics.rectangle("fill", x, y, tw, th)
         love.graphics.setColor(255, 255, 255)
@@ -172,8 +203,7 @@ function Controls:draw()
       end
       y = y + 1
       love.graphics.setColor(255, 255, 255)
-      love.graphics.printf(self.setKeyFor.key,
-                           x, y, w, "center")
+      love.graphics.printf(key, x, y, w, "center")
     end
   end
 end
