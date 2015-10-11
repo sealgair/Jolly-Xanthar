@@ -8,10 +8,10 @@ end
 
 return {
   {
-    up = controls('joy1:leftStick', 'joy1:dpup', 'up'),
-    down = controls('joy1:leftStick', 'joy1:dpdown', 'down'),
-    left = controls('joy1:leftStick', 'joy1:dpleft', 'left'),
-    right = controls('joy1:leftStick', 'joy1:dpright', 'right'),
+    up = controls('joy1:lefty-', 'joy1:dpup', 'up'),
+    down = controls('joy1:lefty+', 'joy1:dpdown', 'down'),
+    left = controls('joy1:leftx-', 'joy1:dpleft', 'left'),
+    right = controls('joy1:leftx+', 'joy1:dpright', 'right'),
 
     a = controls('joy1:a', 'joy1:x', 'n'),
     b = controls('joy1:b', 'joy1:y', 'm'),
@@ -19,10 +19,10 @@ return {
     start = controls('joy1:start', '.', 'return'),
   },
   {
-    up = controls('joy2:leftStick', 'joy2:dpup', 'w'),
-    down = controls('joy2:leftStick', 'joy2:dpdown', 's'),
-    left = controls('joy2:leftStick', 'joy2:dpleft', 'a'),
-    right = controls('joy2:leftStick', 'joy2:dpright', 'd'),
+    up = controls('joy2:lefty-', 'joy2:dpup', 'w'),
+    down = controls('joy2:lefty+', 'joy2:dpdown', 's'),
+    left = controls('joy2:leftx-', 'joy2:dpleft', 'a'),
+    right = controls('joy2:leftx+', 'joy2:dpright', 'd'),
 
     a = controls('joy2:a', 'joy2:x', 'h'),
     b = controls('joy2:b', 'joy2:y', 'j'),

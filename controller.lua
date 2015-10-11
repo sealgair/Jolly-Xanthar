@@ -6,7 +6,7 @@ Controller = {
   listeners = {},
   actions = {},
   waningActions = {},
-  dirSticks = {},
+  axisTracker = {},
 }
 
 local directionsMap = {
@@ -30,14 +30,6 @@ function Controller:load()
     self.actions[player] = {}
     self.waningActions[player] = {}
     self.listeners[player] = {}
-
-    for action, keySet in pairs(controls) do
-      for key, _ in pairs(keySet) do
-        if key:contains("Stick") then
-          self.dirSticks[key] = 1
-        end
-      end
-    end
   end
 end
 
@@ -83,8 +75,34 @@ function Controller:update(dt)
     end
   end
 
-  for key, _ in pairs(self.dirSticks) do
-    self:notifyStickDirection(key)
+  local gpAxes = {'leftx', 'lefty', 'rightx', 'righty', 'triggerleft', 'triggerright'}
+  for _, js in ipairs(love.joystick.getJoysticks()) do
+    for a, axis in ipairs(gpAxes) do
+      self:trackAxis(js, axis)
+    end
+  end
+end
+
+function Controller:trackAxis(joystick, axis)
+  local deadZone = 0.25
+  local key = "joy" .. joystick:getID() .. ":" .. axis
+  local newDir = joystick:getGamepadAxis(axis)
+  if newDir > deadZone then
+    newDir = "+"
+  elseif newDir < -deadZone then
+    newDir = "-"
+  else
+    newDir = nil
+  end
+  local oldDir = self.axisTracker[key]
+  self.axisTracker[key] = newDir
+  if newDir ~= oldDir then
+    if oldDir ~= nil then
+      self:keyreleased(key .. oldDir)
+    end
+    if newDir ~= nil then
+      self:keypressed(key .. newDir)
+    end
   end
 end
 
@@ -150,13 +168,13 @@ function Controller:keyreleased(key)
 end
 
 function Controller:gamepadpressed(joystick, button)
-  local playerActions = self:actionsForButton(joystick, button)
-  self:startActions(playerActions)
+  local key = "joy" .. joystick:getID() .. ":" .. button
+  self:keypressed(key)
 end
 
 function Controller:gamepadreleased(joystick, button)
-  local playerActions = self:actionsForButton(joystick, button)
-  self:stopActions(playerActions)
+  local key = "joy" .. joystick:getID() .. ":" .. button
+  self:keyreleased(key)
 end
 
 function Controller:directionFromActions(actions)
@@ -168,24 +186,6 @@ function Controller:directionFromActions(actions)
       end
     end
     return direction
-end
-
-function Controller:notifyStickDirection(key)
-    local pad, stick = key:match("joy(%d+):(%w+)Stick")
-    pad = tonumber(pad)
-    local joystick = love.joystick.getJoysticks()[pad]
-    if joystick then
-      local x = joystick:getGamepadAxis(stick .. 'x')
-      local y = joystick:getGamepadAxis(stick .. 'y')
-      local dir = Direction(x, y)
-      for player, _ in pairs(self:actionsForKey(key)) do
-        for _, listener in pairs(self.listeners[player]) do
-          if listener.setDirection then
-            listener:setDirection(dir)
-          end
-        end
-      end
-    end
 end
 
 function Controller:notifyDirection(player)
