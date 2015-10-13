@@ -4,3 +4,6 @@
 [submodule "lib/Ser"]
 	path = lib/Ser
 	url = https://github.com/gvx/Ser.git
+[submodule "lib/bump"]
+	path = lib/bump
+	url = https://github.com/kikito/bump.lua.git

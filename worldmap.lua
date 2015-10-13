@@ -9,7 +9,7 @@ WorldMap = class('WorldMap', {
   }
 })
 
-function WorldMap:init(mapfile, imagefile)
+function WorldMap:init(mapfile, imagefile, bumpWorld)
   local templateImg = love.graphics.newImage(imagefile)
   local qw, qh = 16, 16
   local sw, sh = templateImg:getWidth(), templateImg:getHeight()
@@ -51,6 +51,7 @@ function WorldMap:init(mapfile, imagefile)
         if testEmpty(y, x-1) then key = key .. 'l' end
         if testEmpty(y, x+1) then key = key .. 'r' end
         if key == '' then key = 'c' end
+        bumpWorld:add({name="wall"}, (x-1)*qw, (y-1)*qh, qw, qh)
       else
         key = 'f' .. tostring(math.random(1, 4))
       end

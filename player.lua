@@ -97,8 +97,10 @@ function Player:update(dt)
   end
   local distance = dt * self.speed
 
-  self.position.x = round(self.position.x + (self.direction.x * distance))
-  self.position.y = round(self.position.y + (self.direction.y * distance))
+  return {
+    x = round(self.position.x + (self.direction.x * distance)),
+    y = round(self.position.y + (self.direction.y * distance)),
+  }
 end
 
 function Player:draw()
