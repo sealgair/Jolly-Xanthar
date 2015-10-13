@@ -40,9 +40,13 @@ function WorldMap:init(mapfile, imagefile, bumpWorld)
     return block ~= "#"
   end
 
+  self.playerCoords = {}
+
   for y, row in ipairs(blocks) do
     local quadRow = {}
     for x, block in ipairs(row) do
+      dx = (x-1)*qw
+      dy = (y-1)*qh
       if block == "#" then
         key = ''
         if testEmpty(y-1, x) then key = key .. 'u' end
@@ -50,8 +54,11 @@ function WorldMap:init(mapfile, imagefile, bumpWorld)
         if testEmpty(y, x-1) then key = key .. 'l' end
         if testEmpty(y, x+1) then key = key .. 'r' end
         if key == '' then key = 'c' end
-        bumpWorld:add({name="wall"}, (x-1)*qw, (y-1)*qh, qw, qh)
+        bumpWorld:add({name="wall"}, dx, dy, qw, qh)
       else
+        if block:find("%d") then
+          self.playerCoords[tonumber(block)] = {x = dx, y = dy}
+        end
         key = 'f' .. tostring(math.random(1, 4))
       end
       table.insert(quadRow, quadMap[key])

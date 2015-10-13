@@ -19,12 +19,13 @@ function World:load()
   self.bumpWorld = bump.newWorld(8)
   self.worldCanvas = love.graphics.newCanvas()
   self.map = WorldMap("worldMaps/ship1.world", "assets/worlds/ship.png", self.bumpWorld)
-  self.players = {
-    Player(32, 32, self.bumpWorld),
-    Player(32, 64, self.bumpWorld),
-    -- Player(32, 0),
-    -- Player(32, 32),
-  }
+  local playerCount = 2
+  self.players = {}
+  for i, coord in ipairs(self.map.playerCoords) do
+    if i <= playerCount then
+      self.players[i] = Player(coord.x, coord.y, self.bumpWorld)
+    end
+  end
 
   for i, player in ipairs(self.players) do
     Controller:register(player, i)
