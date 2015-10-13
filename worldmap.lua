@@ -43,7 +43,6 @@ function WorldMap:init(mapfile, imagefile, bumpWorld)
   for y, row in ipairs(blocks) do
     local quadRow = {}
     for x, block in ipairs(row) do
-      mw = math.max(x, mw)
       if block == "#" then
         key = ''
         if testEmpty(y-1, x) then key = key .. 'u' end
@@ -57,6 +56,7 @@ function WorldMap:init(mapfile, imagefile, bumpWorld)
       end
       table.insert(quadRow, quadMap[key])
     end
+    mw = math.max(# quadRow, mw)
     table.insert(quads, quadRow)
   end
   local mh = # quads
