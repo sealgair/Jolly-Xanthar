@@ -5,13 +5,26 @@ require 'direction'
 Player = class('Player')
 AnimateInterval = 0.15 --seconds
 
-function Player:init(x, y)
+function Player:init(x, y, bumpWorld)
+  self.bumpWorld = bumpWorld
   self.position = {x=x, y=y}
+
+  self.w, self.h = 16, 16
+  self.hitbox = {w=8, h=8}
+  self.hitboxOffset = {
+    x = (self.w - self.hitbox.w) / 2,
+    y = (self.h - self.hitbox.h) / 2,
+  }
+
+  self.bumpWorld:add(self,
+          self.position.x + self.hitboxOffset.x,
+          self.position.y + self.hitboxOffset.y,
+          self.hitbox.w, self.hitbox.h)
+
   self.speed = 40
   self.actions = {}
 
   self.image = love.graphics.newImage('assets/human.png')
-  self.w, self.h = 16, 16
   local tw, th = self.image:getWidth(), self.image:getHeight()
   self.quads = {
     down = love.graphics.newQuad(0, 0, self.w, self.h, tw, th),
@@ -97,9 +110,14 @@ function Player:update(dt)
   end
   local distance = dt * self.speed
 
-  return {
-    x = round(self.position.x + (self.direction.x * distance)),
-    y = round(self.position.y + (self.direction.y * distance)),
+  local goal = {
+    x = round(self.position.x + (self.direction.x * distance) + self.hitboxOffset.x),
+    y = round(self.position.y + (self.direction.y * distance) + self.hitboxOffset.y),
+  }
+  local actualX, actualY, cols, len = self.bumpWorld:move(self, goal.x, goal.y)
+  self.position = {
+    x = actualX - self.hitbox.w/2,
+    y = actualY - self.hitbox.h/2,
   }
 end
 

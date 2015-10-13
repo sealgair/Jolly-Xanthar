@@ -16,30 +16,25 @@ setmetatable(World, {
 })
 
 function World:load()
-  self.bumpWorld = bump.newWorld(16)
+  self.bumpWorld = bump.newWorld(8)
   self.worldCanvas = love.graphics.newCanvas()
   self.map = WorldMap("worldMaps/ship1.world", "assets/worlds/ship.png", self.bumpWorld)
   self.players = {
-    Player(32, 32),
-    Player(32, 64),
+    Player(32, 32, self.bumpWorld),
+    Player(32, 64, self.bumpWorld),
     -- Player(32, 0),
     -- Player(32, 32),
   }
 
   for i, player in ipairs(self.players) do
     Controller:register(player, i)
-    self.bumpWorld:add(player, player.position.x, player.position.y, 16, 16)
   end
 end
 
 function World:update(dt)
   self.center = {x=0, y=0}
   for i, dude in ipairs(self.players) do
-    local goal = dude:update(dt)
-    local actualX, actualY, cols, len = self.bumpWorld:move(dude, goal.x, goal.y)
-    dude.position = {
-      x = actualX, y = actualY
-    }
+    dude:update(dt)
 
     self.center.x = self.center.x + dude:center().x
     self.center.y = self.center.y + dude:center().y
