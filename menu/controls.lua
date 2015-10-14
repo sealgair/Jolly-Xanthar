@@ -12,7 +12,7 @@ function Controls:load(fsm)
   self.screenQuad = love.graphics.newQuad(0, 0, ww, wh, sw, sh)
 
   self.items = {
-    {'done', 'reset'},
+    {'done', 'setAll', 'reset'},
     {'up', 'down', 'left', 'right'},
     {'select', 'start', 'b', 'a'},
   }
@@ -24,8 +24,9 @@ function Controls:load(fsm)
   local pw = 34
   local ph = 46
   self.selectedQuads = {
-    done =  selectQuad(0, 0, 64, 24),
-    reset = selectQuad(160, 0, 80, 24),
+    done =   selectQuad(0, 0, 64, 24),
+    setAll = selectQuad(72, 0, 64, 24),
+    reset =  selectQuad(160, 0, 80, 24),
 
     up =    selectQuad(16,  36, cw, ch),
     down =  selectQuad(73,  36, cw, ch),
@@ -64,6 +65,10 @@ function Controls:load(fsm)
   self.controlFont = love.graphics.newFont(7)
 end
 
+function Controls:activate()
+  self.selectedPlayer = 1
+end
+
 function Controls:selectedItem()
   return self.items[self.selected.y][self.selected.x]
 end
@@ -78,24 +83,27 @@ function Controls:setDirection(direction)
 end
 
 function Controls:controlStop(action)
-  if action == 'select' then
-    self.selectedPlayer = wrapping(self.selectedPlayer + 1, 4)
-  elseif self:selectedItem() == 'done' then
-    if action == 'a' or action == 'start' then
+  if action == 'a' or action == 'start' then
+    if self:selectedItem() == 'done' then
       Controller:saveControls()
       self.fsm:advance('done')
-    end
-  elseif self:selectedItem() == 'reset' then
-    if action == 'a' or action == 'start' then
+    elseif self:selectedItem() == 'reset' then
       Controller:resetControls()
+      self.selectedPlayer = 1
+    else
+      Controller:forwardAll(self)
+      self.setKeysFor = {
+        player = self.selectedPlayer,
+        action = self:selectedItem(),
+        keys = {},
+      }
+      if self:selectedItem() == 'setAll' then
+        self.setKeysFor.action = 'up'
+        self.setKeysFor.nextAction = {'down', 'left', 'right', 'select', 'start', 'b', 'a'}
+      end
     end
-  elseif action == 'a' then
-    Controller:forwardAll(self)
-    self.setKeysFor = {
-      player = self.selectedPlayer,
-      action = self:selectedItem(),
-      keys = {},
-    }
+  elseif action == 'select' then
+    self.selectedPlayer = wrapping(self.selectedPlayer + 1, 4)
   end
 end
 
@@ -128,11 +136,17 @@ function Controls:update(dt)
     if self.setKeysFor.finalTimer then
       self.setKeysFor.finalTimer = self.setKeysFor.finalTimer - dt
       if self.setKeysFor.finalTimer < 0 then
-        Controller:endForward(self)
         Controller:updatePlayerAction(self.setKeysFor.player,
                                       self.setKeysFor.action,
                                       self.setKeysFor.keys)
-        self.setKeysFor = nil
+        if self.setKeysFor.nextAction and # self.setKeysFor.nextAction > 0 then
+          self.setKeysFor.action = table.remove(self.setKeysFor.nextAction, 1)
+          self.setKeysFor.keys = {}
+          self.setKeysFor.finalTimer = nil
+        else
+          Controller:endForward(self)
+          self.setKeysFor = nil
+        end
       end
     end
   end

@@ -21,8 +21,14 @@ function StateMachine:advance(input, options)
     next = transition[input]
     if self.states[next] then
       self:currentState().active = nil
+      if self:currentState().deactivate then
+        self:currentState():deactivate()
+      end
       self.current = next
       self:currentState().active = true
+      if self:currentState().activate then
+        self:currentState():activate()
+      end
     end
   end
 end
