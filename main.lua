@@ -84,11 +84,10 @@ function love.keyreleased(key)
   Controller:keyreleased(key)
 end
 
-function love.gamepadpressed(joystick, button)
-  print('js', joystick:getID(), button)
-  Controller:gamepadpressed(joystick, button)
+function love.joystickpressed(joystick, button)
+  Controller:joystickpressed(joystick, button)
 end
 
-function love.gamepadreleased(joystick, button)
-  Controller:gamepadreleased(joystick, button)
+function love.joystickreleased(joystick, button)
+  Controller:joystickreleased(joystick, button)
 end

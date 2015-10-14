@@ -77,16 +77,16 @@ function Controller:update(dt)
 
   local gpAxes = {'leftx', 'lefty', 'rightx', 'righty', 'triggerleft', 'triggerright'}
   for _, js in ipairs(love.joystick.getJoysticks()) do
-    for a, axis in ipairs(gpAxes) do
-      self:trackAxis(js, axis)
+    for a=1,js:getAxisCount() do
+      self:trackAxis(js, a)
     end
   end
 end
 
 function Controller:trackAxis(joystick, axis)
   local deadZone = 0.25
-  local key = "joy" .. joystick:getID() .. ":" .. axis
-  local newDir = joystick:getGamepadAxis(axis)
+  local key = "joy" .. joystick:getID() .. ":ax" .. axis
+  local newDir = joystick:getAxis(axis)
   if newDir > deadZone then
     newDir = "+"
   elseif newDir < -deadZone then
@@ -167,12 +167,12 @@ function Controller:keyreleased(key)
   end
 end
 
-function Controller:gamepadpressed(joystick, button)
+function Controller:joystickpressed(joystick, button)
   local key = "joy" .. joystick:getID() .. ":" .. button
   self:keypressed(key)
 end
 
-function Controller:gamepadreleased(joystick, button)
+function Controller:joystickreleased(joystick, button)
   local key = "joy" .. joystick:getID() .. ":" .. button
   self:keyreleased(key)
 end
@@ -214,5 +214,7 @@ function Controller:endForward(to)
 end
 
 function Controller:getListeners(player)
-  return self.listeners[player]
+  return table.filter(self.listeners[player], function(o, k, i)
+    return o.active
+  end)
 end

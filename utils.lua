@@ -66,3 +66,13 @@ function keyCount(table)
   end
   return n
 end
+
+ function table.filter(t, filterIter)
+  local out = {}
+
+  for k, v in pairs(t) do
+    if filterIter(v, k, t) then out[k] = v end
+  end
+
+  return out
+end
