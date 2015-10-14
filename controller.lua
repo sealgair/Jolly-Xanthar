@@ -126,6 +126,7 @@ function Controller:stopActions(playerActions)
 end
 
 function Controller:keypressed(key)
+  if key == ' ' then key = 'space' end
   if self.forward then
     if self.forward.keypressed then
       self.forward:keypressed(key)
@@ -137,6 +138,7 @@ function Controller:keypressed(key)
 end
 
 function Controller:keyreleased(key)
+  if key == ' ' then key = 'space' end
   if self.forward then
     if self.forward.keyreleased then
       self.forward:keyreleased(key)
