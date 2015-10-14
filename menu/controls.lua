@@ -113,7 +113,7 @@ function Controls:keypressed(key)
 end
 
 function Controls:keyreleased(key)
-  if self.setKeysFor.keys[key] > 0 then
+  if self.setKeysFor.keys[key] and self.setKeysFor.keys[key] > 0 then
     self.setKeysFor.keys[key] = nil
   end
   local n = 0
