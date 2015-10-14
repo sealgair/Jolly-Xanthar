@@ -97,3 +97,7 @@ end
 function love.joystickreleased(joystick, button)
   Controller:joystickreleased(joystick, button)
 end
+
+function love.joystickaxis(joystick, axis, value)
+  Controller:joystickaxis(joystick, axis, value)
+end

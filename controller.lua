@@ -74,36 +74,6 @@ function Controller:update(dt)
       end
     end
   end
-
-  local gpAxes = {'leftx', 'lefty', 'rightx', 'righty', 'triggerleft', 'triggerright'}
-  for _, js in ipairs(love.joystick.getJoysticks()) do
-    for a=1,js:getAxisCount() do
-      self:trackAxis(js, a)
-    end
-  end
-end
-
-function Controller:trackAxis(joystick, axis)
-  local deadZone = 0.25
-  local key = "joy" .. joystick:getID() .. ":ax" .. axis
-  local newDir = joystick:getAxis(axis)
-  if newDir > deadZone then
-    newDir = "+"
-  elseif newDir < -deadZone then
-    newDir = "-"
-  else
-    newDir = nil
-  end
-  local oldDir = self.axisTracker[key]
-  self.axisTracker[key] = newDir
-  if newDir ~= oldDir then
-    if oldDir ~= nil then
-      self:keyreleased(key .. oldDir)
-    end
-    if newDir ~= nil then
-      self:keypressed(key .. newDir)
-    end
-  end
 end
 
 function Controller:startActions(playerActions)
@@ -175,6 +145,41 @@ end
 function Controller:joystickreleased(joystick, button)
   local key = "joy" .. joystick:getID() .. ":" .. button
   self:keyreleased(key)
+end
+
+function isTrigger(joystick, axis)
+  for k, name in pairs({"triggerleft", "triggerright"}) do
+    inputtype, inputindex, hatdirection = joystick:getGamepadMapping(name)
+    if axis == inpudindex then
+      return true
+    end
+  end
+  return false
+end
+
+function Controller:joystickaxis(joystick, axis, value)
+  if isTrigger(joystick, axis) then return end
+
+  local deadZone = 0.25
+  local key = "joy" .. joystick:getID() .. ":ax" .. axis
+  local newDir = joystick:getAxis(axis)
+  if newDir > deadZone then
+    newDir = "+"
+  elseif newDir < -deadZone then
+    newDir = "-"
+  else
+    newDir = nil
+  end
+  local oldDir = self.axisTracker[key]
+  self.axisTracker[key] = newDir
+  if newDir ~= oldDir then
+    if oldDir ~= nil then
+      self:keyreleased(key .. oldDir)
+    end
+    if newDir ~= nil then
+      self:keypressed(key .. newDir)
+    end
+  end
 end
 
 function Controller:directionFromActions(actions)
