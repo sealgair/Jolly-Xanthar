@@ -14,7 +14,7 @@ function Controls:load(fsm)
   self.items = {
     {'done', 'reset'},
     {'up', 'down', 'left', 'right'},
-    {'select', 'start', 'a', 'b'},
+    {'select', 'start', 'b', 'a'},
   }
   function selectQuad(x, y, w, h)
     return love.graphics.newQuad(ww + x, y, w, h, sw, sh)
@@ -34,8 +34,8 @@ function Controls:load(fsm)
 
     select = selectQuad(16,  110, cw, ch),
     start =  selectQuad(73,  110, cw, ch),
-    a =      selectQuad(129, 110, cw, ch),
-    b =      selectQuad(185, 110, cw, ch),
+    b =      selectQuad(129, 110, cw, ch),
+    a =      selectQuad(185, 110, cw, ch),
   }
   self.playerQuads = {
     selectQuad(46,  182, pw, ph),
@@ -58,8 +58,8 @@ function Controls:load(fsm)
 
     select = {x=21, y=129, w=46, h=46},
     start =  {x=77, y=129, w=46, h=46},
-    a =      {x=133, y=129, w=46, h=46},
-    b =      {x=189, y=129, w=46, h=46},
+    b =      {x=133, y=129, w=46, h=46},
+    a =      {x=189, y=129, w=46, h=46},
   }
   self.controlFont = love.graphics.newFont(7)
 end
