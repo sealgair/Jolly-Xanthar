@@ -27,8 +27,39 @@ local buttonSymbols = {
   rightshoulder = "R",
 }
 
+local axisSymbols = {
+  leftx = "LSX",
+  lefty = "LSY",
+  rightx = "RSX",
+  righty = "RSY",
+  triggerleft = "L-Trig",
+  triggerright = "R-Trig",
+}
+
+local extraMappings = {
+  ["NES PC Game Pad"] = {
+    axes = {
+      axisSymbols.leftx,
+      axisSymbols.lefty,
+      axisSymbols.lefty,
+      axisSymbols.lefty,
+      axisSymbols.lefty,
+    },
+    buttons = {
+      buttonSymbols.b,
+      buttonSymbols.a,
+      buttonSymbols.back,
+      buttonSymbols.start,
+    }
+  }
+}
+
 function gamepadButton(joystick, button)
-  if joystick:isGamepad() then
+  jsName = joystick:getName()
+  if extraMappings[jsName] then
+    local result = extraMappings[jsName].buttons[button]
+    return result
+  elseif joystick:isGamepad() then
     for key, symbol in pairs(buttonSymbols) do
       inputtype, inputindex, hatdirection = joystick:getGamepadMapping(key)
       if inputindex == button then
@@ -39,17 +70,11 @@ function gamepadButton(joystick, button)
   return button
 end
 
-local axisSymbols = {
-  leftx = "LSX",
-  lefty = "LSY",
-  rightx = "RSX",
-  righty = "RSY",
-  triggerleft = "L-Trig",
-  triggerright = "R-Trig",
-}
-
 function gamepadAxis(joystick, axis)
-  if joystick:isGamepad() then
+  if extraMappings[jsName] then
+    local result = extraMappings[jsName].axes[axis]
+    return result
+  elseif joystick:isGamepad() then
     for key, symbol in pairs(axisSymbols) do
       inputtype, inputindex, hatdirection = joystick:getGamepadMapping(key)
       if inputindex == axis then
