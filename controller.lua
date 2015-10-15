@@ -9,6 +9,57 @@ Controller = {
   axisTracker = {},
 }
 
+local buttonSymbols = {
+  a = "A",
+  b = "B",
+  x = "X",
+  y = "Y",
+  back = "Back",
+  guide = "Home",
+  start = "Start",
+  dpup = "Up",
+  dpdown = "Down",
+  dpleft = "Left",
+  dpright = "Right",
+  leftstick = "LS-Click",
+  rightstick = "RS-Click",
+  leftshoulder = "L",
+  rightshoulder = "R",
+}
+
+function gamepadButton(joystick, button)
+  if joystick:isGamepad() then
+    for key, symbol in pairs(buttonSymbols) do
+      inputtype, inputindex, hatdirection = joystick:getGamepadMapping(key)
+      if inputindex == button then
+        return symbol
+      end
+    end
+  end
+  return button
+end
+
+local axisSymbols = {
+  leftx = "LSX",
+  lefty = "LSY",
+  rightx = "RSX",
+  righty = "RSY",
+  triggerleft = "L-Trig",
+  triggerright = "R-Trig",
+}
+
+function gamepadAxis(joystick, axis)
+  if joystick:isGamepad() then
+    for key, symbol in pairs(axisSymbols) do
+      inputtype, inputindex, hatdirection = joystick:getGamepadMapping(key)
+      if inputindex == axis then
+        return symbol
+      end
+    end
+  end
+  return "ax" .. axis
+end
+
 local directionsMap = {
   down = Direction(0, 1),
   up = Direction(0, -1),
@@ -138,54 +189,60 @@ function Controller:keyreleased(key)
 end
 
 function Controller:joystickpressed(joystick, button)
+  if button == nil then return end
+  button = gamepadButton(joystick, button)
   local key = "joy" .. joystick:getID() .. ":" .. button
   self:keypressed(key)
 end
 
 function Controller:joystickreleased(joystick, button)
+  if button == nil then return end
+  button = gamepadButton(joystick, button)
   local key = "joy" .. joystick:getID() .. ":" .. button
   self:keyreleased(key)
 end
 
-function isTrigger(joystick, axis)
-  for k, name in pairs({"triggerleft", "triggerright"}) do
-    inputtype, inputindex, hatdirection = joystick:getGamepadMapping(name)
-    if axis == inputindex then
-      return true
-    end
-  end
-  return false
-end
-
 function Controller:joystickaxis(joystick, axis, value)
-  local key = "joy" .. joystick:getID() .. ":ax" .. axis
+  if axis == nil then return end
 
-  if isTrigger(joystick, axis) then
+  axis = gamepadAxis(joystick, axis)
+  local key = "joy" .. joystick:getID() .. ":" .. axis
+
+  local oldDir = self.axisTracker[key]
+  if string.find(axis, "[LR]-Trig") then
     if value > -0.9 then
-      self:keypressed(key)
+      newDir = 1
     else
-      self:keyreleased(key)
+      newDir = nil
+    end
+    self.axisTracker[key] = newDir
+
+    if newDir ~= oldDir then
+      if newDir == nil then
+        self:keyreleased(key)
+      else
+        self:keypressed(key)
+      end
     end
   else
     local deadZone = 0.25
-      local newDir = value
-      if newDir > deadZone then
-        newDir = "+"
-      elseif newDir < -deadZone then
-        newDir = "-"
-      else
-        newDir = nil
+    local newDir = value
+    if newDir > deadZone then
+      newDir = "+"
+    elseif newDir < -deadZone then
+      newDir = "-"
+    else
+      newDir = nil
+    end
+    self.axisTracker[key] = newDir
+    if newDir ~= oldDir then
+      if oldDir ~= nil then
+        self:keyreleased(key .. oldDir)
       end
-      local oldDir = self.axisTracker[key]
-      self.axisTracker[key] = newDir
-      if newDir ~= oldDir then
-        if oldDir ~= nil then
-          self:keyreleased(key .. oldDir)
-        end
-        if newDir ~= nil then
-          self:keypressed(key .. newDir)
-        end
+      if newDir ~= nil then
+        self:keypressed(key .. newDir)
       end
+    end
   end
 end
 
