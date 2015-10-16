@@ -26,20 +26,33 @@ function Player:init(x, y, bumpWorld)
 
   self.image = love.graphics.newImage('assets/human.png')
   local tw, th = self.image:getWidth(), self.image:getHeight()
-  self.quads = {
-    down = love.graphics.newQuad(0, 0, self.w, self.h, tw, th),
-    downleft = love.graphics.newQuad(0, 16, self.w, self.h, tw, th),
-    left = love.graphics.newQuad(0, 32, self.w, self.h, tw, th),
-    upleft = love.graphics.newQuad(0, 48, self.w, self.h, tw, th),
-    up = love.graphics.newQuad(0, 64, self.w, self.h, tw, th),
-    upright = love.graphics.newQuad(0, 80, self.w, self.h, tw, th),
-    right = love.graphics.newQuad(0, 96, self.w, self.h, tw, th),
-    downright = love.graphics.newQuad(0, 112, self.w, self.h, tw, th),
+
+  local dirKeys = {
+    'down',
+    'downleft',
+    'left',
+    'upleft',
+    'up',
+    'upright',
+    'right',
+    'downright',
   }
+  self.quads = {}
+  for i, dir in ipairs(dirKeys) do
+    local quadList = {}
+    local y = (i - 1) * self.h
+    for x=0, self.w*2, self.w do
+      table.insert(quadList, love.graphics.newQuad(x, y, self.w, self.h, tw, th))
+    end
+    self.quads[dir] = quadList
+  end
+
+  self.animFrame = 1
+  self.animDelay = AnimateInterval
   self.direction = Direction(0, 0)
   self.animationQueue = {}
-  self.quad = self.quads.down
-  self.animDelay = 0
+  self.facingDir = "down"
+  self.turnDelay = 0
   self.animLength = 1
 end
 
@@ -54,7 +67,7 @@ function Player:advanceQuad()
   if self.animationQueue then
     local newQuad = table.remove(self.animationQueue, 1)
     if newQuad and self.quads[newQuad] then
-      self.quad = self.quads[newQuad]
+      self.facingDir = newQuad
     end
   end
 end
@@ -66,15 +79,14 @@ function Player:setDirection(newDirection)
 
   self.direction = newDirection
   if newDirection ~= Direction(0, 0) then
-    local oldDirectionKey = invert(self.quads)[self.quad]
-    local oldDirection = Direction[oldDirectionKey]
+    local oldDirection = Direction[self.facingDir]
     if oldDirection == newDirection then return end
 
     local ldir = oldDirection
     local rdir = oldDirection
     local lqueue = {}
     local rqueue = {}
-    self.animDelay = 0
+    self.turnDelay = 0
     while true do
       ldir = ldir:turnLeft()
       rdir = rdir:turnRight()
@@ -102,11 +114,22 @@ function Player:controlStop(action)
 end
 
 function Player:update(dt)
-  self.animDelay = self.animDelay - dt
+  self.turnDelay = self.turnDelay - dt
 
-  if self.animDelay <= 0 then
+  if self.direction ~= Direction(0, 0) then
+    self.animDelay = self.animDelay - dt
+    if self.animDelay <= 0 then
+      self.animDelay = AnimateInterval
+      self.animFrame = self.animFrame + 1
+      if self.animFrame > 3 then self.animFrame = 2 end
+    end
+  else
+    self.animFrame = 1
+  end
+
+  if self.turnDelay <= 0 then
     self:advanceQuad()
-    self.animDelay = AnimateInterval / self.animLength
+    self.turnDelay = AnimateInterval / self.animLength
   end
   local distance = dt * self.speed
 
@@ -123,7 +146,7 @@ end
 
 function Player:draw()
   love.graphics.draw(
-    self.image, self.quad,
+    self.image, self.quads[self.facingDir][self.animFrame],
     round(self.position.x), round(self.position.y)
   )
 end

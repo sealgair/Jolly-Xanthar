@@ -49,7 +49,7 @@ function Direction:__tostring()
   if self:key() then
     return self:key()
   else
-    return "none"
+    return "center"
   end
 end
 
