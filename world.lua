@@ -1,5 +1,6 @@
 require 'controller'
 require 'worldmap'
+require 'behavior'
 local bump = require 'lib.bump.bump'
 
 World = {}
@@ -39,16 +40,25 @@ function World:load()
   end
 
   -- add monsters
+  self.behaviors = {}
   for i, coord in ipairs(self.map.monsterCoords) do
-    table.insert(self.mobs, Mob(coord.x, coord.y, self.bumpWorld, 'assets/mobs/monster2.png'))
+    local monster = Mob(coord.x, coord.y, self.bumpWorld, 'assets/mobs/monster2.png')
+    table.insert(self.mobs, monster)
+    table.insert(self.behaviors, Behavior(monster))
   end
 end
 
 function World:update(dt)
+  for _, behavior in pairs(self.behaviors) do
+    behavior:update(dt)
+  end
+
+  for i, mob in ipairs(self.mobs) do
+    mob:update(dt)
+  end
+
   self.center = {x=0, y=0}
   for i, dude in ipairs(self.players) do
-    dude:update(dt)
-
     self.center.x = self.center.x + dude:center().x
     self.center.y = self.center.y + dude:center().y
   end
