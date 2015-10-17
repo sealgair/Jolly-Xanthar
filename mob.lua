@@ -5,7 +5,7 @@ require 'direction'
 Mob = class('Mob')
 AnimateInterval = 0.15 --seconds
 
-function Mob:init(x, y, bumpWorld)
+function Mob:init(x, y, bumpWorld, imageFile)
   self.bumpWorld = bumpWorld
   self.position = {x=x, y=y}
 
@@ -24,7 +24,7 @@ function Mob:init(x, y, bumpWorld)
   self.speed = 40
   self.actions = {}
 
-  self.image = love.graphics.newImage('assets/human.png')
+  self.image = love.graphics.newImage(imageFile)
   local tw, th = self.image:getWidth(), self.image:getHeight()
 
   local dirKeys = {

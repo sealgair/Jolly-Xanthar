@@ -21,27 +21,32 @@ function World:load()
   self.map = WorldMap("worldMaps/ship1.world", "assets/worlds/ship.png", self.bumpWorld)
   local playerCount = 2
   self.mobs = {}
+  self.players = {}
+
+  -- add players
   for i, coord in ipairs(self.map.playerCoords) do
     if i <= playerCount then
-      self.mobs[i] = Mob(coord.x, coord.y, self.bumpWorld)
+      local player = Mob(coord.x, coord.y, self.bumpWorld, 'assets/mobs/human.png')
+      Controller:register(player, i)
+      self.mobs[i] = player
+      self.players[i] = player
     end
   end
 
-  for i, player in ipairs(self.mobs) do
-    Controller:register(player, i)
-  end
+  -- add monsters
+  table.insert(self.mobs, Mob(10*15, 5*16, self.bumpWorld, 'assets/mobs/monster2.png'))
 end
 
 function World:update(dt)
   self.center = {x=0, y=0}
-  for i, dude in ipairs(self.mobs) do
+  for i, dude in ipairs(self.players) do
     dude:update(dt)
 
     self.center.x = self.center.x + dude:center().x
     self.center.y = self.center.y + dude:center().y
   end
-  self.center.x = round(self.center.x / # self.mobs)
-  self.center.y = round(self.center.y / # self.mobs)
+  self.center.x = round(self.center.x / # self.players)
+  self.center.y = round(self.center.y / # self.players)
 end
 
 function World:draw()
