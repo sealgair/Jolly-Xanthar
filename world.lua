@@ -8,7 +8,7 @@ setmetatable(World, {
   __newindex = function(self, key, value)
     rawset(self, key, value)
     if key == 'active' then
-      for i, player in pairs(self.players) do
+      for i, player in pairs(self.mobs) do
         player.active = self.active
       end
     end
@@ -20,28 +20,28 @@ function World:load()
   self.worldCanvas = love.graphics.newCanvas()
   self.map = WorldMap("worldMaps/ship1.world", "assets/worlds/ship.png", self.bumpWorld)
   local playerCount = 2
-  self.players = {}
+  self.mobs = {}
   for i, coord in ipairs(self.map.playerCoords) do
     if i <= playerCount then
-      self.players[i] = Player(coord.x, coord.y, self.bumpWorld)
+      self.mobs[i] = Mob(coord.x, coord.y, self.bumpWorld)
     end
   end
 
-  for i, player in ipairs(self.players) do
+  for i, player in ipairs(self.mobs) do
     Controller:register(player, i)
   end
 end
 
 function World:update(dt)
   self.center = {x=0, y=0}
-  for i, dude in ipairs(self.players) do
+  for i, dude in ipairs(self.mobs) do
     dude:update(dt)
 
     self.center.x = self.center.x + dude:center().x
     self.center.y = self.center.y + dude:center().y
   end
-  self.center.x = round(self.center.x / # self.players)
-  self.center.y = round(self.center.y / # self.players)
+  self.center.x = round(self.center.x / # self.mobs)
+  self.center.y = round(self.center.y / # self.mobs)
 end
 
 function World:draw()
@@ -50,7 +50,7 @@ function World:draw()
     self.worldCanvas:clear()
     love.graphics.setCanvas(self.worldCanvas)
     self.map:draw()
-    for i, dude in ipairs(self.players) do
+    for i, dude in ipairs(self.mobs) do
       dude:draw()
     end
   love.graphics.pop()

@@ -2,10 +2,10 @@ class = require 'lib/30log/30log'
 require 'utils'
 require 'direction'
 
-Player = class('Player')
+Mob = class('Mob')
 AnimateInterval = 0.15 --seconds
 
-function Player:init(x, y, bumpWorld)
+function Mob:init(x, y, bumpWorld)
   self.bumpWorld = bumpWorld
   self.position = {x=x, y=y}
 
@@ -56,14 +56,14 @@ function Player:init(x, y, bumpWorld)
   self.animLength = 1
 end
 
-function Player:center()
+function Mob:center()
   return {
     x = self.position.x + round(self.w/2),
     y = self.position.y + round(self.h/2),
   }
 end
 
-function Player:advanceQuad()
+function Mob:advanceQuad()
   if self.animationQueue then
     local newQuad = table.remove(self.animationQueue, 1)
     if newQuad and self.quads[newQuad] then
@@ -72,7 +72,7 @@ function Player:advanceQuad()
   end
 end
 
-function Player:setDirection(newDirection)
+function Mob:setDirection(newDirection)
   if newDirection == self.direction or newDirection == nil then
     return
   end
@@ -105,15 +105,15 @@ function Player:setDirection(newDirection)
   end
 end
 
-function Player:controlStart(action)
+function Mob:controlStart(action)
   self.actions[action] = true
 end
 
-function Player:controlStop(action)
+function Mob:controlStop(action)
   self.actions[action] = nil
 end
 
-function Player:update(dt)
+function Mob:update(dt)
   self.turnDelay = self.turnDelay - dt
 
   if self.direction ~= Direction(0, 0) then
@@ -144,7 +144,7 @@ function Player:update(dt)
   }
 end
 
-function Player:draw()
+function Mob:draw()
   love.graphics.draw(
     self.image, self.quads[self.facingDir][self.animFrame],
     round(self.position.x), round(self.position.y)

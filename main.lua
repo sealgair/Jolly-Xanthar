@@ -1,5 +1,5 @@
 require 'controller'
-require 'player'
+require 'mob'
 require 'utils'
 require 'world'
 require 'menu/splash'
