@@ -9,7 +9,7 @@ WorldMap = class('WorldMap', {
   }
 })
 
-function WorldMap:init(mapfile, imagefile, bumpWorld)
+function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
   local templateImg = love.graphics.newImage(imagefile)
   local qw, qh = 16, 16
   local sw, sh = templateImg:getWidth(), templateImg:getHeight()
@@ -41,6 +41,7 @@ function WorldMap:init(mapfile, imagefile, bumpWorld)
   end
 
   self.playerCoords = {}
+  local potentialMonsters = {}
 
   for y, row in ipairs(blocks) do
     local quadRow = {}
@@ -58,6 +59,8 @@ function WorldMap:init(mapfile, imagefile, bumpWorld)
       else
         if block:find("%d") then
           self.playerCoords[tonumber(block)] = {x = dx, y = dy}
+        else
+          table.insert(potentialMonsters, {x = dx, y = dy})
         end
         key = 'f' .. tostring(math.random(1, 4))
       end
@@ -67,6 +70,17 @@ function WorldMap:init(mapfile, imagefile, bumpWorld)
     table.insert(quads, quadRow)
   end
   local mh = # quads
+
+  self.monsterCoords = {}
+  local seen = {}
+  local i = math.random(# potentialMonsters)
+  for _ = 1, monsterCount do
+    while seen[i] ~= nil do
+      i = math.random(# potentialMonsters)
+    end
+    seen[i] = true
+    table.insert(self.monsterCoords, potentialMonsters[i])
+  end
 
   -- draw quaods to canvas
   love.graphics.push()

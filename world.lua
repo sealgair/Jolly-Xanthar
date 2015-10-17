@@ -18,7 +18,12 @@ setmetatable(World, {
 function World:load()
   self.bumpWorld = bump.newWorld(8)
   self.worldCanvas = love.graphics.newCanvas()
-  self.map = WorldMap("worldMaps/ship1.world", "assets/worlds/ship.png", self.bumpWorld)
+  self.map = WorldMap(
+    "worldMaps/ship1.world",
+    "assets/worlds/ship.png",
+    self.bumpWorld,
+    10
+  )
   local playerCount = 2
   self.mobs = {}
   self.players = {}
@@ -34,7 +39,9 @@ function World:load()
   end
 
   -- add monsters
-  table.insert(self.mobs, Mob(10*15, 5*16, self.bumpWorld, 'assets/mobs/monster2.png'))
+  for i, coord in ipairs(self.map.monsterCoords) do
+    table.insert(self.mobs, Mob(coord.x, coord.y, self.bumpWorld, 'assets/mobs/monster2.png'))
+  end
 end
 
 function World:update(dt)
