@@ -62,6 +62,11 @@ function World:draw()
     self.worldCanvas:clear()
     love.graphics.setCanvas(self.worldCanvas)
     self.map:draw()
+
+    table.sort(self.mobs, function(a, b)
+      return a.position.y < b.position.y
+    end)
+
     for i, dude in ipairs(self.mobs) do
       dude:draw()
     end
