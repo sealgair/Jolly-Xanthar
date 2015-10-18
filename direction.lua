@@ -30,6 +30,10 @@ function Direction:sub(rhs)
   return Direction(self.x - rhs.x, self.y - rhs.y)
 end
 
+function Direction:reverse()
+  return Direction(self.x * -1, self.y * -1)
+end
+
 function Direction:key()
   local result = ""
   if self.y > 0 then

@@ -23,6 +23,7 @@ function Mob:init(x, y, bumpWorld, imageFile)
 
   self.speed = 40
   self.actions = {}
+  self.collisions = {}
 
   self.image = love.graphics.newImage(imageFile)
   local tw, th = self.image:getWidth(), self.image:getHeight()
@@ -138,6 +139,7 @@ function Mob:update(dt)
     y = round(self.position.y + (self.direction.y * distance) + self.hitboxOffset.y),
   }
   local actualX, actualY, cols, len = self.bumpWorld:move(self, goal.x, goal.y)
+  self.collisions = cols
   self.position = {
     x = actualX - self.hitbox.w/2,
     y = actualY - self.hitbox.h/2,
