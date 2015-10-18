@@ -5,9 +5,10 @@ require 'direction'
 Mob = class('Mob')
 AnimateInterval = 0.15 --seconds
 
-function Mob:init(x, y, bumpWorld, imageFile)
-  self.bumpWorld = bumpWorld
-  self.position = {x=x, y=y}
+function Mob:init(opts)
+  -- opts: x, y, bumpWorld, imageFile, speed
+  self.bumpWorld = opts.bumpWorld
+  self.position = {x=opts.x, y=opts.y}
 
   self.w, self.h = 16, 16
   self.hitbox = {w=8, h=8}
@@ -21,11 +22,15 @@ function Mob:init(x, y, bumpWorld, imageFile)
           self.position.y + self.hitboxOffset.y,
           self.hitbox.w, self.hitbox.h)
 
-  self.speed = 40
+  if opts.speed == nil then
+    self.speed = 40
+  else
+    self.speed = opts.speed
+  end
   self.actions = {}
   self.collisions = {}
 
-  self.image = love.graphics.newImage(imageFile)
+  self.image = love.graphics.newImage(opts.imageFile)
   local tw, th = self.image:getWidth(), self.image:getHeight()
 
   local dirKeys = {
@@ -135,8 +140,8 @@ function Mob:update(dt)
   local distance = dt * self.speed
 
   local goal = {
-    x = round(self.position.x + (self.direction.x * distance) + self.hitboxOffset.x),
-    y = round(self.position.y + (self.direction.y * distance) + self.hitboxOffset.y),
+    x = self.position.x + (self.direction.x * distance) + self.hitboxOffset.x,
+    y = self.position.y + (self.direction.y * distance) + self.hitboxOffset.y,
   }
   local actualX, actualY, cols, len = self.bumpWorld:move(self, goal.x, goal.y)
   self.collisions = cols

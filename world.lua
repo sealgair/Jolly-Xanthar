@@ -25,14 +25,19 @@ function World:load()
     self.bumpWorld,
     10
   )
-  local playerCount = 1
+  local playerCount = 2
   self.mobs = {}
   self.players = {}
 
   -- add players
   for i, coord in ipairs(self.map.playerCoords) do
     if i <= playerCount then
-      local player = Mob(coord.x, coord.y, self.bumpWorld, 'assets/mobs/human.png')
+      local player = Mob{
+        x=coord.x, y=coord.y,
+        bumpWorld=self.bumpWorld,
+        imageFile='assets/mobs/human.png',
+        speed=50
+      }
       Controller:register(player, i)
       self.mobs[i] = player
       self.players[i] = player
@@ -42,7 +47,12 @@ function World:load()
   -- add monsters
   self.behaviors = {}
   for i, coord in ipairs(self.map.monsterCoords) do
-    local monster = Mob(coord.x, coord.y, self.bumpWorld, 'assets/mobs/monster2.png')
+    local monster = Mob{
+      x=coord.x, y=coord.y,
+      bumpWorld=self.bumpWorld,
+      imageFile='assets/mobs/monster2.png',
+      speed=30
+    }
     table.insert(self.mobs, monster)
     table.insert(self.behaviors, Behavior(monster))
   end
