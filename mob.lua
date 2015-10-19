@@ -6,21 +6,13 @@ Mob = class('Mob')
 AnimateInterval = 0.15 --seconds
 
 function Mob:init(opts)
-  -- opts: x, y, bumpWorld, imageFile, speed
-  self.bumpWorld = opts.bumpWorld
+  -- opts: x, y, imageFile, speed
   self.position = {x=opts.x, y=opts.y}
 
   self.w, self.h = 16, 16
   self.hitbox = {w=8, h=8}
-  self.hitboxOffset = {
-    x = (self.w - self.hitbox.w) / 2,
-    y = (self.h - self.hitbox.h) / 2,
-  }
-
-  self.bumpWorld:add(self,
-          self.position.x + self.hitboxOffset.x,
-          self.position.y + self.hitboxOffset.y,
-          self.hitbox.w, self.hitbox.h)
+  self.hitbox.x = (self.w - self.hitbox.w) / 2
+  self.hitbox.y = (self.h - self.hitbox.h) / 2
 
   if opts.speed == nil then
     self.speed = 40
@@ -111,6 +103,20 @@ function Mob:setDirection(newDirection)
   end
 end
 
+function Mob:getBoundingBox()
+  return {
+    x = self.position.x + self.hitbox.x,
+    y = self.position.y + self.hitbox.y,
+  }
+end
+
+function Mob:setBoundingBox(box)
+  self.position = {
+    x = box.x - self.hitbox.x,
+    y = box.y - self.hitbox.y,
+  }
+end
+
 function Mob:controlStart(action)
   self.actions[action] = true
 end
@@ -139,16 +145,14 @@ function Mob:update(dt)
   end
   local distance = dt * self.speed
 
-  local goal = {
-    x = self.position.x + (self.direction.x * distance) + self.hitboxOffset.x,
-    y = self.position.y + (self.direction.y * distance) + self.hitboxOffset.y,
-  }
-  local actualX, actualY, cols, len = self.bumpWorld:move(self, goal.x, goal.y)
-  self.collisions = cols
   self.position = {
-    x = actualX - self.hitbox.w/2,
-    y = actualY - self.hitbox.h/2,
+    x = self.position.x + self.direction.x * distance,
+    y = self.position.y + self.direction.y * distance,
   }
+end
+
+function Mob:collide(cols)
+  self.collisions = cols
 end
 
 function Mob:draw()

@@ -9,7 +9,7 @@ setmetatable(World, {
   __newindex = function(self, key, value)
     rawset(self, key, value)
     if key == 'active' then
-      for i, player in pairs(self.mobs) do
+      for i, player in pairs(self.gobs) do
         player.active = self.active
       end
     end
@@ -26,7 +26,7 @@ function World:load()
     10
   )
   local playerCount = 2
-  self.mobs = {}
+  self.gobs = {}
   self.players = {}
 
   -- add players
@@ -39,7 +39,7 @@ function World:load()
         speed=50
       }
       Controller:register(player, i)
-      self.mobs[i] = player
+      self:spawn(player)
       self.players[i] = player
     end
   end
@@ -53,9 +53,17 @@ function World:load()
       imageFile='assets/mobs/monster2.png',
       speed=30
     }
-    table.insert(self.mobs, monster)
+    self:spawn(monster)
     table.insert(self.behaviors, Behavior(monster))
   end
+end
+
+function World:spawn(gob)
+  table.insert(self.gobs, gob)
+  self.bumpWorld:add(gob,
+          gob.position.x + gob.hitbox.x,
+          gob.position.y + gob.hitbox.y,
+          gob.hitbox.w, gob.hitbox.h)
 end
 
 function World:update(dt)
@@ -63,8 +71,14 @@ function World:update(dt)
     behavior:update(dt)
   end
 
-  for i, mob in ipairs(self.mobs) do
-    mob:update(dt)
+  for i, gob in ipairs(self.gobs) do
+    gob:update(dt)
+
+    -- handle collisions
+    local goal = gob:getBoundingBox()
+    local x, y, cols, len = self.bumpWorld:move(gob, goal.x, goal.y)
+    gob:setBoundingBox{x=x, y=y}
+    gob:collide(cols)
   end
 
   self.center = {x=0, y=0}
@@ -83,11 +97,11 @@ function World:draw()
     love.graphics.setCanvas(self.worldCanvas)
     self.map:draw()
 
-    table.sort(self.mobs, function(a, b)
+    table.sort(self.gobs, function(a, b)
       return a.position.y < b.position.y
     end)
 
-    for i, dude in ipairs(self.mobs) do
+    for i, dude in ipairs(self.gobs) do
       dude:draw()
     end
   love.graphics.pop()
