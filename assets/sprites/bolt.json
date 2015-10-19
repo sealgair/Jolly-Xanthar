@@ -1,7 +1,11 @@
 {
-  'image': 'assets/sprites/bolt.png',
-  'w': 8, 'h': 8,
-  'hitbox': {
-    'x': 0, 'y': 0, 'w': 8, 'h': 8
+  "image": "assets/sprites/bolt.png",
+  "w": 8, "h": 8,
+  "animations": {
+    "walk": [1],
+    "idle": [1]
+  },
+  "hitbox": {
+    "x": 0, "y": 0, "w": 8, "h": 8
   }
 }
