@@ -25,7 +25,7 @@ function World:load()
     self.bumpWorld,
     10
   )
-  local playerCount = 2
+  local playerCount = 1
   self.gobs = {}
   self.players = {}
 
@@ -34,8 +34,7 @@ function World:load()
     if i <= playerCount then
       local player = Mob{
         x=coord.x, y=coord.y,
-        bumpWorld=self.bumpWorld,
-        imageFile='assets/mobs/human.png',
+        confFile='assets/mobs/human.json',
         speed=50
       }
       Controller:register(player, i)
@@ -49,8 +48,7 @@ function World:load()
   for i, coord in ipairs(self.map.monsterCoords) do
     local monster = Mob{
       x=coord.x, y=coord.y,
-      bumpWorld=self.bumpWorld,
-      imageFile='assets/mobs/monster2.png',
+      confFile='assets/mobs/monster2.json',
       speed=30
     }
     self:spawn(monster)

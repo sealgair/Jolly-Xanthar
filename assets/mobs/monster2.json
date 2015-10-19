@@ -1,0 +1,8 @@
+{
+  'image': 'assets/mobs/monster2.png',
+  'w': 16,
+  'h': 16,
+  'hitbox': {
+    'x': 4, 'y': 4, 'w': 8, 'h': 8
+  }
+}

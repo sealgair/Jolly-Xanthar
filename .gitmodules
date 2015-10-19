@@ -7,3 +7,6 @@
 [submodule "lib/bump"]
 	path = lib/bump
 	url = https://github.com/kikito/bump.lua.git
+[submodule "lib/json4lua"]
+	path = lib/json4lua
+	url = https://github.com/craigmj/json4lua

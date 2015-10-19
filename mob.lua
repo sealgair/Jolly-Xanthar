@@ -1,73 +1,13 @@
 class = require 'lib/30log/30log'
 require 'utils'
 require 'direction'
+require 'gob'
 
-Mob = class('Mob')
-AnimateInterval = 0.15 --seconds
+Mob = Gob:extend('Mob')
 
 function Mob:init(opts)
-  -- opts: x, y, imageFile, speed
-  self.position = {x=opts.x, y=opts.y}
-
-  self.w, self.h = 16, 16
-  self.hitbox = {w=8, h=8}
-  self.hitbox.x = (self.w - self.hitbox.w) / 2
-  self.hitbox.y = (self.h - self.hitbox.h) / 2
-
-  if opts.speed == nil then
-    self.speed = 40
-  else
-    self.speed = opts.speed
-  end
+  Mob.super.init(self, opts)
   self.actions = {}
-  self.collisions = {}
-
-  self.image = love.graphics.newImage(opts.imageFile)
-  local tw, th = self.image:getWidth(), self.image:getHeight()
-
-  local dirKeys = {
-    'down',
-    'downleft',
-    'left',
-    'upleft',
-    'up',
-    'upright',
-    'right',
-    'downright',
-  }
-  self.quads = {}
-  for i, dir in ipairs(dirKeys) do
-    local quadList = {}
-    local y = (i - 1) * self.h
-    for x=0, self.w*2, self.w do
-      table.insert(quadList, love.graphics.newQuad(x, y, self.w, self.h, tw, th))
-    end
-    self.quads[dir] = quadList
-  end
-
-  self.animFrame = 1
-  self.animDelay = AnimateInterval
-  self.direction = Direction(0, 0)
-  self.animationQueue = {}
-  self.facingDir = "down"
-  self.turnDelay = 0
-  self.animLength = 1
-end
-
-function Mob:center()
-  return {
-    x = self.position.x + round(self.w/2),
-    y = self.position.y + round(self.h/2),
-  }
-end
-
-function Mob:advanceQuad()
-  if self.animationQueue then
-    local newQuad = table.remove(self.animationQueue, 1)
-    if newQuad and self.quads[newQuad] then
-      self.facingDir = newQuad
-    end
-  end
 end
 
 function Mob:setDirection(newDirection)
@@ -103,61 +43,10 @@ function Mob:setDirection(newDirection)
   end
 end
 
-function Mob:getBoundingBox()
-  return {
-    x = self.position.x + self.hitbox.x,
-    y = self.position.y + self.hitbox.y,
-  }
-end
-
-function Mob:setBoundingBox(box)
-  self.position = {
-    x = box.x - self.hitbox.x,
-    y = box.y - self.hitbox.y,
-  }
-end
-
 function Mob:controlStart(action)
   self.actions[action] = true
 end
 
 function Mob:controlStop(action)
   self.actions[action] = nil
-end
-
-function Mob:update(dt)
-  self.turnDelay = self.turnDelay - dt
-
-  if self.direction ~= Direction(0, 0) then
-    self.animDelay = self.animDelay - dt
-    if self.animDelay <= 0 then
-      self.animDelay = AnimateInterval
-      self.animFrame = self.animFrame + 1
-      if self.animFrame > 3 then self.animFrame = 2 end
-    end
-  else
-    self.animFrame = 1
-  end
-
-  if self.turnDelay <= 0 then
-    self:advanceQuad()
-    self.turnDelay = AnimateInterval / self.animLength
-  end
-  local distance = dt * self.speed
-
-  self.position = {
-    x = self.position.x + self.direction.x * distance,
-    y = self.position.y + self.direction.y * distance,
-  }
-end
-
-function Mob:collide(cols)
-  self.collisions = cols
-end
-
-function Mob:draw()
-  love.graphics.draw(
-    self.image, self.quads[self.facingDir][self.animFrame],
-    round(self.position.x), round(self.position.y)
-  )
 end

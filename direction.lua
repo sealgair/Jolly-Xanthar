@@ -2,6 +2,17 @@ class = require 'lib/30log/30log'
 
 Direction = class('Direction', {x=0, y=0})
 
+Direction.keys = {
+    'down',
+    'downleft',
+    'left',
+    'upleft',
+    'up',
+    'upright',
+    'right',
+    'downright',
+}
+
 function Direction:init(x, y)
   self.x = x
   self.y = y
