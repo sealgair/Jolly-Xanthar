@@ -5,7 +5,13 @@ Projectile = Gob:extend("Projectile")
 
 function Projectile:init(opts)
   Projectile.super.init(self, opts)
+  self.done = false
   self.owner = opts.owner
+  if opts.damage then
+    self.damage = opts.damage
+  else
+    self.damage = 1
+  end
   if self.conf.particles then
     local pimage = love.graphics.newImage(self.conf.particles.image)
     self.particleSystem = love.graphics.newParticleSystem(pimage, 32)
@@ -19,27 +25,27 @@ end
 
 
 function Projectile:collidesWith(b)
-    if b == self.owner then
-        return "cross"
-    else
-        return "touch"
-    end
+  return "touch", 10
 end
 
 
 function Projectile:collide(cols)
-    Projectile.super.collide(self, cols)
+  Projectile.super.collide(self, cols)
 
-    for _, col in pairs(cols) do
-        if col.other ~= self.owner then
-            World:despawn(self)
-            break
-        end
+  for _, col in pairs(cols) do
+    if col.other ~= self.owner then
+      self.done = true
+      break
     end
+  end
 end
 
 
 function Projectile:update(dt)
+  if self.done then
+    World:despawn(self)
+    return
+  end
   Projectile.super.update(self, dt)
   self.particleSystem:setDirection(self.direction:reverse():radians())
   self.particleSystem:setSpeed(self.speed)

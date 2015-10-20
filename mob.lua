@@ -8,6 +8,14 @@ Mob = Gob:extend('Mob')
 
 function Mob:init(opts)
   Mob.super.init(self, opts)
+
+  if opts.health then
+    self.maxHeatlh = opts.health
+  else
+    self.maxHealth = 10
+  end
+  self.health = self.maxHealth
+
   self.actions = {}
 end
 
@@ -63,7 +71,38 @@ function Mob:controlStop(action)
       y = shoot.y,
       dir = facingDirection,
       speed = 200,
+      damage=10,
     }
     World:spawn(bullet)
   end
+end
+
+function Mob:update(dt)
+  if self:dead() then
+    World:despawn(self)
+    return
+  end
+
+  Mob.super.update(self, dt)
+end
+
+function Mob:collidesWith(other)
+  if other.owner == self then
+    return nil, 100
+  else
+    return Mob.super.collidesWith(self, other)
+  end
+end
+
+function Mob:collide(cols)
+  Mob.super.collide(self, cols)
+  for _, col in pairs(cols) do
+    if col.other.damage then
+      self.health = self.health - col.other.damage
+    end
+  end
+end
+
+function Mob:dead()
+  return self.health <= 0
 end

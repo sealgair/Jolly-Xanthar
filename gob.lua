@@ -9,7 +9,7 @@ DefaultAnimateInterval = 0.15 --seconds
 function Gob:init(opts)
   -- required opts: x, y, confFile
   -- optional opts: speed, dir, animDelay
-  self.position = {x=opts.x, y=opts.y}
+  self.position = { x = opts.x, y = opts.y }
   local conf, _ = love.filesystem.read(opts.confFile)
   self.conf = json.decode(conf)
 
@@ -47,7 +47,7 @@ function Gob:init(opts)
   for i, dir in ipairs(Direction.keys) do
     local quadList = {}
     local y = (i - 1) * self.h
-    for x=0, tw-self.w, self.w do
+    for x = 0, tw - self.w, self.w do
       table.insert(quadList, love.graphics.newQuad(x, y, self.w, self.h, tw, th))
     end
     self.quads[dir] = quadList
@@ -56,7 +56,7 @@ function Gob:init(opts)
   self.animIndex = 1
   self.animDelay = self.animInterval
   self.animationQueue = {}
-  if self.direction == Direction(0,0) then
+  if self.direction == Direction(0, 0) then
     self.facingDir = "down"
   else
     self.facingDir = self.direction:key()
@@ -67,8 +67,8 @@ end
 
 function Gob:center()
   return {
-    x = self.position.x + self.w/2,
-    y = self.position.y + self.h/2,
+    x = self.position.x + self.w / 2,
+    y = self.position.y + self.h / 2,
   }
 end
 
@@ -111,7 +111,7 @@ function Gob:update(dt)
   if self.animDelay <= 0 then
     self.animDelay = self.animInterval
     self.animIndex = self.animIndex + 1
-    if self.animIndex > # animFrames then self.animIndex = 1 end
+    if self.animIndex > #animFrames then self.animIndex = 1 end
   end
 
   if self.turnDelay <= 0 then
@@ -132,23 +132,17 @@ function Gob:update(dt)
 end
 
 function Gob:collidesWith(other)
-    return nil
+  return "slide", 0
 end
 
 function Gob.collideFilter(a, b)
-    local type = nil
-    if a.collidesWith then
-    type = a:collidesWith(b)
-    end
-    if type == nil then
-        if b.collidesWith then
-            type = b:collidesWith(a)
-        end
-    end
-    if type == nil then
-        type = "slide"
-    end
-    return type
+  local typeA, priorityA = a:collidesWith(b)
+  local typeB, priorityB = b:collidesWith(a)
+  if priorityA > priorityB then
+    return typeA
+  else
+    return typeB
+  end
 end
 
 function Gob:collide(cols)
@@ -157,11 +151,9 @@ end
 
 function Gob:draw()
   local animFrames = self.animations[self:animState()]
-  local animFrame = animFrames[math.min(self.animIndex, # animFrames)]
-  love.graphics.draw(
-    self.image,
+  local animFrame = animFrames[math.min(self.animIndex, #animFrames)]
+  love.graphics.draw(self.image,
     self.quads[self.facingDir][animFrame],
     self.position.x,
-    self.position.y
-  )
+    self.position.y)
 end

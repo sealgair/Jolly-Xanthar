@@ -1,11 +1,12 @@
 class = require 'lib/30log/30log'
+require 'wall'
 
 WorldMap = class('WorldMap', {
   quadNames = {
-    {'f1', 'ul',  'u',   'ur',  'udlr'},
-    {'f2', 'l',   'c',   'r',   'lr'},
-    {'f3', 'dl',  'd',   'dr',  'ud'},
-    {'f4', 'dlr', 'udr', 'udl', 'ulr'},
+    { 'f1', 'ul', 'u', 'ur', 'udlr' },
+    { 'f2', 'l', 'c', 'r', 'lr' },
+    { 'f3', 'dl', 'd', 'dr', 'ud' },
+    { 'f4', 'dlr', 'udr', 'udl', 'ulr' },
   }
 })
 
@@ -17,9 +18,9 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
   -- create our quads
   local quadMap = {}
   for y, row in ipairs(self.quadNames) do
-    y = (y-1)*qh
+    y = (y - 1) * qh
     for x, name in ipairs(row) do
-      x = (x-1)*qw
+      x = (x - 1) * qw
       quadMap[name] = love.graphics.newQuad(x, y, qw, qh, sw, sh)
     end
   end
@@ -28,14 +29,14 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
   local quads = {}
   local mw = 0
   local blocks = self:fileToTable(mapfile)
-  function testEmpty(y, x)
-    local block = nil
+  local function testEmpty(y, x)
+    local block
     local row = blocks[y]
     if row then
       block = row[x]
     end
     if block == nil then
-      block = "#"  -- null is wall
+      block = "#" -- null is wall
     end
     return block ~= "#"
   end
@@ -46,37 +47,38 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
   for y, row in ipairs(blocks) do
     local quadRow = {}
     for x, block in ipairs(row) do
-      dx = (x-1)*qw
-      dy = (y-1)*qh
+      local dx = (x - 1) * qw
+      local dy = (y - 1) * qh
+      local key
       if block == "#" then
         key = ''
-        if testEmpty(y-1, x) then key = key .. 'u' end
-        if testEmpty(y+1, x) then key = key .. 'd' end
-        if testEmpty(y, x-1) then key = key .. 'l' end
-        if testEmpty(y, x+1) then key = key .. 'r' end
+        if testEmpty(y - 1, x) then key = key .. 'u' end
+        if testEmpty(y + 1, x) then key = key .. 'd' end
+        if testEmpty(y, x - 1) then key = key .. 'l' end
+        if testEmpty(y, x + 1) then key = key .. 'r' end
         if key == '' then key = 'c' end
-        bumpWorld:add({name="wall"}, dx, dy, qw, qh)
+        bumpWorld:add(Wall(), dx, dy, qw, qh)
       else
         if block:find("%d") then
-          self.playerCoords[tonumber(block)] = {x = dx, y = dy}
+          self.playerCoords[tonumber(block)] = { x = dx, y = dy }
         else
-          table.insert(potentialMonsters, {x = dx, y = dy})
+          table.insert(potentialMonsters, { x = dx, y = dy })
         end
         key = 'f' .. tostring(math.random(1, 4))
       end
       table.insert(quadRow, quadMap[key])
     end
-    mw = math.max(# quadRow, mw)
+    mw = math.max(#quadRow, mw)
     table.insert(quads, quadRow)
   end
-  local mh = # quads
+  local mh = #quads
 
   self.monsterCoords = {}
   local seen = {}
-  local i = math.random(# potentialMonsters)
+  local i = math.random(#potentialMonsters)
   for _ = 1, monsterCount do
     while seen[i] ~= nil do
-      i = math.random(# potentialMonsters)
+      i = math.random(#potentialMonsters)
     end
     seen[i] = true
     table.insert(self.monsterCoords, potentialMonsters[i])
@@ -88,9 +90,9 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
     self.mapCanvas = love.graphics.newCanvas(mw * qw, mh * qh)
     love.graphics.setCanvas(self.mapCanvas)
     for y, quadRow in ipairs(quads) do
-      y = (y-1) * qh
+      y = (y - 1) * qh
       for x, quad in ipairs(quadRow) do
-        x = (x-1) * qw
+        x = (x - 1) * qw
         love.graphics.draw(templateImg, quad, x, y)
       end
     end
