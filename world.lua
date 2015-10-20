@@ -25,7 +25,7 @@ function World:load()
     self.bumpWorld,
     10
   )
-  local playerCount = 1
+  local playerCount = 2
   self.gobs = {}
   self.players = {}
 
@@ -84,8 +84,8 @@ function World:update(dt)
     self.center.x = self.center.x + dude:center().x
     self.center.y = self.center.y + dude:center().y
   end
-  self.center.x = round(self.center.x / # self.players)
-  self.center.y = round(self.center.y / # self.players)
+  self.center.x = self.center.x / # self.players
+  self.center.y = self.center.y / # self.players
 end
 
 function World:draw()
@@ -105,7 +105,7 @@ function World:draw()
   love.graphics.pop()
   love.graphics.setCanvas()
 
-  local offx = round(Size.w / 2) - self.center.x
-  local offy = round(Size.h / 2) - self.center.y
+  local offx = (Size.w / 2) - self.center.x
+  local offy = (Size.h / 2) - self.center.y
   love.graphics.draw(self.worldCanvas, offx, offy)
 end

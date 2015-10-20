@@ -67,8 +67,8 @@ end
 
 function Gob:center()
   return {
-    x = self.position.x + round(self.w/2),
-    y = self.position.y + round(self.h/2),
+    x = self.position.x + self.w/2,
+    y = self.position.y + self.h/2,
   }
 end
 
@@ -141,7 +141,7 @@ function Gob:draw()
   love.graphics.draw(
     self.image,
     self.quads[self.facingDir][animFrame],
-    round(self.position.x),
-    round(self.position.y)
+    self.position.x,
+    self.position.y
   )
 end
