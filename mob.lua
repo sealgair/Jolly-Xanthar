@@ -2,6 +2,7 @@ class = require 'lib/30log/30log'
 require 'utils'
 require 'direction'
 require 'gob'
+require 'projectile'
 
 Mob = Gob:extend('Mob')
 
@@ -50,13 +51,13 @@ end
 function Mob:controlStop(action)
   self.actions[action] = nil
   local facingDirection = Direction[self.facingDir]
-  local shoot = {
-    x = self.position.x + facingDirection.x * self.w * (2/3),
-    y = self.position.y + facingDirection.y * self.h * (2/3),
-  }
+  local shoot = self:center()
+  shoot.x = shoot.x - 4
+  shoot.y = shoot.y - 4
 
   if action == 'a' then
-    local bullet = Gob{
+    local bullet = Projectile{
+      owner=self,
       confFile = 'assets/sprites/bolt.json',
       x = shoot.x,
       y = shoot.y,

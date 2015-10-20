@@ -131,6 +131,26 @@ function Gob:update(dt)
   }
 end
 
+function Gob:collidesWith(other)
+    return nil
+end
+
+function Gob.collideFilter(a, b)
+    local type = nil
+    if a.collidesWith then
+    type = a:collidesWith(b)
+    end
+    if type == nil then
+        if b.collidesWith then
+            type = b:collidesWith(a)
+        end
+    end
+    if type == nil then
+        type = "slide"
+    end
+    return type
+end
+
 function Gob:collide(cols)
   self.collisions = cols
 end

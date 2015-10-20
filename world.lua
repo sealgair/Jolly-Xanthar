@@ -25,7 +25,7 @@ function World:load()
     self.bumpWorld,
     10
   )
-  local playerCount = 2
+  local playerCount = 1
   self.gobs = {}
   self.players = {}
 
@@ -64,6 +64,16 @@ function World:spawn(gob)
           gob.hitbox.w, gob.hitbox.h)
 end
 
+function World:despawn(gob)
+    for i, g in ipairs(self.gobs) do
+        if g == gob then
+            table.remove(self.gobs, i)
+            break
+        end
+    end
+    self.bumpWorld:remove(gob)
+end
+
 function World:update(dt)
   for _, behavior in pairs(self.behaviors) do
     behavior:update(dt)
@@ -74,7 +84,7 @@ function World:update(dt)
 
     -- handle collisions
     local goal = gob:getBoundingBox()
-    local x, y, cols, len = self.bumpWorld:move(gob, goal.x, goal.y)
+    local x, y, cols, len = self.bumpWorld:move(gob, goal.x, goal.y, Gob.collideFilter)
     gob:setBoundingBox{x=x, y=y}
     gob:collide(cols)
   end
