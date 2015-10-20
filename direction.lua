@@ -103,3 +103,21 @@ end
 function Direction:turnLeft()
   return counterclockwise[self:key()]
 end
+
+function Direction:radians()
+  if self == Direction(0, 0) then
+    return nil
+  end
+  local d = Direction.right
+  local r = 0
+  while d ~= self do
+    r = r + .25
+    d = d:turnRight()
+
+    -- prevent weird infinite loops
+    if r >= 2 then
+      return nil
+    end
+  end
+  return r * math.pi
+end

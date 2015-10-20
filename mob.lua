@@ -58,7 +58,7 @@ function Mob:controlStop(action)
   if action == 'a' then
     local bullet = Projectile{
       owner=self,
-      confFile = 'assets/sprites/bolt.json',
+      confFile = 'assets/projectiles/bolt.json',
       x = shoot.x,
       y = shoot.y,
       dir = facingDirection,

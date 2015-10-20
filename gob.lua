@@ -11,12 +11,12 @@ function Gob:init(opts)
   -- optional opts: speed, dir, animDelay
   self.position = {x=opts.x, y=opts.y}
   local conf, _ = love.filesystem.read(opts.confFile)
-  conf = json.decode(conf)
+  self.conf = json.decode(conf)
 
-  self.w = conf.w
-  self.h = conf.h
-  self.hitbox = conf.hitbox
-  self.animations = conf.animations
+  self.w = self.conf.w
+  self.h = self.conf.h
+  self.hitbox = self.conf.hitbox
+  self.animations = self.conf.animations
 
   if opts.speed == nil then
     self.speed = 40
@@ -29,10 +29,10 @@ function Gob:init(opts)
     self.direction = opts.dir
   end
   if opts.animInterval == nil then
-    if conf.animInterval == nil then
+    if self.conf.animInterval == nil then
       self.animInterval = DefaultAnimateInterval
     else
-      self.animInterval = conf.animInterval
+      self.animInterval = self.conf.animInterval
     end
   else
     self.animInterval = opts.animInterval
@@ -40,7 +40,7 @@ function Gob:init(opts)
 
   self.collisions = {}
 
-  self.image = love.graphics.newImage(conf.image)
+  self.image = love.graphics.newImage(self.conf.image)
   local tw, th = self.image:getWidth(), self.image:getHeight()
 
   self.quads = {}
