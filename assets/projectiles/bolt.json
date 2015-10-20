@@ -1,5 +1,5 @@
 {
-  "image": "assets/sprites/bolt.png",
+  "image": "assets/projectiles/bolt.png",
   "w": 8, "h": 8,
   "animations": {
     "walk": [1],
