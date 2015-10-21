@@ -93,11 +93,7 @@ function Mob:animState()
 end
 
 function Mob:update(dt)
-  if self:dead() then
 --    World:despawn(self)
-    return
-  end
-
   Mob.super.update(self, dt)
 end
 
