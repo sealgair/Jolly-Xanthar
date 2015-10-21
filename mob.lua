@@ -88,7 +88,7 @@ function Mob:controlStop(action)
       y = shoot.y,
       dir = facingDirection,
       speed = 200,
-      damage=2,
+      damage = 2,
     }
     World:spawn(bullet)
   end
@@ -135,6 +135,7 @@ end
 
 function Mob:collide(cols)
   Mob.super.collide(self, cols)
+  if self:dead() then return end
   for _, col in pairs(cols) do
     if col.other.damage then
       self.health = self.health - col.other.damage
