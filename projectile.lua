@@ -28,6 +28,12 @@ function Projectile:collidesWith(b)
   return "touch", 10
 end
 
+function Projectile:collidesWith(other)
+  if self.done then
+    return nil, 100
+  end
+  return Projectile.super.collidesWith(other)
+end
 
 function Projectile:collide(cols)
   Projectile.super.collide(self, cols)
@@ -36,26 +42,30 @@ function Projectile:collide(cols)
   for _, col in pairs(cols) do
     if col.other ~= self.owner and doneTypes[col.type] then
       self.done = true
+      self.particleSystem:setEmissionRate(0)
       break
     end
   end
 end
 
-
 function Projectile:update(dt)
   if self.done then
-    World:despawn(self)
-    return
+    if self.particleSystem:getCount() <= 0 then
+      World:despawn(self)
+      return
+    end
   end
   Projectile.super.update(self, dt)
   self.particleSystem:setDirection(self.direction:reverse():radians())
-  self.particleSystem:setSpeed(self.speed)
+  self.particleSystem:setSpeed(self.speed * 0.75)
   self.particleSystem:update(dt)
 end
 
 
 function Projectile:draw()
-  Projectile.super.draw(self)
+  if not self.done then
+    Projectile.super.draw(self)
+  end
   if self.particleSystem then
     local center = self:center()
     love.graphics.draw(self.particleSystem, center.x, center.y)
