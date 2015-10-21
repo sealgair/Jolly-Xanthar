@@ -20,6 +20,11 @@ function Mob:init(opts)
 end
 
 function Mob:setDirection(newDirection)
+  if self:dead() then
+    self.direction = Direction(0, 0)
+    return
+  end
+
   if newDirection == self.direction or newDirection == nil then
     return
   end
@@ -53,10 +58,12 @@ function Mob:setDirection(newDirection)
 end
 
 function Mob:controlStart(action)
+  if self:dead() then return end
   self.actions[action] = true
 end
 
 function Mob:controlStop(action)
+  if self:dead() then return end
   self.actions[action] = nil
   local facingDirection = Direction[self.facingDir]
   local shoot = self:center()
@@ -77,9 +84,17 @@ function Mob:controlStop(action)
   end
 end
 
+function Mob:animState()
+  if self:dead() then
+    return "dead"
+  else
+    return Mob.super.animState(self)
+  end
+end
+
 function Mob:update(dt)
   if self:dead() then
-    World:despawn(self)
+--    World:despawn(self)
     return
   end
 
@@ -87,7 +102,9 @@ function Mob:update(dt)
 end
 
 function Mob:collidesWith(other)
-  if other.owner == self then
+  if self:dead() then
+    return "cross", 50
+  elseif other.owner == self then
     return nil, 100
   else
     return Mob.super.collidesWith(self, other)
