@@ -112,13 +112,44 @@ function World:update(dt)
   end
   self.despawnQueue = {}
 
-  self.center = { x = 0, y = 0 }
-  for i, dude in ipairs(self.players) do
-    self.center.x = self.center.x + dude:center().x
-    self.center.y = self.center.y + dude:center().y
+  if self.center then
+    self.borders = {
+      top = self.center.y - Size.h/2,
+      bottom = self.center.y + Size.h/2,
+      left = self.center.x - Size.w/2,
+      right = self.center.x + Size.w/2,
+    }
+  else
+    self.borders = {
+      top = 0, bottom = self.worldCanvas:getHeight(),
+      left = 0, right = self.worldCanvas:getWidth(),
+    }
   end
-  self.center.x = self.center.x / #self.players
-  self.center.y = self.center.y / #self.players
+
+  local old_center = self.center
+  self.center = { x = 0, y = 0 }
+  local count = 0
+  for i, dude in ipairs(self.players) do
+    local center = dude:center()
+    if center.y < self.borders.bottom
+        and center.y > self.borders.top
+        and center.x > self.borders.left
+        and center.x < self.borders.right then
+      self.center.x = self.center.x + center.x
+      self.center.y = self.center.y + center.y
+      count = count + 1
+    end
+  end
+  self.center.x = self.center.x / count
+  self.center.y = self.center.y / count
+
+  if old_center then
+    local maxStep = 60 * dt -- pixels per second
+    self.center.x = math.max(self.center.x, old_center.x - maxStep)
+    self.center.x = math.min(self.center.x, old_center.x + maxStep)
+    self.center.y = math.max(self.center.y, old_center.y - maxStep)
+    self.center.y = math.min(self.center.y, old_center.y + maxStep)
+  end
 end
 
 function World:draw()
@@ -136,30 +167,25 @@ function World:draw()
     dude:draw()
   end
 
-  local top = self.center.y - Size.h/2
-  local bottom = self.center.y + Size.h/2
-  local left = self.center.x - Size.w/2
-  local right = self.center.x + Size.w/2
-
   for i, player in pairs(self.players) do
     local ind = self.indicators[i]
     local pos = player:center()
     pos.y = pos.y - (player.h)/2
     local dir = ""
 
-    if pos.y < top then
+    if pos.y < self.borders.top then
       dir = "up"
-      pos.y = top
-    elseif pos.y > bottom then
+      pos.y = self.borders.top
+    elseif pos.y > self.borders.bottom then
       dir = "down"
-      pos.y = bottom
+      pos.y = self.borders.bottom
     end
-    if pos.x > right then
+    if pos.x > self.borders.right then
       dir = dir .. "right"
-      pos.x = right
-    elseif pos.x < left then
+      pos.x = self.borders.right
+    elseif pos.x < self.borders.left then
       dir = dir .. "left"
-      pos.x = left
+      pos.x = self.borders.left
     end
 
     if dir == "" then dir = "down" end
