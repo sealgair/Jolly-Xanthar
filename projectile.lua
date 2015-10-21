@@ -32,8 +32,9 @@ end
 function Projectile:collide(cols)
   Projectile.super.collide(self, cols)
 
+  local doneTypes = {touch = true, slide = true, bounce = true}
   for _, col in pairs(cols) do
-    if col.other ~= self.owner then
+    if col.other ~= self.owner and doneTypes[col.type] then
       self.done = true
       break
     end
