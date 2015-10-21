@@ -1,6 +1,7 @@
 require 'controller'
 require 'worldmap'
 require 'behavior'
+require 'indicator'
 local bump = require 'lib.bump.bump'
 
 World = {}
@@ -23,9 +24,10 @@ function World:load()
     "assets/worlds/ship.png",
     self.bumpWorld,
     10)
-  local playerCount = 1
+  local playerCount = 4
   self.gobs = {}
   self.players = {}
+  self.indicators = {}
   self.despawnQueue = {}
 
   -- add players
@@ -40,6 +42,7 @@ function World:load()
       Controller:register(player, i)
       self:spawn(player)
       self.players[i] = player
+      self.indicators[i] = Indicator(i)
     end
   end
 
@@ -131,6 +134,12 @@ function World:draw()
 
   for i, dude in ipairs(self.gobs) do
     dude:draw()
+  end
+  for i, player in pairs(self.players) do
+    local ind = self.indicators[i]
+    local pos = player:center()
+    pos.y = pos.y - (player.h)/2
+    ind:draw(pos.x, pos.y)
   end
   love.graphics.pop()
   love.graphics.setCanvas()
