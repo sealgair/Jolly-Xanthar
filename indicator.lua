@@ -17,6 +17,20 @@ function Indicator:init(player)
 end
 
 function Indicator:draw(x, y, dir)
-  if dir == nil then dir = "down" end
-  love.graphics.draw(self.image, self.quads[dir], x - self.w/2, y - self.h - 3)
+  y = y - self.h/2
+--  x = x + self.w/2
+
+  if dir:find("up") then
+    y = y + self.h
+  elseif dir:find("down") then
+    y = y - self.h
+  end
+
+  if dir:find("left") then
+    x = x + self.w
+  elseif dir:find("right") then
+    x = x - self.w
+  end
+
+  love.graphics.draw(self.image, self.quads[dir], x - self.w/2, y)
 end

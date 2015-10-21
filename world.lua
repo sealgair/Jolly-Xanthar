@@ -135,11 +135,35 @@ function World:draw()
   for i, dude in ipairs(self.gobs) do
     dude:draw()
   end
+
+  local top = self.center.y - Size.h/2
+  local bottom = self.center.y + Size.h/2
+  local left = self.center.x - Size.w/2
+  local right = self.center.x + Size.w/2
+
   for i, player in pairs(self.players) do
     local ind = self.indicators[i]
     local pos = player:center()
     pos.y = pos.y - (player.h)/2
-    ind:draw(pos.x, pos.y)
+    local dir = ""
+
+    if pos.y < top then
+      dir = "up"
+      pos.y = top
+    elseif pos.y > bottom then
+      dir = "down"
+      pos.y = bottom
+    end
+    if pos.x > right then
+      dir = dir .. "right"
+      pos.x = right
+    elseif pos.x < left then
+      dir = dir .. "left"
+      pos.x = left
+    end
+
+    if dir == "" then dir = "down" end
+    ind:draw(pos.x, pos.y, dir)
   end
   love.graphics.pop()
   love.graphics.setCanvas()
