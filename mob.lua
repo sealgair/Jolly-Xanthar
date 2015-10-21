@@ -93,7 +93,16 @@ function Mob:animState()
 end
 
 function Mob:update(dt)
---    World:despawn(self)
+  if self:dead() then
+    if self.corpseDecay == nil then
+      self.corpseDecay = 20
+    else
+      self.corpseDecay = self.corpseDecay - dt
+    end
+    if self.corpseDecay <= 0 then
+      World:despawn(self)
+    end
+  end
   Mob.super.update(self, dt)
 end
 
