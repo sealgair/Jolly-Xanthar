@@ -16,6 +16,16 @@ function Mob:init(opts)
   end
   self.health = self.maxHealth
 
+  self.splatImg = love.graphics.newImage("assets/particles/damage.png")
+  self.splat = love.graphics.newParticleSystem(self.splatImg, 64)
+  self.splat:setEmissionRate(32)
+  self.splat:setSpread(math.pi)
+  self.splat:setSizeVariation(1)
+  self.splat:setParticleLifetime(0.1, 0.3)
+  self.splat:setRotation(0, 2 * math.pi)
+  self.splat:setSpeed(50)
+  self.splat:setEmitterLifetime(0)
+
   self.actions = {}
 end
 
@@ -78,7 +88,7 @@ function Mob:controlStop(action)
       y = shoot.y,
       dir = facingDirection,
       speed = 200,
-      damage=10,
+      damage=2,
     }
     World:spawn(bullet)
   end
@@ -104,6 +114,13 @@ function Mob:update(dt)
     end
   end
   Mob.super.update(self, dt)
+  self.splat:update(dt)
+end
+
+function Mob:draw()
+  Mob.super.draw(self)
+  local center = self:center()
+  love.graphics.draw(self.splat, center.x, center.y)
 end
 
 function Mob:collidesWith(other)
@@ -121,6 +138,10 @@ function Mob:collide(cols)
   for _, col in pairs(cols) do
     if col.other.damage then
       self.health = self.health - col.other.damage
+      local splatDir = Direction(col.normal.x, col.normal.y)
+      self.splat:setDirection(splatDir:radians())
+      self.splat:setEmitterLifetime(0.1)
+      self.splat:start()
     end
   end
 end
