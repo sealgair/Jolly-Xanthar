@@ -15,7 +15,11 @@ local AllDirections = {
 }
 
 function ThinkyMob:update(dt)
-  self:wander(dt)
+  if self.agressor then
+    self:attack(dt)
+  else
+    self:wander(dt)
+  end
   ThinkyMob.super.update(self, dt)
 end
 
@@ -52,4 +56,26 @@ function ThinkyMob:wander(dt)
     self.wanderDirection = Direction(newx, newy)
   end
   self:setDirection(self.wanderDirection)
+end
+
+function ThinkyMob:hurt(damage, collision)
+  ThinkyMob.super.hurt(self, damage, collision)
+  self.agressor = collision.other.owner
+end
+
+function ThinkyMob:attack(dt)
+  if self.agressor == nil then return end
+
+  local s = 3
+  local dist = {
+    x = self.agressor.position.x - self.position.x,
+    y = self.agressor.position.y - self.position.y,
+  }
+  if math.abs(dist.x) * 3 < math.abs(dist.y) then
+    dist.x = 0
+  elseif math.abs(dist.y) * 3 < math.abs(dist.x) then
+    dist.y = 0
+  end
+
+  self:setDirection(Direction(dist.x, dist.y))
 end

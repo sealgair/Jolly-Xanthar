@@ -133,16 +133,20 @@ function Mob:collidesWith(other)
   end
 end
 
+function Mob:hurt(damage, collision)
+  self.health = self.health - damage
+  local splatDir = Direction(collision.normal.x, collision.normal.y)
+  self.splat:setDirection(splatDir:radians())
+  self.splat:setEmitterLifetime(0.1)
+  self.splat:start()
+end
+
 function Mob:collide(cols)
   Mob.super.collide(self, cols)
   if self:dead() then return end
   for _, col in pairs(cols) do
     if col.other.damage then
-      self.health = self.health - col.other.damage
-      local splatDir = Direction(col.normal.x, col.normal.y)
-      self.splat:setDirection(splatDir:radians())
-      self.splat:setEmitterLifetime(0.1)
-      self.splat:start()
+      self:hurt(col.other.damage, col)
     end
   end
 end
