@@ -1,6 +1,6 @@
 require 'controller'
 require 'worldmap'
-require 'behavior'
+require 'thinkymob'
 require 'indicator'
 local bump = require 'lib.bump.bump'
 
@@ -47,16 +47,14 @@ function World:load()
   end
 
   -- add monsters
-  self.behaviors = {}
   for i, coord in ipairs(self.map.monsterCoords) do
-    local monster = Mob {
+    local monster = ThinkyMob {
       x = coord.x,
       y = coord.y,
       confFile = 'assets/mobs/monster2.json',
       speed = 30
     }
     self:spawn(monster)
-    table.insert(self.behaviors, Behavior(monster))
   end
 end
 
@@ -73,10 +71,6 @@ function World:despawn(gob)
 end
 
 function World:update(dt)
-  for _, behavior in pairs(self.behaviors) do
-    behavior:update(dt)
-  end
-
   local collisions = {}
   for i, gob in ipairs(self.gobs) do
     gob:update(dt)

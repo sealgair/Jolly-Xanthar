@@ -1,10 +1,7 @@
 class = require 'lib/30log/30log'
+require 'mob'
 
-Behavior = class('Behavior')
-
-function Behavior:init(mob)
-  self.mob = mob
-end
+ThinkyMob = Mob:extend('ThinkyMob')
 
 local AllDirections = {
   Direction.downleft,
@@ -17,11 +14,12 @@ local AllDirections = {
   Direction.down,
 }
 
-function Behavior:update(dt)
+function ThinkyMob:update(dt)
   self:wander(dt)
+  ThinkyMob.super.update(self, dt)
 end
 
-function Behavior:wander(dt)
+function ThinkyMob:wander(dt)
   if self.wanderDirection == nil then
     self.wanderDirection = AllDirections[math.random(8)]
     self.wanderDuration = math.random() * 5
@@ -40,10 +38,10 @@ function Behavior:wander(dt)
     self.wanderDuration = self.wanderDuration - dt
   end
 
-  if # self.mob.collisions > 0 then
+  if # self.collisions > 0 then
     local newx = self.wanderDirection.x
     local newy = self.wanderDirection.y
-    for _, col in pairs(self.mob.collisions) do
+    for _, col in pairs(self.collisions) do
       if col.normal.x ~= 0 then
         newx = col.normal.x
       end
@@ -53,5 +51,5 @@ function Behavior:wander(dt)
     end
     self.wanderDirection = Direction(newx, newy)
   end
-  self.mob:setDirection(self.wanderDirection)
+  self:setDirection(self.wanderDirection)
 end
