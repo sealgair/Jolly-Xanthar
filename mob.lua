@@ -88,7 +88,7 @@ function Mob:controlStop(action)
       y = shoot.y,
       dir = facingDirection,
       speed = 200,
-      damage = 2,
+      damage = 1,
     }
     World:spawn(bullet)
   end

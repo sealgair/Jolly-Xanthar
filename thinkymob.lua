@@ -16,7 +16,11 @@ local AllDirections = {
 
 function ThinkyMob:update(dt)
   if self.agressor then
-    self:attack(dt)
+    if self.health <= self.maxHealth / 4 then
+      self:flee(dt)
+    else
+      self:attack(dt)
+    end
   else
     self:wander(dt)
   end
@@ -70,6 +74,23 @@ function ThinkyMob:attack(dt)
   local dist = {
     x = self.agressor.position.x - self.position.x,
     y = self.agressor.position.y - self.position.y,
+  }
+  if math.abs(dist.x) * 3 < math.abs(dist.y) then
+    dist.x = 0
+  elseif math.abs(dist.y) * 3 < math.abs(dist.x) then
+    dist.y = 0
+  end
+
+  self:setDirection(Direction(dist.x, dist.y))
+end
+
+function ThinkyMob:flee(dt)
+  if self.agressor == nil then return end
+
+  local s = 3
+  local dist = {
+    x = self.position.x - self.agressor.position.x,
+    y = self.position.y - self.agressor.position.y,
   }
   if math.abs(dist.x) * 3 < math.abs(dist.y) then
     dist.x = 0
