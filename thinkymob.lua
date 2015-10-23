@@ -82,6 +82,14 @@ function ThinkyMob:attack(dt)
   end
 
   self:setDirection(Direction(dist.x, dist.y))
+
+  if self.attackTimer == nil then
+    self.attackTimer = 1
+  end
+
+  local sDist = (dist.x^2 * dist.y^2)^0.5
+  if sDist < 8 and self.attackTimer < 0 then
+  end
 end
 
 function ThinkyMob:flee(dt)

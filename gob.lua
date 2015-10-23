@@ -72,6 +72,11 @@ function Gob:center()
   }
 end
 
+function Gob:setDirection(newDirection)
+  self.direction = newDirection
+  self.facingDir = self.direction:key()
+end
+
 function Gob:facingDirection()
   return Direction[self.facingDir]
 end

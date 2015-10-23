@@ -35,7 +35,7 @@ end
 
 function Weapon:collide(cols)
   Weapon.super.collide(self, cols)
-  local doneTypes = {touch = true, slide = true, bounce = true}
+  local doneTypes = { touch = true, slide = true, bounce = true }
   for _, col in pairs(cols) do
     if col.other ~= self.owner and doneTypes[col.type] then
       self.done = true
@@ -57,13 +57,12 @@ function Projectile:init(opts)
     self.particleSystem:setParticleLifetime(0.1, 0.3)
     self.particleSystem:setEmissionRate(20)
     self.particleSystem:setSizeVariation(.5)
-    self.particleSystem:setRotation(0, 2*math.pi)
+    self.particleSystem:setRotation(0, 2 * math.pi)
   end
 end
 
 function Projectile:collide(cols)
   Projectile.super.collide(self, cols)
-
   if self.done then
     self.particleSystem:setEmissionRate(0)
   end
@@ -97,9 +96,47 @@ Bolt = Projectile:extend('Bolt')
 
 function Bolt:init(shooter)
   Bolt.super.init(self, {
-    owner=shooter,
+    owner = shooter,
     confFile = 'assets/weapons/bolt.json',
     speed = 200,
     damage = 1,
   })
+end
+
+Bite = Weapon:extend('Bite')
+
+function Bite:init(shooter)
+  Bite.super.init(self, {
+    owner = shooter,
+    confFile = 'assets/weapons/bite.json',
+    speed = 0,
+    damage = 2,
+  })
+end
+
+function Bite:update(dt)
+  if self.done then
+    if self.despawnTimer == nil then
+      self.despawnTimer = 0.25
+    end
+    if self.despawnTimer <= 0 then
+      World:despawn(self)
+      return
+    end
+    self.despawnTimer = self.despawnTimer - dt
+  end
+
+  Bite.super.update(self, dt)
+  self:setDirection(self.owner:facingDirection())
+
+  local pythagoras = 1
+  if self.direction.x ~= 0 and self.direction.y ~= 0 then
+    -- diagonal, use pythagoras
+    pythagoras = 1 / 1.414
+  end
+
+  self.position = {
+    x = self.owner.position.x + self.w/2 + (self.direction.x * (self.w + self.owner.w)/2 * pythagoras),
+    y = self.owner.position.y + self.h/2 + (self.direction.y * (self.w + self.owner.h)/2 * pythagoras),
+  }
 end

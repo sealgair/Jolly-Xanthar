@@ -70,6 +70,11 @@ end
 function Mob:controlStart(action)
   if self:dead() then return end
   self.actions[action] = true
+
+  if action == 'b' then
+    self.bite = Bite(self)
+    World:spawn(self.bite)
+  end
 end
 
 function Mob:controlStop(action)
@@ -77,8 +82,12 @@ function Mob:controlStop(action)
   self.actions[action] = nil
 
   if action == 'a' then
-    local bullet = Bolt(self)
-    World:spawn(bullet)
+    World:spawn(Bolt(self))
+  end
+
+  if action == 'b' and self.bite ~= nil then
+    World:despawn(self.bite)
+    self.bite = nil
   end
 end
 

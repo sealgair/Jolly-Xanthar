@@ -102,7 +102,9 @@ function World:update(dt)
         break
       end
     end
-    self.bumpWorld:remove(gob)
+    if self.bumpWorld:hasItem(gob) then
+      self.bumpWorld:remove(gob)
+    end
   end
   self.despawnQueue = {}
 
