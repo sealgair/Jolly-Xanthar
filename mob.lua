@@ -27,6 +27,10 @@ function Mob:init(opts)
   self.splat:setEmitterLifetime(0)
 
   self.actions = {}
+  self.weapons = {
+    a = Bolter(self),
+    b = Bite(self),
+  }
 end
 
 function Mob:setDirection(newDirection)
@@ -71,9 +75,9 @@ function Mob:controlStart(action)
   if self:dead() then return end
   self.actions[action] = true
 
-  if action == 'b' then
-    self.bite = Bite(self)
-    World:spawn(self.bite)
+  local weapon = self.weapons[action]
+  if weapon ~= nil then
+    weapon:start()
   end
 end
 
@@ -81,13 +85,9 @@ function Mob:controlStop(action)
   if self:dead() then return end
   self.actions[action] = nil
 
-  if action == 'a' then
-    World:spawn(Bolt(self))
-  end
-
-  if action == 'b' and self.bite ~= nil then
-    World:despawn(self.bite)
-    self.bite = nil
+  local weapon = self.weapons[action]
+  if weapon ~= nil then
+    weapon:stop()
   end
 end
 

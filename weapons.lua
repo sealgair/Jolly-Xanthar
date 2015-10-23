@@ -13,17 +13,32 @@ function Weapon:init(opts)
   opts.x = 0
   opts.y = 0
   Weapon.super.init(self, opts)
-  local center = self.owner:center()
-  self.position = {
-    x = center.x - self.w / 2,
-    y = center.y - self.h / 2,
-  }
+  self:positionToOwner()
   if opts.damage then
     self.damage = opts.damage
   else
     self.damage = 1
   end
   self.done = false
+end
+
+function Weapon:positionToOwner()
+  local center = self.owner:center()
+  self.position = {
+    x = center.x - self.w / 2,
+    y = center.y - self.h / 2,
+  }
+  self:setDirection(self.owner:facingDirection())
+end
+
+function Weapon:start()
+  self.done = false
+  self:positionToOwner()
+  World:spawn(self)
+end
+
+function Weapon:stop()
+  self.done = true
 end
 
 function Weapon:collidesWith(b)
@@ -41,6 +56,53 @@ function Weapon:collide(cols)
       self.done = true
       break
     end
+  end
+end
+
+-- TODO: some kind of 'ghost' gob that gets updated, but doesn't need position / graphics
+Shooter = class('Shooter')
+
+function Shooter:init(opts)
+  self.owner = opts.owner
+  self.projectileOpts = opts
+  self.projectileOpts.shooter = self
+  self.projectileOpts.owner = self.owner
+  self.rateLimit = opts.rateLimit
+  if opts.ProjectileClass == nil then
+    self.ProjectileClass = Projectile
+  else
+    self.ProjectileClass = opts.ProjectileClass
+  end
+  self.bullets = {}
+  self.cooldown = 0
+
+  -- Fake!!
+  local hitbox = { x=1, y=1, w=1, h=1 }
+  self.hitbox = hitbox
+  self.position = self.hitbox
+  self.draw = function() end
+  self.getBoundingBox = function() return hitbox end
+  self.setBoundingBox = function() end
+  self.collide = self.draw
+  self.collidesWith = function(b) return nil, 100 end
+  World:spawn(self)
+end
+
+function Shooter:start()
+  if self.cooldown <= 0 then
+    local bullet = self.ProjectileClass(self.projectileOpts)
+    table.insert(self.bullets, bullet)
+    bullet:start()
+    self.cooldown = self.rateLimit
+  end
+end
+
+function Shooter:stop()
+end
+
+function Shooter:update(dt)
+  if self.cooldown > 0 then
+    self.cooldown = self.cooldown - dt
   end
 end
 
@@ -92,14 +154,15 @@ function Projectile:draw()
   end
 end
 
-Bolt = Projectile:extend('Bolt')
+Bolter = Shooter:extend('Bolter')
 
-function Bolt:init(shooter)
-  Bolt.super.init(self, {
-    owner = shooter,
+function Bolter:init(owner)
+  Bolter.super.init(self, {
+    owner = owner,
     confFile = 'assets/weapons/bolt.json',
     speed = 200,
-    damage = 1,
+    damage = 2,
+    rateLimit = 0.15,
   })
 end
 
@@ -110,8 +173,23 @@ function Bite:init(shooter)
     owner = shooter,
     confFile = 'assets/weapons/bite.json',
     speed = 0,
-    damage = 2,
+    damage = 3,
   })
+end
+
+function Bite:positionToOwner()
+  Bite.super.positionToOwner(self)
+
+  -- offset in front of owner
+  local pythagoras = 1
+  if self.direction.x ~= 0 and self.direction.y ~= 0 then
+    -- diagonal, use pythagoras
+    pythagoras = 1 / 1.414
+  end
+  self.position = {
+    x = self.owner.position.x + self.w/2 + (self.direction.x * (self.w + self.owner.w)/2 * pythagoras),
+    y = self.owner.position.y + self.h/2 + (self.direction.y * (self.w + self.owner.h)/2 * pythagoras),
+  }
 end
 
 function Bite:update(dt)
@@ -127,16 +205,5 @@ function Bite:update(dt)
   end
 
   Bite.super.update(self, dt)
-  self:setDirection(self.owner:facingDirection())
-
-  local pythagoras = 1
-  if self.direction.x ~= 0 and self.direction.y ~= 0 then
-    -- diagonal, use pythagoras
-    pythagoras = 1 / 1.414
-  end
-
-  self.position = {
-    x = self.owner.position.x + self.w/2 + (self.direction.x * (self.w + self.owner.w)/2 * pythagoras),
-    y = self.owner.position.y + self.h/2 + (self.direction.y * (self.w + self.owner.h)/2 * pythagoras),
-  }
+  self:positionToOwner()
 end

@@ -67,7 +67,7 @@ function keyCount(table)
   return n
 end
 
- function table.filter(t, filterIter)
+function table.filter(t, filterIter)
   local out = {}
 
   for k, v in pairs(t) do
@@ -75,4 +75,12 @@ end
   end
 
   return out
+end
+
+function table.removeValue(t, value)
+  for k, v in pairs(t) do
+    if g == gob then
+      table.remove(t, k)
+    end
+  end
 end
