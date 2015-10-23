@@ -1,17 +1,55 @@
 require 'gob'
 
-Projectile = Gob:extend("Projectile")
+Weapon = Gob:extend("Weapon")
 
-
-function Projectile:init(opts)
-  Projectile.super.init(self, opts)
-  self.done = false
+function Weapon:init(opts)
+  -- required: confFile, owner
+  -- optional: speed, damage
   self.owner = opts.owner
+  opts.dir = self.owner:facingDirection()
+  if opts.speed == nil then
+    opts.speed = 0
+  end
+  opts.x = 0
+  opts.y = 0
+  Weapon.super.init(self, opts)
+  local center = self.owner:center()
+  self.position = {
+    x = center.x - self.w / 2,
+    y = center.y - self.h / 2,
+  }
   if opts.damage then
     self.damage = opts.damage
   else
     self.damage = 1
   end
+  self.done = false
+end
+
+function Weapon:collidesWith(b)
+  if self.done or b == self.owner then
+    return nil, 100
+  end
+  return "touch", 10
+end
+
+function Weapon:collide(cols)
+  Weapon.super.collide(self, cols)
+  local doneTypes = {touch = true, slide = true, bounce = true}
+  for _, col in pairs(cols) do
+    if col.other ~= self.owner and doneTypes[col.type] then
+      self.done = true
+      break
+    end
+  end
+end
+
+
+Projectile = Weapon:extend("Projectile")
+
+function Projectile:init(opts)
+  Projectile.super.init(self, opts)
+
   if self.conf.particles then
     local pimage = love.graphics.newImage(self.conf.particles.image)
     self.particleSystem = love.graphics.newParticleSystem(pimage, 32)
@@ -23,28 +61,11 @@ function Projectile:init(opts)
   end
 end
 
-
-function Projectile:collidesWith(b)
-  return "touch", 10
-end
-
-function Projectile:collidesWith(other)
-  if self.done then
-    return nil, 100
-  end
-  return Projectile.super.collidesWith(other)
-end
-
 function Projectile:collide(cols)
   Projectile.super.collide(self, cols)
 
-  local doneTypes = {touch = true, slide = true, bounce = true}
-  for _, col in pairs(cols) do
-    if col.other ~= self.owner and doneTypes[col.type] then
-      self.done = true
-      self.particleSystem:setEmissionRate(0)
-      break
-    end
+  if self.done then
+    self.particleSystem:setEmissionRate(0)
   end
 end
 
@@ -70,4 +91,15 @@ function Projectile:draw()
     local center = self:center()
     love.graphics.draw(self.particleSystem, center.x, center.y)
   end
+end
+
+Bolt = Projectile:extend('Bolt')
+
+function Bolt:init(shooter)
+  Bolt.super.init(self, {
+    owner=shooter,
+    confFile = 'assets/weapons/bolt.json',
+    speed = 200,
+    damage = 1,
+  })
 end

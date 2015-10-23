@@ -2,7 +2,7 @@ class = require 'lib/30log/30log'
 require 'utils'
 require 'direction'
 require 'gob'
-require 'projectile'
+require 'weapons'
 
 Mob = Gob:extend('Mob')
 
@@ -75,21 +75,9 @@ end
 function Mob:controlStop(action)
   if self:dead() then return end
   self.actions[action] = nil
-  local facingDirection = Direction[self.facingDir]
-  local shoot = self:center()
-  shoot.x = shoot.x - 4
-  shoot.y = shoot.y - 4
 
   if action == 'a' then
-    local bullet = Projectile{
-      owner=self,
-      confFile = 'assets/projectiles/bolt.json',
-      x = shoot.x,
-      y = shoot.y,
-      dir = facingDirection,
-      speed = 200,
-      damage = 1,
-    }
+    local bullet = Bolt(self)
     World:spawn(bullet)
   end
 end

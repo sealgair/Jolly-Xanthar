@@ -72,6 +72,10 @@ function Gob:center()
   }
 end
 
+function Gob:facingDirection()
+  return Direction[self.facingDir]
+end
+
 function Gob:advanceQuad()
   if self.animationQueue then
     local newDirKey = table.remove(self.animationQueue, 1)
