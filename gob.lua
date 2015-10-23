@@ -112,15 +112,22 @@ function Gob:animState()
   end
 end
 
+function Gob:animFrames()
+  local animFrames = self.animations[self:animState()]
+  if animFrames == nil then
+    animFrames = self.animations["idle"]
+  end
+  return animFrames
+end
+
 function Gob:update(dt)
   self.turnDelay = self.turnDelay - dt
   self.animDelay = self.animDelay - dt
 
-  local animFrames = self.animations[self:animState()]
   if self.animDelay <= 0 then
     self.animDelay = self.animInterval
     self.animIndex = self.animIndex + 1
-    if self.animIndex > #animFrames then self.animIndex = 1 end
+    if self.animIndex > #self:animFrames() then self.animIndex = 1 end
   end
 
   if self.turnDelay <= 0 then
@@ -159,7 +166,7 @@ function Gob:collide(cols)
 end
 
 function Gob:draw()
-  local animFrames = self.animations[self:animState()]
+  local animFrames = self:animFrames()
   local animFrame = animFrames[math.min(self.animIndex, #animFrames)]
   love.graphics.draw(self.image,
     self.quads[self.facingDir][animFrame],
