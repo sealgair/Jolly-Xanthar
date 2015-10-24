@@ -1,6 +1,7 @@
 require 'controller'
 require 'worldmap'
-require 'mobs.mob'
+require 'mobs.human'
+require 'mobs.monster'
 require 'mobs.behavior'
 require 'indicator'
 local bump = require 'lib.bump.bump'
@@ -35,12 +36,7 @@ function World:load()
   -- add players
   for i, coord in ipairs(self.map.playerCoords) do
     if i <= playerCount then
-      local player = Mob {
-        x = coord.x,
-        y = coord.y,
-        confFile = 'assets/mobs/human.json',
-        speed = 50
-      }
+      local player = Human(coord)
       Controller:register(player, i)
       self:spawn(player)
       self.players[i] = player
@@ -50,12 +46,7 @@ function World:load()
 
   -- add monsters
   for i, coord in ipairs(self.map.monsterCoords) do
-    local monster = Mob {
-      x = coord.x,
-      y = coord.y,
-      confFile = 'assets/mobs/monster2.json',
-      speed = 30
-    }
+    local monster = Monster(coord)
     table.insert(self.behaviors, Behavior(monster))
     self:spawn(monster)
   end

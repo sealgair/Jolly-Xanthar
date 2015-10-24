@@ -28,10 +28,7 @@ function Mob:init(opts)
   self.splat:setEmitterLifetime(0)
 
   self.actions = {}
-  self.weapons = {
-    a = Bolter(self),
-    b = Teeth(self),
-  }
+  self.weapons = {}
 end
 
 function Mob:setDirection(newDirection)
