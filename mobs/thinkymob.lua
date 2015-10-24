@@ -1,5 +1,5 @@
 class = require 'lib/30log/30log'
-require 'mob'
+require 'mobs.mob'
 
 ThinkyMob = Mob:extend('ThinkyMob')
 

@@ -1,6 +1,7 @@
 require 'controller'
 require 'worldmap'
-require 'thinkymob'
+require 'mobs.mob'
+require 'mobs.thinkyMob'
 require 'indicator'
 local bump = require 'lib.bump.bump'
 

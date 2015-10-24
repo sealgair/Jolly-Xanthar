@@ -2,7 +2,8 @@ class = require 'lib/30log/30log'
 require 'utils'
 require 'direction'
 require 'gob'
-require 'weapons'
+require 'weapons.bolter'
+require 'weapons.teeth'
 
 Mob = Gob:extend('Mob')
 
@@ -29,7 +30,7 @@ function Mob:init(opts)
   self.actions = {}
   self.weapons = {
     a = Bolter(self),
-    b = Bite(self),
+    b = Teeth(self),
   }
 end
 
@@ -112,6 +113,9 @@ function Mob:update(dt)
   end
   Mob.super.update(self, dt)
   self.splat:update(dt)
+  for k, weapon in pairs(self.weapons) do
+    weapon:update(dt)
+  end
 end
 
 function Mob:draw()

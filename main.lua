@@ -1,9 +1,8 @@
 require 'controller'
-require 'mob'
 require 'utils'
 require 'world'
-require 'menu/splash'
-require 'menu/controls'
+require 'menu.splash'
+require 'menu.controls'
 
 local StateMachine = {
   states = {},
@@ -18,7 +17,7 @@ end
 function StateMachine:advance(input, options)
   local transition = self.transitions[self.current]
   if transition then
-    next = transition[input]
+    local next = transition[input]
     if self.states[next] then
       self:currentState().active = nil
       if self:currentState().deactivate then
@@ -68,7 +67,7 @@ end
 
 function love.update(dt)
   Controller:update(dt)
-  state = StateMachine:currentState()
+  local state = StateMachine:currentState()
   if state.update then
     state:update(dt)
   end
@@ -76,7 +75,7 @@ end
 
 function love.draw()
   love.graphics.scale(Scale.x, Scale.y)
-  state = StateMachine:currentState()
+  local state = StateMachine:currentState()
   if state.draw then
     state:draw()
   end
