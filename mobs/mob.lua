@@ -98,6 +98,10 @@ function Mob:animState()
 end
 
 function Mob:update(dt)
+  if self.agressor and self.agressor:dead() then
+    self.agressor = nil
+  end
+
   if self:dead() then
     if self.corpseDecay == nil then
       self.corpseDecay = 20

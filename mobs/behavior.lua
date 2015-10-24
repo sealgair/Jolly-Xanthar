@@ -4,6 +4,9 @@ Behavior = class('Behavior')
 
 function Behavior:init(mob)
   self.mob = mob
+  self.attackRepeat = 0.66
+  self.attackDuration = 0.2
+  self.attackTimer = self.attackRepeat
 end
 
 function Behavior:update(dt)
@@ -69,12 +72,18 @@ function Behavior:attack(dt)
 
   self.mob:setDirection(Direction(dist.x, dist.y))
 
-  if self.attackTimer == nil then
-    self.attackTimer = 1
+  if self.attackTimer <= 0 then
+    self.mob:controlStart('a')
+    self.attacking = true
+    self.attackTimer = self.attackRepeat
+  end
+  if self.attacking and self.attackTimer < self.attackRepeat - self.attackDuration then
+    self.mob:controlStop('a')
+    self.attacking = false
   end
 
-  local sDist = (dist.x^2 * dist.y^2)^0.5
-  if sDist < 8 and self.attackTimer < 0 then
+  if self.attackTimer > 0 then
+    self.attackTimer = self.attackTimer - dt
   end
 end
 
