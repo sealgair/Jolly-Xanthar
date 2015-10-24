@@ -1,7 +1,7 @@
 require 'controller'
 require 'worldmap'
 require 'mobs.mob'
-require 'mobs.thinkyMob'
+require 'mobs.behavior'
 require 'indicator'
 local bump = require 'lib.bump.bump'
 
@@ -28,6 +28,7 @@ function World:load()
   local playerCount = 4
   self.gobs = {}
   self.players = {}
+  self.behaviors = {}
   self.indicators = {}
   self.despawnQueue = {}
 
@@ -49,12 +50,13 @@ function World:load()
 
   -- add monsters
   for i, coord in ipairs(self.map.monsterCoords) do
-    local monster = ThinkyMob {
+    local monster = Mob {
       x = coord.x,
       y = coord.y,
       confFile = 'assets/mobs/monster2.json',
       speed = 30
     }
+    table.insert(self.behaviors, Behavior(monster))
     self:spawn(monster)
   end
 end
@@ -108,6 +110,11 @@ function World:update(dt)
     end
   end
   self.despawnQueue = {}
+
+  -- Let AI do its thing
+  for _, behavior in pairs(self.behaviors) do
+    behavior:update(dt)
+  end
 
   if self.center then
     self.borders = {

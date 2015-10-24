@@ -1,22 +1,14 @@
 class = require 'lib/30log/30log'
-require 'mobs.mob'
 
-ThinkyMob = Mob:extend('ThinkyMob')
+Behavior = class('Behavior')
 
-local AllDirections = {
-  Direction.downleft,
-  Direction.left,
-  Direction.upleft,
-  Direction.up,
-  Direction.upright,
-  Direction.right,
-  Direction.downright,
-  Direction.down,
-}
+function Behavior:init(mob)
+  self.mob = mob
+end
 
-function ThinkyMob:update(dt)
-  if self.agressor then
-    if self.health <= self.maxHealth / 4 then
+function Behavior:update(dt)
+  if self.mob.agressor then
+    if self.mob.health <= self.mob.maxHealth / 4 then
       self:flee(dt)
     else
       self:attack(dt)
@@ -24,12 +16,11 @@ function ThinkyMob:update(dt)
   else
     self:wander(dt)
   end
-  ThinkyMob.super.update(self, dt)
 end
 
-function ThinkyMob:wander(dt)
+function Behavior:wander(dt)
   if self.wanderDirection == nil then
-    self.wanderDirection = AllDirections[math.random(8)]
+    self.wanderDirection = Direction.allDirections[math.random(8)]
     self.wanderDuration = math.random() * 5
   end
   if self.wanderDuration < 0 then
@@ -46,10 +37,10 @@ function ThinkyMob:wander(dt)
     self.wanderDuration = self.wanderDuration - dt
   end
 
-  if # self.collisions > 0 then
+  if # self.mob.collisions > 0 then
     local newx = self.wanderDirection.x
     local newy = self.wanderDirection.y
-    for _, col in pairs(self.collisions) do
+    for _, col in pairs(self.mob.collisions) do
       if col.normal.x ~= 0 then
         newx = col.normal.x
       end
@@ -59,21 +50,16 @@ function ThinkyMob:wander(dt)
     end
     self.wanderDirection = Direction(newx, newy)
   end
-  self:setDirection(self.wanderDirection)
+  self.mob:setDirection(self.wanderDirection)
 end
 
-function ThinkyMob:hurt(damage, collision)
-  ThinkyMob.super.hurt(self, damage, collision)
-  self.agressor = collision.other.owner
-end
-
-function ThinkyMob:attack(dt)
-  if self.agressor == nil then return end
+function Behavior:attack(dt)
+  if self.mob.agressor == nil then return end
 
   local s = 3
   local dist = {
-    x = self.agressor.position.x - self.position.x,
-    y = self.agressor.position.y - self.position.y,
+    x = self.mob.agressor.position.x - self.mob.position.x,
+    y = self.mob.agressor.position.y - self.mob.position.y,
   }
   if math.abs(dist.x) * 3 < math.abs(dist.y) then
     dist.x = 0
@@ -81,7 +67,7 @@ function ThinkyMob:attack(dt)
     dist.y = 0
   end
 
-  self:setDirection(Direction(dist.x, dist.y))
+  self.mob:setDirection(Direction(dist.x, dist.y))
 
   if self.attackTimer == nil then
     self.attackTimer = 1
@@ -92,13 +78,13 @@ function ThinkyMob:attack(dt)
   end
 end
 
-function ThinkyMob:flee(dt)
-  if self.agressor == nil then return end
+function Behavior:flee(dt)
+  if self.mob.agressor == nil then return end
 
   local s = 3
   local dist = {
-    x = self.position.x - self.agressor.position.x,
-    y = self.position.y - self.agressor.position.y,
+    x = self.mob.position.x - self.mob.agressor.position.x,
+    y = self.mob.position.y - self.mob.agressor.position.y,
   }
   if math.abs(dist.x) * 3 < math.abs(dist.y) then
     dist.x = 0
@@ -106,5 +92,5 @@ function ThinkyMob:flee(dt)
     dist.y = 0
   end
 
-  self:setDirection(Direction(dist.x, dist.y))
+  self.mob:setDirection(Direction(dist.x, dist.y))
 end

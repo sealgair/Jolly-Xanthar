@@ -80,6 +80,17 @@ for _, x in pairs({-1, 0, 1}) do
   end
 end
 
+Direction.allDirections = {
+  Direction.downleft,
+  Direction.left,
+  Direction.upleft,
+  Direction.up,
+  Direction.upright,
+  Direction.right,
+  Direction.downright,
+  Direction.down,
+}
+
 local clockwise = {
   down = Direction.downleft,
   downleft = Direction.left,

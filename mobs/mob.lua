@@ -135,7 +135,9 @@ function Mob:collidesWith(other)
 end
 
 function Mob:hurt(damage, collision)
+  self.agressor = collision.other.owner
   self.health = self.health - damage
+
   local splatDir = Direction(collision.normal.x, collision.normal.y)
   self.splat:setDirection(splatDir:radians())
   self.splat:setEmitterLifetime(0.1)
