@@ -92,3 +92,11 @@ function coalesce(...)
   end
   return nil
 end
+
+function values(t)
+  local k, v
+  return function()
+    k, v = next(t, k)
+    return v
+  end
+end

@@ -154,13 +154,13 @@ end
 
 function Controller:startActions(playerActions)
   for player, actions in pairs(playerActions) do
-    for _, action in pairs(actions) do
+    for action in values(actions) do
       self.actions[player][action] = 1
 
       if directionsMap[action] then
         self:notifyDirection(player)
       else
-        for _, listener in pairs(self:getListeners(player)) do
+        for listener in values(self:getListeners(player)) do
           if listener and listener.controlStart then
             listener:controlStart(action)
           end
@@ -172,7 +172,7 @@ end
 
 function Controller:stopActions(playerActions)
   for player, actions in pairs(playerActions) do
-    for _, action in pairs(actions) do
+    for action in values(actions) do
       self.actions[player][action] = nil
       self.waningActions[player][action] = 0.2
 
@@ -273,7 +273,7 @@ end
 
 function Controller:directionFromActions(actions)
     local direction = Direction(0,0)
-    for control, _ in pairs(actions) do
+    for control in pairs(actions) do
       local ctlDir = directionsMap[control]
       if ctlDir then
         direction = direction:add(ctlDir)
