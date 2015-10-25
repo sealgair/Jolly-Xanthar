@@ -100,3 +100,11 @@ function values(t)
     return v
   end
 end
+
+function map(t, func)
+  local result = {}
+  for k, v in pairs(t) do
+    result[k] = func(v)
+  end
+  return result
+end

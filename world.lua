@@ -4,6 +4,7 @@ require 'mobs.human'
 require 'mobs.monster'
 require 'mobs.behavior'
 require 'indicator'
+require 'hud'
 local bump = require 'lib.bump.bump'
 
 World = {}
@@ -33,6 +34,7 @@ function World:load()
   self.players = {}
   self.behaviors = {}
   self.indicators = {}
+  self.huds = {}
   self.despawnQueue = {}
 
   -- add players
@@ -43,6 +45,7 @@ function World:load()
       self:spawn(player)
       self.players[i] = player
       self.indicators[i] = Indicator(i)
+      self.huds[i] = HUD(player, i)
     end
   end
 
@@ -194,4 +197,8 @@ function World:draw()
   local offx = (Size.w / 2) - self.center.x
   local offy = (Size.h / 2) - self.center.y
   love.graphics.draw(self.worldCanvas, offx, offy)
+
+  for hud in values(self.huds) do
+    hud:draw()
+  end
 end
