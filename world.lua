@@ -22,10 +22,12 @@ setmetatable(World, {
 function World:load()
   self.bumpWorld = bump.newWorld(8)
   self.worldCanvas = love.graphics.newCanvas()
-  self.map = WorldMap("worldMaps/ship1.world",
+  self.map = WorldMap(
+    "assets/worlds/ship1.world",
     "assets/worlds/ship.png",
     self.bumpWorld,
-    10)
+    10
+  )
   local playerCount = 4
   self.gobs = {}
   self.players = {}
