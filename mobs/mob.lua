@@ -10,11 +10,7 @@ Mob = Gob:extend('Mob')
 function Mob:init(opts)
   Mob.super.init(self, opts)
 
-  if opts.health then
-    self.maxHeatlh = opts.health
-  else
-    self.maxHealth = 10
-  end
+  self.maxHealth = coalesce(opts.health, 10)
   self.health = self.maxHealth
 
   self.splatImg = love.graphics.newImage("assets/particles/damage.png")
@@ -65,7 +61,7 @@ function Mob:setDirection(newDirection)
         break
       end
     end
-    self.animLength = # self.animationQueue
+    self.animLength = #self.animationQueue
   end
 end
 

@@ -61,10 +61,10 @@ function Direction:key()
 end
 
 function Direction:__tostring()
-  if self:key() then
-    return self:key()
-  else
+  if self:key() == "" then
     return "center"
+  else
+    return self:key()
   end
 end
 

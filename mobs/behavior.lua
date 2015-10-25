@@ -29,7 +29,7 @@ function Behavior:wander(dt)
   if self.wanderDuration < 0 then
     self.wanderDuration = math.random() * 5
     local turnDir = math.random()
-    for _=1,math.random(3) do
+    for _ = 1, math.random(3) do
       if turnDir > 0.5 then
         self.wanderDirection = self.wanderDirection:turnLeft()
       else
@@ -40,7 +40,7 @@ function Behavior:wander(dt)
     self.wanderDuration = self.wanderDuration - dt
   end
 
-  if # self.mob.collisions > 0 then
+  if #self.mob.collisions > 0 then
     local newx = self.wanderDirection.x
     local newy = self.wanderDirection.y
     for _, col in pairs(self.mob.collisions) do

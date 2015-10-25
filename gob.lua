@@ -18,26 +18,9 @@ function Gob:init(opts)
   self.hitbox = self.conf.hitbox
   self.animations = self.conf.animations
 
-  if opts.speed == nil then
-    self.speed = 40
-  else
-    self.speed = opts.speed
-  end
-  if opts.dir == nil then
-    self.direction = Direction(0, 0)
-  else
-    self.direction = opts.dir
-  end
-  if opts.animInterval == nil then
-    if self.conf.animInterval == nil then
-      self.animInterval = DefaultAnimateInterval
-    else
-      self.animInterval = self.conf.animInterval
-    end
-  else
-    self.animInterval = opts.animInterval
-  end
-
+  self.speed = coalesce(opts.speed, 40)
+  self.direction = coalesce(opts.dir, Direction(0, 0))
+  self.animInterval = coalesce(opts.animInterval, self.conf.animInterval, DefaultAnimateInterval)
   self.collisions = {}
 
   self.image = love.graphics.newImage(self.conf.image)
@@ -113,11 +96,7 @@ function Gob:animState()
 end
 
 function Gob:animFrames()
-  local animFrames = self.animations[self:animState()]
-  if animFrames == nil then
-    animFrames = self.animations["idle"]
-  end
-  return animFrames
+  return coalesce(self.animations[self:animState()], self.animations["idle"])
 end
 
 function Gob:update(dt)

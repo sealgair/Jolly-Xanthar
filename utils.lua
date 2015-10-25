@@ -1,9 +1,9 @@
 function round(num)
-   if num >= 0 then
-     return math.floor(num+.5)
-   else
-     return math.ceil(num-.5)
-   end
+  if num >= 0 then
+    return math.floor(num + .5)
+  else
+    return math.ceil(num - .5)
+  end
 end
 
 function invert(t)
@@ -15,7 +15,7 @@ function invert(t)
 end
 
 function last(t)
-  return t[# t]
+  return t[#t]
 end
 
 function setDefault(t, key, value)
@@ -25,7 +25,7 @@ function setDefault(t, key, value)
 end
 
 function string:startsWith(substring)
-  return self:sub(1 , substring:len()) == substring
+  return self:sub(1, substring:len()) == substring
 end
 
 function string:endsWith(substring)
@@ -83,4 +83,12 @@ function table.removeValue(t, value)
       table.remove(t, k)
     end
   end
+end
+
+function coalesce(...)
+  for i = 1, select('#', ...) do
+    local v = select(i, ...)
+    if v ~= nil then return v end
+  end
+  return nil
 end
