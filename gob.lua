@@ -10,8 +10,12 @@ function Gob:init(opts)
   -- required opts: x, y, confFile
   -- optional opts: speed, dir, animDelay
   self.position = { x = opts.x, y = opts.y }
-  local conf, _ = love.filesystem.read(opts.confFile)
-  self.conf = json.decode(conf)
+  if opts.conf then
+    self.conf = opts.conf
+  else
+    local confData, _ = love.filesystem.read(opts.confFile)
+    self.conf = json.decode(confData)
+  end
 
   self.w = self.conf.w
   self.h = self.conf.h
@@ -23,17 +27,24 @@ function Gob:init(opts)
   self.animInterval = coalesce(opts.animInterval, self.conf.animInterval, DefaultAnimateInterval)
   self.collisions = {}
 
-  self.image = love.graphics.newImage(self.conf.image)
+  if opts.image then
+    self.image = opts.image
+  else
+    self.image = love.graphics.newImage(self.conf.image)
+  end
   local tw, th = self.image:getWidth(), self.image:getHeight()
 
-  self.quads = {}
-  for i, dir in ipairs(Direction.keys) do
-    local quadList = {}
-    local y = (i - 1) * self.h
-    for x = 0, tw - self.w, self.w do
-      table.insert(quadList, love.graphics.newQuad(x, y, self.w, self.h, tw, th))
+  self.quads = opts.quads
+  if opts.quads == nil then
+    self.quads = {}
+    for i, dir in ipairs(Direction.keys) do
+      local quadList = {}
+      local y = (i - 1) * self.h
+      for x = 0, tw - self.w, self.w do
+        table.insert(quadList, love.graphics.newQuad(x, y, self.w, self.h, tw, th))
+      end
+      self.quads[dir] = quadList
     end
-    self.quads[dir] = quadList
   end
 
   self.animIndex = 1

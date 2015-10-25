@@ -14,6 +14,13 @@ function Weapon:init(opts)
     self.ProjectileClass = opts.ProjectileClass
   end
   self.cooldown = 0
+
+  -- save time on expensive processing when creating new bullets on the fly
+  local prototype = self.ProjectileClass(self.projectileOpts)
+  self.projectileOpts.image = prototype.image
+  self.projectileOpts.quads = prototype.quads
+  self.projectileOpts.conf = prototype.conf
+  prototype.confFile = nil
 end
 
 function Weapon:start()
