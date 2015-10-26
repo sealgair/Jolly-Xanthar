@@ -12,6 +12,7 @@ function Mob:init(opts)
 
   self.maxHealth = coalesce(opts.health, 10)
   self.health = self.maxHealth
+  self.hurting = {time = 0}
 
   self.splatImg = love.graphics.newImage("assets/particles/damage.png")
   self.splat = love.graphics.newParticleSystem(self.splatImg, 64)
@@ -97,10 +98,13 @@ function Mob:update(dt)
   if self.agressor and self.agressor:dead() then
     self.agressor = nil
   end
+  if self.hurting.time > 0 then
+    self.hurting.time = self.hurting.time - dt
+  end
 
   if self:dead() then
     if self.corpseDecay == nil then
-      self.corpseDecay = 20
+      self.corpseDecay = 10
     else
       self.corpseDecay = self.corpseDecay - dt
     end
@@ -116,9 +120,15 @@ function Mob:update(dt)
 end
 
 function Mob:draw()
+  love.graphics.push()
+  if self.hurting.time > 0 then
+    love.graphics.setColor(255, 0, 0)
+  end
   Mob.super.draw(self)
+  love.graphics.setColor(255, 255, 255)
   local center = self:center()
   love.graphics.draw(self.splat, center.x, center.y)
+  love.graphics.pop()
 end
 
 function Mob:collidesWith(other)
@@ -134,6 +144,7 @@ end
 function Mob:hurt(damage, collision)
   self.agressor = collision.other.owner
   self.health = self.health - damage
+  self.hurting.time = self.animInterval
 
   local splatDir = Direction(collision.normal.x, collision.normal.y)
   self.splat:setDirection(splatDir:radians())
