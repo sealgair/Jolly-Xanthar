@@ -28,6 +28,15 @@ function HUD:init(player, playerIndex)
   self.shadowColor = map(self.color, function(c)
     return c * 0.5
   end)
+
+  self.prevHealth = math.max(self.player.health / self.player.maxHealth, 0)
+end
+
+function HUD:update(dt)
+  local newHealth = math.max(self.player.health / self.player.maxHealth, 0)
+  if self.prevHealth > newHealth then
+    self.prevHealth = self.prevHealth - dt/3
+  end
 end
 
 function HUD:draw()
@@ -55,13 +64,24 @@ function HUD:draw()
   love.graphics.rectangle("fill", x, y, w, h)
 
   local healthPercent = math.max(self.player.health / self.player.maxHealth, 0)
-  love.graphics.setColor(
+  if healthPercent < self.prevHealth then
+    local healthColor =  {
+      255 * math.min(2 + (self.prevHealth * -2), 1),
+      255 * math.min(self.prevHealth * 2, 1),
+      0
+    }
+    healthColor = map(healthColor, function(c) return c * 0.75 end)
+    love.graphics.setColor(healthColor)
+    love.graphics.rectangle("fill", x, y, w * self.prevHealth, h)
+  end
+
+  local healthColor =  {
     255 * math.min(2 + (healthPercent * -2), 1),
     255 * math.min(healthPercent * 2, 1),
     0
-  )
-  w = w * healthPercent
-  love.graphics.rectangle("fill", x, y, w, h)
+  }
+  love.graphics.setColor(healthColor)
+  love.graphics.rectangle("fill", x, y, w * healthPercent, h)
 
   love.graphics.setColor(255, 255, 255)
   love.graphics.pop()

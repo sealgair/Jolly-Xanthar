@@ -126,6 +126,10 @@ function World:update(dt)
     }
   end
 
+  for hud in values(self.huds) do
+    hud:update(dt)
+  end
+
   local old_center = self.center
   self.center = { x = 0, y = 0 }
   local count = 0
