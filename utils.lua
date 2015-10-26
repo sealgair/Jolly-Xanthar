@@ -118,3 +118,66 @@ function sign(n)
     return 0
   end
 end
+
+function join(strings, separator)
+  local res = ""
+  for s in values(strings) do
+    res = res .. s .. separator
+  end
+  return res:sub(1, res:len() - separator:len())
+end
+
+function palletSwapShader(fromColors, toColors)
+  local function serializeColors(colors)
+    return join(map(colors, function(color)
+      local translated = map(color, function(c) return c / 255 end)
+      if #translated == 3 then table.insert(translated, 1.0) end
+      return "vec4(" .. join(translated, ", ") .. ")"
+    end), ", ")
+  end
+
+  local fromArray = serializeColors(fromColors)
+  local toArray = serializeColors(toColors)
+
+  local shader = love.graphics.newShader([[
+  vec4 fromColor[] = vec4[]( ]] .. fromArray .. [[ );
+  vec4 toColor[] = vec4[]( ]] .. toArray .. [[ );
+
+  bool same_color( vec4 a, vec4 b ) {
+    float tolerance = 1.0/255.0;
+    for (int i = 0; i < 4; i++) {
+      if (a[i] <= b[i] - tolerance || a[i] >= b[i] + tolerance) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords ) {
+    vec4 texcolor = Texel(texture, texture_coords);
+
+    for (int i = 0; i < fromColor.length(); i++) {
+      if (same_color(texcolor, fromColor[i])) {
+        return toColor[i];
+      }
+    }
+    return texcolor;
+  }
+  ]])
+  return shader
+end
+
+function HSVtoRGB(h, s, v)
+  if s <= 0 then return v, v, v end
+  h, s, v = h / 256 * 6, s / 255, v / 255
+  local c = v * s
+  local x = (1 - math.abs((h % 2) - 1)) * c
+  local m, r, g, b = (v - c), 0, 0, 0
+  if h < 1 then r, g, b = c, x, 0
+  elseif h < 2 then r, g, b = x, c, 0
+  elseif h < 3 then r, g, b = 0, c, x
+  elseif h < 4 then r, g, b = 0, x, c
+  elseif h < 5 then r, g, b = x, 0, c
+  else r, g, b = c, 0, x
+  end return {(r + m) * 255, (g + m) * 255, (b + m) * 255}
+end
