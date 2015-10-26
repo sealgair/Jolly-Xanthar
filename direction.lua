@@ -33,6 +33,13 @@ function Direction:normalize()
   end
 end
 
+function Direction:vector()
+  return {
+    x = self.x,
+    y = self.y,
+  }
+end
+
 function Direction:add(rhs)
   return Direction(self.x + rhs.x, self.y + rhs.y)
 end

@@ -113,6 +113,22 @@ function Mob:update(dt)
     end
   end
   Mob.super.update(self, dt)
+
+  if not self:dead() and self.hurting.offset then
+    local distance = dt * self.hurting.offset.speed
+
+    for k in values({'x', 'y'}) do
+      if self.hurting.offset[k] ~= 0 then
+        local ds = sign(self.hurting.offset[k])
+        self.position[k] = self.position[k] + distance * ds
+        self.hurting.offset[k] = self.hurting.offset[k] - distance * ds
+        if sign(self.hurting.offset[k]) ~= ds then
+          self.hurting.offset[k] = 0
+        end
+      end
+    end
+  end
+
   self.splat:update(dt)
   for k, weapon in pairs(self.weapons) do
     weapon:update(dt)
@@ -145,6 +161,8 @@ function Mob:hurt(damage, collision)
   self.agressor = collision.other.owner
   self.health = self.health - damage
   self.hurting.time = self.animInterval
+  self.hurting.offset = map(collision.other.direction:vector(), function(n) return n * damage * 8 end)
+  self.hurting.offset.speed = 75*damage
 
   local splatDir = Direction(collision.normal.x, collision.normal.y)
   self.splat:setDirection(splatDir:radians())
