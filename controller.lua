@@ -55,13 +55,13 @@ local extraMappings = {
 }
 
 function gamepadButton(joystick, button)
-  jsName = joystick:getName()
+  local jsName = joystick:getName()
   if extraMappings[jsName] then
     local result = extraMappings[jsName].buttons[button]
     return result
   elseif joystick:isGamepad() then
     for key, symbol in pairs(buttonSymbols) do
-      inputtype, inputindex, hatdirection = joystick:getGamepadMapping(key)
+      local inputtype, inputindex, hatdirection = joystick:getGamepadMapping(key)
       if inputindex == button then
         return symbol
       end
@@ -76,7 +76,7 @@ function gamepadAxis(joystick, axis)
     return result
   elseif joystick:isGamepad() then
     for key, symbol in pairs(axisSymbols) do
-      inputtype, inputindex, hatdirection = joystick:getGamepadMapping(key)
+      local inputtype, inputindex, hatdirection = joystick:getGamepadMapping(key)
       if inputindex == axis then
         return symbol
       end
@@ -101,7 +101,7 @@ function Controller:load()
   else
     self.playerControls = defaultControls
   end
-  self.listeners[0] = {}
+  self.listeners = {}
   for player, controls in pairs(self.playerControls) do
     self.actions[player] = {}
     self.waningActions[player] = {}
@@ -123,7 +123,7 @@ function Controller:resetControls()
 end
 
 function Controller:actionsForKey(key)
-  actions = {}
+  local actions = {}
   for player, controls in ipairs(self.playerControls) do
     for action, keySet in pairs(controls) do
       if keySet[key] then
@@ -235,6 +235,7 @@ function Controller:joystickaxis(joystick, axis, value)
 
   local oldDir = self.axisTracker[key]
   if string.find(axis, "[LR]-Trig") then
+    local newDir
     if value > -0.9 then
       newDir = 1
     else

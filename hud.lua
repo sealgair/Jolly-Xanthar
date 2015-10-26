@@ -30,16 +30,14 @@ function HUD:init(player, playerIndex)
   end)
 
   self.prevHealth = math.max(self.player.health / self.player.maxHealth, 0)
+
+  self.canvas = love.graphics.newCanvas()
+  love.graphics.setCanvas(self.canvas)
+  self:drawBase()
+  love.graphics.setCanvas()
 end
 
-function HUD:update(dt)
-  local newHealth = math.max(self.player.health / self.player.maxHealth, 0)
-  if self.prevHealth > newHealth then
-    self.prevHealth = self.prevHealth - dt/3
-  end
-end
-
-function HUD:draw()
+function HUD:drawBase()
   love.graphics.push()
 
   love.graphics.setColor(self.shadowColor)
@@ -63,9 +61,32 @@ function HUD:draw()
   h = h - 2
   love.graphics.rectangle("fill", x, y, w, h)
 
+  love.graphics.setColor(255, 255, 255)
+  love.graphics.pop()
+
+  self.healthRect = { x = x, y = y, w = w, h = h, }
+end
+
+function HUD:update(dt)
+  local newHealth = math.max(self.player.health / self.player.maxHealth, 0)
+  if self.prevHealth > newHealth then
+    self.prevHealth = self.prevHealth - dt / 3
+  end
+end
+
+function HUD:draw()
+  love.graphics.push()
+
+  love.graphics.draw(self.canvas)
+
+  local x = self.healthRect.x
+  local y = self.healthRect.y
+  local w = self.healthRect.w
+  local h = self.healthRect.h
+
   local healthPercent = math.max(self.player.health / self.player.maxHealth, 0)
   if healthPercent < self.prevHealth then
-    local healthColor =  {
+    local healthColor = {
       255 * math.min(2 + (self.prevHealth * -2), 1),
       255 * math.min(self.prevHealth * 2, 1),
       0
@@ -75,7 +96,7 @@ function HUD:draw()
     love.graphics.rectangle("fill", x, y, w * self.prevHealth, h)
   end
 
-  local healthColor =  {
+  local healthColor = {
     255 * math.min(2 + (healthPercent * -2), 1),
     255 * math.min(healthPercent * 2, 1),
     0
