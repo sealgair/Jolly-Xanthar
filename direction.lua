@@ -40,6 +40,10 @@ function Direction:vector()
   }
 end
 
+function Direction:isDiagonal()
+  return self.x ~= 0 and self.y ~= 0
+end
+
 function Direction:add(rhs)
   return Direction(self.x + rhs.x, self.y + rhs.y)
 end

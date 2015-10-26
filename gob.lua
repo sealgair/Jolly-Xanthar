@@ -126,7 +126,7 @@ function Gob:update(dt)
   end
   local distance = dt * self.speed
 
-  if self.direction.x ~= 0 and self.direction.y ~= 0 then
+  if self.direction:isDiagonal() then
     -- diagonal, use pythagoras
     distance = distance / 1.414
   end

@@ -44,7 +44,7 @@ function Bite:positionToOwner()
 
   -- offset in front of owner
   local pythagoras = 1
-  if self.direction.x ~= 0 and self.direction.y ~= 0 then
+  if self.direction:isDiagonal() then
     -- diagonal, use pythagoras
     pythagoras = 1 / 1.414
   end

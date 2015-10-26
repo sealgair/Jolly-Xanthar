@@ -5,7 +5,6 @@ local serialize = require "lib/Ser/ser"
 Controller = {
   listeners = {},
   actions = {},
-  waningActions = {},
   axisTracker = {},
 }
 
@@ -104,7 +103,6 @@ function Controller:load()
   self.listeners = {}
   for player, controls in pairs(self.playerControls) do
     self.actions[player] = {}
-    self.waningActions[player] = {}
     self.listeners[player] = {}
   end
 end
@@ -141,13 +139,13 @@ function Controller:actionsForButton(joystick, button)
 end
 
 function Controller:update(dt)
-  for player, waning in pairs(self.waningActions) do
-    for action, time in pairs(waning) do
-      if time > dt then
-        waning[action] = time - dt
-      else
-        waning[action] = nil
+  if self.delayedDirection then
+    self.delayedDirection.timer = self.delayedDirection.timer - dt
+    if self.delayedDirection.timer <= 0 then
+      for listener in values(self:getListeners(self.delayedDirection.player)) do
+        listener:setDirection(self.delayedDirection.dir)
       end
+      self.delayedDirection = nil
     end
   end
 end
@@ -174,8 +172,6 @@ function Controller:stopActions(playerActions)
   for player, actions in pairs(playerActions) do
     for action in values(actions) do
       self.actions[player][action] = nil
-      self.waningActions[player][action] = 0.2
-
       if directionsMap[action] then
         self:notifyDirection(player)
       else
@@ -273,26 +269,32 @@ function Controller:joystickaxis(joystick, axis, value)
 end
 
 function Controller:directionFromActions(actions)
-    local direction = Direction(0,0)
-    for control in pairs(actions) do
-      local ctlDir = directionsMap[control]
-      if ctlDir then
-        direction = direction:add(ctlDir)
-      end
+  local direction = Direction(0, 0)
+  for control in pairs(actions) do
+    local ctlDir = directionsMap[control]
+    if ctlDir then
+      direction = direction:add(ctlDir)
     end
-    return direction
+  end
+  return direction
 end
 
 function Controller:notifyDirection(player)
   local direction = self:directionFromActions(self.actions[player])
-  for _, listener in pairs(self:getListeners(player)) do
-    if direction == Direction(0, 0) then
-        local waningDirection = self:directionFromActions(self.waningActions[player])
-        if listener.setDirection then
-          listener:setDirection(waningDirection)
-        end
+  if direction ~= self.prevDirection then
+    if self.prevDirection and self.prevDirection:isDiagonal() and not direction:isDiagonal() then
+      self.delayedDirection = {
+        player = player,
+        dir = direction,
+        timer = 0.05
+      }
+    else
+      self.delayedDirection = nil
+      for listener in values(self:getListeners(player)) do
+        listener:setDirection(direction)
+      end
     end
-    listener:setDirection(direction)
+    self.prevDirection = direction
   end
 end
 
