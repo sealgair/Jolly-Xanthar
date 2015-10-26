@@ -68,7 +68,9 @@ end
 
 function Gob:setDirection(newDirection)
   self.direction = newDirection
-  self.facingDir = self.direction:key()
+  if self.direction ~= Direction(0, 0) then
+    self.facingDir = self.direction:key()
+  end
 end
 
 function Gob:facingDirection()

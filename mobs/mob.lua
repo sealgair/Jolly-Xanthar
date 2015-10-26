@@ -38,9 +38,10 @@ function Mob:setDirection(newDirection)
     return
   end
 
-  self.direction = newDirection
+  local oldDirection = self:facingDirection()
+  Mob.super.setDirection(self, newDirection)
+
   if newDirection ~= Direction(0, 0) then
-    local oldDirection = Direction[self.facingDir]
     if oldDirection == newDirection then return end
 
     local ldir = oldDirection
