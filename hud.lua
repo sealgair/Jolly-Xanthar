@@ -104,6 +104,16 @@ function HUD:draw()
   love.graphics.setColor(healthColor)
   love.graphics.rectangle("fill", x, y, w * healthPercent, h)
 
+  local barWidth = w / self.player.maxHealth
+  if barWidth >= 4 then
+    love.graphics.setColor(self.color)
+    local barX = x
+    for i = 1, self.player.health do
+      barX = barX + barWidth
+      love.graphics.rectangle("fill", barX, y, 1, h)
+    end
+  end
+
   love.graphics.setColor(255, 255, 255)
   love.graphics.pop()
 end
