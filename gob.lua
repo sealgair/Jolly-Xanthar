@@ -2,6 +2,7 @@ class = require 'lib/30log/30log'
 json = require 'lib.json4lua.json.json'
 require 'utils'
 require 'direction'
+require 'position'
 
 Gob = class('Gob')
 DefaultAnimateInterval = 0.15 --seconds
@@ -9,7 +10,7 @@ DefaultAnimateInterval = 0.15 --seconds
 function Gob:init(opts)
   -- required opts: x, y, confFile
   -- optional opts: speed, dir, animDelay
-  self.position = { x = opts.x, y = opts.y }
+  self.position = Point(opts)
   if opts.conf then
     self.conf = opts.conf
   else
@@ -19,7 +20,7 @@ function Gob:init(opts)
 
   self.w = self.conf.w
   self.h = self.conf.h
-  self.hitbox = self.conf.hitbox
+  self.hitbox = Rect(self.conf.hitbox)
   self.animations = self.conf.animations
 
   self.speed = coalesce(opts.speed, 40)
@@ -68,11 +69,12 @@ function Gob:init(opts)
   self.animLength = 1
 end
 
+function Gob:rect()
+  return Rect(self.position, self.w, self.h)
+end
+
 function Gob:center()
-  return {
-    x = self.position.x + self.w / 2,
-    y = self.position.y + self.h / 2,
-  }
+  return self:rect():center()
 end
 
 function Gob:setDirection(newDirection)
@@ -96,17 +98,11 @@ function Gob:advanceQuad()
 end
 
 function Gob:getBoundingBox()
-  return {
-    x = self.position.x + self.hitbox.x,
-    y = self.position.y + self.hitbox.y,
-  }
+  return self.hitbox:origin() + self.position
 end
 
 function Gob:setBoundingBox(box)
-  self.position = {
-    x = box.x - self.hitbox.x,
-    y = box.y - self.hitbox.y,
-  }
+  self.position = box - self.hitbox:origin()
 end
 
 function Gob:animState()
@@ -142,10 +138,7 @@ function Gob:update(dt)
     distance = distance / 1.414
   end
 
-  self.position = {
-    x = self.position.x + self.direction.x * distance,
-    y = self.position.y + self.direction.y * distance,
-  }
+  self.position = self.position + (Point(self.direction) * distance)
 end
 
 function Gob:collidesWith(other)

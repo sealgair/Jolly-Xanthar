@@ -19,10 +19,10 @@ function HUD:init(player, playerIndex)
     h = 32
   }
   if playerIndex == 2 or playerIndex == 4 then
-    self.rect.x = Size.w - self.rect.w
+    self.rect.x = GameSize.w - self.rect.w
   end
   if playerIndex == 3 or playerIndex == 4 then
-    self.rect.y = Size.h - self.rect.h
+    self.rect.y = GameSize.h - self.rect.h
   end
   self.color = PlayerColors[playerIndex]
   self.shadowColor = map(self.color, function(c)

@@ -37,7 +37,10 @@ function World:load()
   self.huds = {}
   self.despawnQueue = {}
 
+  self.screen = Rect(Point(), GameSize)
+
   -- add players
+  local center = Point()
   for i, coord in ipairs(self.map.playerCoords) do
     if i <= playerCount then
       local player = Human(coord)
@@ -46,8 +49,11 @@ function World:load()
       self.players[i] = player
       self.indicators[i] = Indicator(i)
       self.huds[i] = HUD(player, i)
+      center = center + player:center()
     end
   end
+  center = center / playerCount
+  self.screen:setCenter(center)
 
   -- add monsters
   for i, coord in ipairs(self.map.monsterCoords) do
@@ -77,7 +83,7 @@ function World:update(dt)
     -- handle collisions
     local goal = gob:getBoundingBox()
     local x, y, cols, len = self.bumpWorld:move(gob, goal.x, goal.y, Gob.collideFilter)
-    gob:setBoundingBox { x = x, y = y }
+    gob:setBoundingBox(Point(x, y))
     collisions[gob] = cols
   end
 
@@ -112,48 +118,27 @@ function World:update(dt)
     behavior:update(dt)
   end
 
-  if self.center then
-    self.borders = {
-      top = self.center.y - Size.h/2,
-      bottom = self.center.y + Size.h/2,
-      left = self.center.x - Size.w/2,
-      right = self.center.x + Size.w/2,
-    }
-  else
-    self.borders = {
-      top = 0, bottom = self.worldCanvas:getHeight(),
-      left = 0, right = self.worldCanvas:getWidth(),
-    }
-  end
-
   for hud in values(self.huds) do
     hud:update(dt)
   end
 
-  local old_center = self.center
-  self.center = { x = 0, y = 0 }
+  local oldCenter = self.screen:center()
+  local newCenter = Point()
   local count = 0
-  for i, dude in ipairs(self.players) do
-    local center = dude:center()
-    if center.y < self.borders.bottom
-        and center.y > self.borders.top
-        and center.x > self.borders.left
-        and center.x < self.borders.right then
-      self.center.x = self.center.x + center.x
-      self.center.y = self.center.y + center.y
+  for dude in values(self.players) do
+    if self.screen:contains(dude:center()) then
+      newCenter = newCenter + dude:center()
       count = count + 1
     end
   end
-  self.center.x = self.center.x / count
-  self.center.y = self.center.y / count
+  newCenter = newCenter / count
 
-  if old_center then
-    local maxStep = 60 * dt -- pixels per second
-    self.center.x = math.max(self.center.x, old_center.x - maxStep)
-    self.center.x = math.min(self.center.x, old_center.x + maxStep)
-    self.center.y = math.max(self.center.y, old_center.y - maxStep)
-    self.center.y = math.min(self.center.y, old_center.y + maxStep)
-  end
+  local maxStep = 60 * dt -- pixels per second
+  newCenter.x = math.max(newCenter.x, oldCenter.x - maxStep)
+  newCenter.x = math.min(newCenter.x, oldCenter.x + maxStep)
+  newCenter.y = math.max(newCenter.y, oldCenter.y - maxStep)
+  newCenter.y = math.min(newCenter.y, oldCenter.y + maxStep)
+  self.screen:setCenter(newCenter)
 end
 
 function World:draw()
@@ -177,19 +162,19 @@ function World:draw()
     pos.y = pos.y - (player.h)/2
     local dir = ""
 
-    if pos.y < self.borders.top then
+    if pos.y < self.screen.y then
       dir = "up"
-      pos.y = self.borders.top
-    elseif pos.y > self.borders.bottom then
+      pos.y = self.screen.y
+    elseif pos.y > self.screen:bottom() then
       dir = "down"
-      pos.y = self.borders.bottom
+      pos.y = self.screen:bottom()
     end
-    if pos.x > self.borders.right then
+    if pos.x > self.screen:right() then
       dir = dir .. "right"
-      pos.x = self.borders.right
-    elseif pos.x < self.borders.left then
+      pos.x = self.screen:right()
+    elseif pos.x < self.screen.x then
       dir = dir .. "left"
-      pos.x = self.borders.left
+      pos.x = self.screen.x
     end
 
     if dir == "" then dir = "down" end
@@ -198,9 +183,8 @@ function World:draw()
   love.graphics.pop()
   love.graphics.setCanvas()
 
-  local offx = (Size.w / 2) - self.center.x
-  local offy = (Size.h / 2) - self.center.y
-  love.graphics.draw(self.worldCanvas, offx, offy)
+  local offset = Point(GameSize.w / 2, GameSize.h /2) - self.screen:center()
+  love.graphics.draw(self.worldCanvas, offset.x, offset.y)
 
   for hud in values(self.huds) do
     hud:draw()

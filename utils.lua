@@ -79,7 +79,7 @@ end
 
 function table.removeValue(t, value)
   for k, v in pairs(t) do
-    if g == gob then
+    if v == value then
       table.remove(t, k)
     end
   end

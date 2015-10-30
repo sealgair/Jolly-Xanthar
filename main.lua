@@ -4,8 +4,8 @@ require 'world'
 require 'menu.splash'
 require 'menu.controls'
 
-Size = { w = 256, h = 240 }
-Scale = { x = 3, y = 3 }
+GameSize = Size{ w = 256, h = 240 }
+GameScale = { x = 3, y = 3 }
 
 local StateMachine = {
   states = {},
@@ -37,7 +37,7 @@ end
 
 function love.load(arg)
   if arg[#arg] == "-debug" then require("mobdebug").start() end
-  love.window.setMode(Size.w * Scale.x, Size.h * Scale.y)
+  love.window.setMode(GameSize.w * GameScale.x, GameSize.h * GameScale.y)
   love.graphics.setDefaultFilter("nearest", "nearest")
 
   Controller:load()
@@ -75,7 +75,7 @@ function love.update(dt)
 end
 
 function love.draw()
-  love.graphics.scale(Scale.x, Scale.y)
+  love.graphics.scale(GameScale.x, GameScale.y)
   local state = StateMachine:currentState()
   if state.draw then
     state:draw()
