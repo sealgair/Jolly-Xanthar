@@ -1,5 +1,6 @@
 require 'mobs.mob'
 require 'weapons.bolter'
+require 'weapons.forcefield'
 
 Human = Mob:extend('Human')
 
@@ -34,4 +35,5 @@ function Human:init(coord)
     shader = self.shader
   })
   self.weapons.a = Bolter(self)
+  self.weapons.b = ForceField(self)
 end

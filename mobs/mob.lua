@@ -12,7 +12,6 @@ function Mob:init(opts)
 
   self.maxHealth = coalesce(opts.health, 10)
   self.health = self.maxHealth
-  self.hurting = {time = 0}
 
   self.splatImg = love.graphics.newImage("assets/particles/damage.png")
   self.splat = love.graphics.newParticleSystem(self.splatImg, 64)
@@ -99,8 +98,11 @@ function Mob:update(dt)
   if self.agressor and self.agressor:dead() then
     self.agressor = nil
   end
-  if self.hurting.time > 0 then
-    self.hurting.time = self.hurting.time - dt
+  if self.hurting then
+    self.hurting = self.hurting - dt
+    if self.hurting <= 0 then
+      self.hurting = nil
+    end
   end
 
   if self:dead() then
@@ -115,21 +117,6 @@ function Mob:update(dt)
   end
   Mob.super.update(self, dt)
 
-  if not self:dead() and self.hurting.offset then
-    local distance = dt * self.hurting.offset.speed
-
-    for k in values({'x', 'y'}) do
-      if self.hurting.offset[k] ~= 0 then
-        local ds = sign(self.hurting.offset[k])
-        self.position[k] = self.position[k] + distance * ds
-        self.hurting.offset[k] = self.hurting.offset[k] - distance * ds
-        if sign(self.hurting.offset[k]) ~= ds then
-          self.hurting.offset[k] = 0
-        end
-      end
-    end
-  end
-
   self.splat:update(dt)
   for k, weapon in pairs(self.weapons) do
     weapon:update(dt)
@@ -138,7 +125,7 @@ end
 
 function Mob:draw()
   love.graphics.push()
-  if self.hurting.time > 0 then
+  if self.hurting then
     love.graphics.setColor(255, 0, 0)
   end
   Mob.super.draw(self)
@@ -161,21 +148,26 @@ end
 function Mob:hurt(damage, collision)
   self.agressor = collision.other.owner
   self.health = self.health - damage
-  self.hurting.time = self.animInterval
-  self.hurting.offset = map(collision.other.direction:vector(), function(n) return n * damage * 8 end)
-  self.hurting.offset.speed = 75*damage
+  self:shove(map(collision.other.direction:vector(), function(n) return n * damage * 8 end), 75 * damage)
+  self.hurting = self.animInterval
 
   local splatDir = Direction(collision.normal.x, collision.normal.y)
   self.splat:setDirection(splatDir:radians())
   self.splat:setEmitterLifetime(0.1)
   self.splat:start()
+
+  if self:dead() then
+    for weapon in values(self.weapons) do
+      weapon:stop()
+    end
+  end
 end
 
 function Mob:collide(cols)
   Mob.super.collide(self, cols)
   if self:dead() then return end
   for _, col in pairs(cols) do
-    if col.other.damage then
+    if col.other.damage and col.other.damage > 0 then
       self:hurt(col.other.damage, col)
     end
   end

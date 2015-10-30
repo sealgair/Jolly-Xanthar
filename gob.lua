@@ -27,6 +27,12 @@ function Gob:init(opts)
   self.direction = coalesce(opts.dir, Direction(0, 0))
   self.animInterval = coalesce(opts.animInterval, self.conf.animInterval, DefaultAnimateInterval)
   self.collisions = {}
+  self.impulse = {
+    time = 0,
+    x = 0,
+    y = 0,
+    speed = self.speed
+  }
 
   if opts.image then
     self.image = opts.image
@@ -50,6 +56,7 @@ function Gob:init(opts)
     for i, dir in ipairs(Direction.keys) do
       local quadList = {}
       local y = (i - 1) * self.h
+      if y >= th then y = 0 end
       for x = 0, tw - self.w, self.w do
         table.insert(quadList, love.graphics.newQuad(x, y, self.w, self.h, tw, th))
       end
@@ -82,6 +89,12 @@ function Gob:setDirection(newDirection)
   if self.direction ~= Direction(0, 0) then
     self.facingDir = self.direction:key()
   end
+end
+
+function Gob:shove(vector, speed)
+  self.impulse.x = self.impulse.x + vector.x
+  self.impulse.y = self.impulse.y + vector.y
+  self.impulse.time = self.impulse.time + self.animInterval
 end
 
 function Gob:facingDirection()
@@ -120,6 +133,9 @@ end
 function Gob:update(dt)
   self.turnDelay = self.turnDelay - dt
   self.animDelay = self.animDelay - dt
+  if self.impulse.time > 0 then
+    self.impulse.time = math.max(self.impulse.time - dt, 0)
+  end
 
   if self.animDelay <= 0 then
     self.animDelay = self.animInterval
@@ -139,6 +155,21 @@ function Gob:update(dt)
   end
 
   self.position = self.position + (Point(self.direction) * distance)
+
+  if self.impulse.time > 0 then
+    local distance = dt * self.impulse.speed
+
+    for k in values({ 'x', 'y' }) do
+      if self.impulse[k] ~= 0 then
+        local ds = sign(self.impulse[k])
+        self.position[k] = self.position[k] + distance * ds
+        self.impulse[k] = self.impulse[k] - distance * ds
+        if sign(self.impulse[k]) ~= ds then
+          self.impulse[k] = 0
+        end
+      end
+    end
+  end
 end
 
 function Gob:collidesWith(other)

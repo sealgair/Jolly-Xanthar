@@ -1,0 +1,11 @@
+{
+  "image": "assets/weapons/forcefield.png",
+  "w": 32, "h": 32,
+  "animations": {
+    "walk": [1],
+    "idle": [1]
+  },
+  "hitbox": {
+    "x": 0, "y": 0, "w": 32, "h": 32
+  }
+}

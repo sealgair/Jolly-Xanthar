@@ -29,7 +29,7 @@ function World:load()
     self.bumpWorld,
     10
   )
-  local playerCount = 4
+  local playerCount = 1
   self.gobs = {}
   self.players = {}
   self.behaviors = {}
@@ -71,6 +71,7 @@ function World:spawn(gob)
     gob.position.x + gob.hitbox.x,
     gob.position.y + gob.hitbox.y,
     gob.hitbox.w, gob.hitbox.h)
+  gob.bumpWorld = self.bumpWorld
 end
 
 function World:despawn(gob)
@@ -111,6 +112,9 @@ function World:update(dt)
     end
     if self.bumpWorld:hasItem(gob) then
       self.bumpWorld:remove(gob)
+      if gob.bumpWorld == self.bumpWorld then
+        gob.bumpWorld = nil
+      end
     end
   end
   self.despawnQueue = {}

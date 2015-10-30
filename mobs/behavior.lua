@@ -57,7 +57,7 @@ function Behavior:wander(dt)
 end
 
 function Behavior:attack(dt)
-  if self.mob.agressor == nil then return end
+  if self.mob.agressor == nil or self.mob.agressor:dead() then return end
 
   local s = 3
   local dist = {

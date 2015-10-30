@@ -1,4 +1,5 @@
 require 'gob'
+require 'utils'
 
 Weapon = class("weapon")
 
@@ -59,11 +60,9 @@ function Impactor:init(opts)
   self.age = 0
   Impactor.super.init(self, opts)
   self:positionToOwner()
-  if opts.damage then
-    self.damage = opts.damage
-  else
-    self.damage = 1
-  end
+  self.damage = coalesce(opts.damage, 1)
+  self.collideType = coalesce(opts.collideType, "touch")
+  self.collidePriority = coalesce(opts.collidePriority, 10)
   self.maxAge = opts.maxAge
   self.done = false
 end
@@ -89,7 +88,7 @@ function Impactor:collidesWith(b)
   if self.done or b == self.owner then
     return nil, 100
   end
-  return "touch", 10
+  return self.collideType, self.collidePriority
 end
 
 function Impactor:collide(cols)
