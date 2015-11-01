@@ -228,34 +228,6 @@ function World:draw()
     dude:draw()
   end
 
-  for i, player in pairs(self.players) do
-    -- TODO: draw indicators directly to screen after canvas
-    local ind = self.indicators[i]
-
-    for screen in values(self.screens) do
-      local pos = player:center()
-      pos.y = pos.y - (player.h)/2
-      local dir = ""
-
-      if pos.y < screen.y then
-        dir = "up"
-        pos.y = screen.y
-      elseif pos.y > screen:bottom() then
-        dir = "down"
-        pos.y = screen:bottom()
-      end
-      if pos.x > screen:right() then
-        dir = dir .. "right"
-        pos.x = screen:right()
-      elseif pos.x < screen.x then
-        dir = dir .. "left"
-        pos.x = screen.x
-      end
-
-      if dir == "" then dir = "down" end
-      ind:draw(pos.x, pos.y, dir)
-    end
-  end
   love.graphics.pop()
   love.graphics.setCanvas()
 
@@ -267,6 +239,35 @@ function World:draw()
       sw, sh
     )
     love.graphics.draw(self.worldCanvas, quad, screen.windowOffset.x, screen.windowOffset.y)
+  end
+
+  for i, player in pairs(self.players) do
+    local ind = self.indicators[i]
+
+    for screen in values(self.screens) do
+      local sco = screen.windowOffset
+      local pos = player:center() - screen:origin() + sco
+      pos.y = pos.y - (player.h)/2
+      local dir = ""
+
+      if pos.y < sco.y then
+        dir = "up"
+        pos.y = sco.y
+      elseif pos.y > sco.y + screen.h then
+        dir = "down"
+        pos.y = sco.y + screen.h
+      end
+      if pos.x > sco.x + screen.w then
+        dir = dir .. "right"
+        pos.x = sco.x + screen.w
+      elseif pos.x < sco.x then
+        dir = dir .. "left"
+        pos.x = sco.x
+      end
+
+      if dir == "" then dir = "down" end
+      ind:draw(pos.x, pos.y, dir)
+    end
   end
 
   for hud in values(self.huds) do
