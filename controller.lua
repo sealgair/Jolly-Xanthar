@@ -70,6 +70,7 @@ function gamepadButton(joystick, button)
 end
 
 function gamepadAxis(joystick, axis)
+  local jsName = joystick:getName()
   if extraMappings[jsName] then
     local result = extraMappings[jsName].axes[axis]
     return result

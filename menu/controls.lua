@@ -6,7 +6,7 @@ local controlTime = 1
 function Controls:load(fsm)
   self.fsm = fsm
   self.image = love.graphics.newImage('assets/controls.png')
-  local ww, wh = 256, 240
+  local ww, wh = GameSize.w, GameSize.h
   local sw, sh = self.image:getDimensions()
   self.screenQuad = love.graphics.newQuad(0, 0, ww, wh, sw, sh)
 
@@ -157,11 +157,11 @@ function Controls:draw()
   local selectedQuad = self.selectedQuads[selectedItem]
   local playerQuad = self.playerQuads[self.selectedPlayer]
   local qx, qy, qw, qh = selectedQuad:getViewport()
-  qx = qx - ww
+  qx = qx - GameSize.w
   love.graphics.draw(self.image, selectedQuad, qx, qy)
 
   qx, qy, qw, qh = playerQuad:getViewport()
-  qx = qx - ww
+  qx = qx - GameSize.w
   love.graphics.draw(self.image, playerQuad, qx, qy)
 
   love.graphics.setFont(self.controlFont)
