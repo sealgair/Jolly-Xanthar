@@ -60,6 +60,10 @@ function Point:__div(s)
   return Point(self.x / s, self.y / s)
 end
 
+function Point:abs()
+  return Point(math.abs(self.x), math.abs(self.y))
+end
+
 
 Size = class('Size')
 
@@ -176,6 +180,14 @@ function Rect:contains(thing)
   if class.isInstance(thing, Point) then
     return self.x < thing.x and thing.x < self:right()
        and self.y < thing.y and thing.y < self:bottom()
+  end
+  return false
+end
+
+function Rect:intersects(other)
+  if class.isInstance(other, Rect) then
+    return self.x < other:right() and self:right() > other.x
+       and self.y < other:bottom() and self:bottom() > other.y
   end
   return false
 end

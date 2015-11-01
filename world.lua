@@ -241,32 +241,44 @@ function World:draw()
     love.graphics.draw(self.worldCanvas, quad, screen.windowOffset.x, screen.windowOffset.y)
   end
 
+  local drawn = {}
   for i, player in pairs(self.players) do
     local ind = self.indicators[i]
+    local indSz = Size(ind.w, ind.h)
 
-    for screen in values(self.screens) do
+    for s, screen in ipairs(self.screens) do
       local sco = screen.windowOffset
       local pos = player:center() - screen:origin() + sco
       pos.y = pos.y - (player.h)/2
       local dir = ""
 
-      if pos.y < sco.y then
-        dir = "up"
-        pos.y = sco.y
-      elseif pos.y > sco.y + screen.h then
+      if not Rect(screen.windowOffset, screen:size()):contains(pos) then
+        if pos.y < sco.y then
+          dir = "up"
+          pos.y = sco.y
+        elseif pos.y > sco.y + screen.h then
+          dir = "down"
+          pos.y = sco.y + screen.h
+        end
+        if pos.x > sco.x + screen.w then
+          dir = dir .. "right"
+          pos.x = sco.x + screen.w
+        elseif pos.x < sco.x then
+          dir = dir .. "left"
+          pos.x = sco.x
+        end
+
+        for p in values(drawn) do
+          if Rect(p, indSz):intersects(Rect(pos, indSz)) then
+            pos.x = p.x + indSz.w
+          end
+        end
+      else
         dir = "down"
-        pos.y = sco.y + screen.h
-      end
-      if pos.x > sco.x + screen.w then
-        dir = dir .. "right"
-        pos.x = sco.x + screen.w
-      elseif pos.x < sco.x then
-        dir = dir .. "left"
-        pos.x = sco.x
       end
 
-      if dir == "" then dir = "down" end
       ind:draw(pos.x, pos.y, dir)
+      table.insert(drawn, pos)
     end
   end
 
