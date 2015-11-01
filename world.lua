@@ -37,7 +37,8 @@ function World:load()
   self.huds = {}
   self.despawnQueue = {}
 
-  self.screen = Rect(Point(), GameSize)
+  self.screens = {Rect(Point(), GameSize) }
+  self.screens[1].windowOffset = Point()
 
   -- add players
   local center = Point()
@@ -53,7 +54,7 @@ function World:load()
     end
   end
   center = center / playerCount
-  self.screen:setCenter(center)
+  self.screens[1]:setCenter(center)
 
   -- add monsters
   for i, coord in ipairs(self.map.monsterCoords) do
@@ -122,23 +123,94 @@ function World:update(dt)
     hud:update(dt)
   end
 
-  local oldCenter = self.screen:center()
-  local newCenter = Point()
-  local count = 0
-  for dude in values(self.players) do
-    if self.screen:contains(dude:center()) then
-      newCenter = newCenter + dude:center()
-      count = count + 1
+  local maxStep = 120 * dt -- pixels per second
+
+  local screensChanged = false
+  local outsiders = shallowCopy(self.players)
+  local unusedScreens = shallowCopy(self.screens)
+  for screen in values(self.screens) do
+    local oldCenter = screen:center()
+    local newCenter = Point()
+    local count = 0
+    local toRemove = {}
+    for player in values(outsiders) do
+      if screen:contains(player:center()) then
+        newCenter = newCenter + player:center()
+        count = count + 1
+        table.insert(toRemove, player)
+        table.removeValue(unusedScreens, screen)
+      end
+    end
+    newCenter = newCenter / count
+    for p in values(toRemove) do
+      table.removeValue(outsiders, p)
+    end
+
+    newCenter.x = math.max(newCenter.x, oldCenter.x - maxStep)
+    newCenter.x = math.min(newCenter.x, oldCenter.x + maxStep)
+    newCenter.y = math.max(newCenter.y, oldCenter.y - maxStep)
+    newCenter.y = math.min(newCenter.y, oldCenter.y + maxStep)
+    screen:setCenter(newCenter)
+  end
+  for s in values(unusedScreens) do
+    table.removeValue(self.screens, s)
+    screensChanged = true
+  end
+
+  if #outsiders > 0 then
+    local oldScreen, newScreen
+
+    local newScreen = Rect(Point(), self.screens[1]:size())
+    table.insert(self.screens, newScreen)
+    screensChanged = true
+
+    local newCenter = Point()
+    for player in values(outsiders) do
+      newCenter = newCenter + player:center()
+    end
+    newCenter = newCenter / #outsiders
+    newScreen:setCenter(newCenter)
+  end
+
+  if screensChanged then
+    local borderSize = 1
+    local fullSize = GameSize
+    local halfSize = Size(GameSize.w, GameSize.h / 2)
+    local quarterSize = Size(GameSize.w / 2, halfSize.h)
+    local x2 = quarterSize.w + borderSize
+    local y2 = quarterSize.h + borderSize
+
+    local oldCenters = map(self.screens, function(s)
+      return s:center()
+    end)
+
+    local sc = #self.screens
+
+    self.screens[1].windowOffset = Point(0, 0)
+    self.screens[1]:setSize(fullSize)
+
+    if sc >= 2 then
+      self.screens[2].windowOffset = Point(0, y2)
+      self.screens[2]:setSize(halfSize)
+      self.screens[1]:setSize(halfSize)
+    end
+
+    if sc >= 3 then
+      self.screens[3].windowOffset = Point(x2, y2)
+      self.screens[3]:setSize(quarterSize)
+      self.screens[2]:setSize(quarterSize)
+    end
+
+    if sc == 4 then
+      self.screens[4].windowOffset = Point(x2, 0)
+      self.screens[4]:setSize(quarterSize)
+      self.screens[1]:setSize(quarterSize)
+    end
+
+    for s, center in ipairs(oldCenters) do
+      self.screens[s]:setCenter(center)
     end
   end
-  newCenter = newCenter / count
-
-  local maxStep = 60 * dt -- pixels per second
-  newCenter.x = math.max(newCenter.x, oldCenter.x - maxStep)
-  newCenter.x = math.min(newCenter.x, oldCenter.x + maxStep)
-  newCenter.y = math.max(newCenter.y, oldCenter.y - maxStep)
-  newCenter.y = math.min(newCenter.y, oldCenter.y + maxStep)
-  self.screen:setCenter(newCenter)
 end
 
 function World:draw()
@@ -157,34 +229,45 @@ function World:draw()
   end
 
   for i, player in pairs(self.players) do
+    -- TODO: draw indicators directly to screen after canvas
     local ind = self.indicators[i]
-    local pos = player:center()
-    pos.y = pos.y - (player.h)/2
-    local dir = ""
 
-    if pos.y < self.screen.y then
-      dir = "up"
-      pos.y = self.screen.y
-    elseif pos.y > self.screen:bottom() then
-      dir = "down"
-      pos.y = self.screen:bottom()
-    end
-    if pos.x > self.screen:right() then
-      dir = dir .. "right"
-      pos.x = self.screen:right()
-    elseif pos.x < self.screen.x then
-      dir = dir .. "left"
-      pos.x = self.screen.x
-    end
+    for screen in values(self.screens) do
+      local pos = player:center()
+      pos.y = pos.y - (player.h)/2
+      local dir = ""
 
-    if dir == "" then dir = "down" end
-    ind:draw(pos.x, pos.y, dir)
+      if pos.y < screen.y then
+        dir = "up"
+        pos.y = screen.y
+      elseif pos.y > screen:bottom() then
+        dir = "down"
+        pos.y = screen:bottom()
+      end
+      if pos.x > screen:right() then
+        dir = dir .. "right"
+        pos.x = screen:right()
+      elseif pos.x < screen.x then
+        dir = dir .. "left"
+        pos.x = screen.x
+      end
+
+      if dir == "" then dir = "down" end
+      ind:draw(pos.x, pos.y, dir)
+    end
   end
   love.graphics.pop()
   love.graphics.setCanvas()
 
-  local offset = Point(GameSize.w / 2, GameSize.h /2) - self.screen:center()
-  love.graphics.draw(self.worldCanvas, offset.x, offset.y)
+  local sw, sh = self.worldCanvas:getDimensions()
+  for screen in values(self.screens) do
+    local quad = love.graphics.newQuad(
+      screen.x, screen.y,
+      screen.w, screen.h,
+      sw, sh
+    )
+    love.graphics.draw(self.worldCanvas, quad, screen.windowOffset.x, screen.windowOffset.y)
+  end
 
   for hud in values(self.huds) do
     hud:draw()

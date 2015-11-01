@@ -109,6 +109,10 @@ function map(t, func)
   return result
 end
 
+function shallowCopy(t)
+  return map(t, function(v) return v end)
+end
+
 function sign(n)
   if n > 0 then
     return 1
