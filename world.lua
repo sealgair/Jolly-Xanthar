@@ -152,7 +152,7 @@ function World:update(dt)
     local newScreen = Rect(Point(), hud.rect.w, hud.rect.w)
     newScreen:setCenter(player:center())
 
-    newScreen.windowOffset = hud.rect:origin()`
+    newScreen.windowOffset = hud.rect:origin()
     if p > 2 then
       newScreen.windowOffset.y = hud.rect:bottom() - newScreen.h - hud.barHeight
     else
