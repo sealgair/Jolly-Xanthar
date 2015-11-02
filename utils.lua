@@ -85,6 +85,12 @@ function table.removeValue(t, value)
   end
 end
 
+function table.extend(t, other)
+  for v in values(other) do
+    table.insert(t, v)
+  end
+end
+
 function coalesce(...)
   for i = 1, select('#', ...) do
     local v = select(i, ...)

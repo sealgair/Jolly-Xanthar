@@ -37,8 +37,9 @@ function World:load()
   self.huds = {}
   self.despawnQueue = {}
 
-  self.screens = {Rect(Point(), GameSize) }
-  self.screens[1].windowOffset = Point()
+  self.mainScreen = Rect(Point(), GameSize)
+  self.mainScreen.windowOffset = Point()
+  self.extraScreens = {}
 
   -- add players
   local center = Point()
@@ -54,7 +55,7 @@ function World:load()
     end
   end
   center = center / playerCount
-  self.screens[1]:setCenter(center)
+  self.mainScreen:setCenter(center)
 
   -- add monsters
   for i, coord in ipairs(self.map.monsterCoords) do
@@ -125,91 +126,39 @@ function World:update(dt)
 
   local maxStep = 120 * dt -- pixels per second
 
-  local screensChanged = false
-  local outsiders = shallowCopy(self.players)
-  local unusedScreens = shallowCopy(self.screens)
-  for screen in values(self.screens) do
-    local oldCenter = screen:center()
-    local newCenter = Point()
-    local count = 0
-    local toRemove = {}
-    for player in values(outsiders) do
-      if screen:contains(player:center()) then
-        newCenter = newCenter + player:center()
-        count = count + 1
-        table.insert(toRemove, player)
-        table.removeValue(unusedScreens, screen)
-      end
-    end
-    newCenter = newCenter / count
-    for p in values(toRemove) do
-      table.removeValue(outsiders, p)
-    end
-
-    newCenter.x = math.max(newCenter.x, oldCenter.x - maxStep)
-    newCenter.x = math.min(newCenter.x, oldCenter.x + maxStep)
-    newCenter.y = math.max(newCenter.y, oldCenter.y - maxStep)
-    newCenter.y = math.min(newCenter.y, oldCenter.y + maxStep)
-    screen:setCenter(newCenter)
-  end
-  for s in values(unusedScreens) do
-    table.removeValue(self.screens, s)
-    screensChanged = true
-  end
-
-  if #outsiders > 0 then
-    local oldScreen, newScreen
-
-    local newScreen = Rect(Point(), self.screens[1]:size())
-    table.insert(self.screens, newScreen)
-    screensChanged = true
-
-    local newCenter = Point()
-    for player in values(outsiders) do
+  local oldCenter = self.mainScreen:center()
+  local newCenter = Point()
+  local count = 0
+  local outsiders = {}
+  for p, player in pairs(self.players) do
+    if self.mainScreen:contains(player:center()) then
       newCenter = newCenter + player:center()
+      count = count + 1
+    else
+      outsiders[p] = player
     end
-    newCenter = newCenter / #outsiders
-    newScreen:setCenter(newCenter)
   end
+  newCenter = newCenter / count
 
-  if screensChanged then
-    local borderSize = 1
-    local fullSize = GameSize
-    local halfSize = Size(GameSize.w, GameSize.h / 2)
-    local quarterSize = Size(GameSize.w / 2, halfSize.h)
-    local x2 = quarterSize.w + borderSize
-    local y2 = quarterSize.h + borderSize
+  newCenter.x = math.max(newCenter.x, oldCenter.x - maxStep)
+  newCenter.x = math.min(newCenter.x, oldCenter.x + maxStep)
+  newCenter.y = math.max(newCenter.y, oldCenter.y - maxStep)
+  newCenter.y = math.min(newCenter.y, oldCenter.y + maxStep)
+  self.mainScreen:setCenter(newCenter)
 
-    local oldCenters = map(self.screens, function(s)
-      return s:center()
-    end)
+  self.extraScreens = {}
+  for p, player in pairs(outsiders) do
+    local hud = self.huds[p]
+    local newScreen = Rect(Point(), hud.rect.w, hud.rect.w)
+    newScreen:setCenter(player:center())
 
-    local sc = #self.screens
-
-    self.screens[1].windowOffset = Point(0, 0)
-    self.screens[1]:setSize(fullSize)
-
-    if sc >= 2 then
-      self.screens[2].windowOffset = Point(0, y2)
-      self.screens[2]:setSize(halfSize)
-      self.screens[1]:setSize(halfSize)
+    newScreen.windowOffset = hud.rect:origin()`
+    if p > 2 then
+      newScreen.windowOffset.y = hud.rect:bottom() - newScreen.h - hud.barHeight
+    else
+      newScreen.windowOffset.y = newScreen.windowOffset.y + hud.barHeight
     end
-
-    if sc >= 3 then
-      self.screens[3].windowOffset = Point(x2, y2)
-      self.screens[3]:setSize(quarterSize)
-      self.screens[2]:setSize(quarterSize)
-    end
-
-    if sc == 4 then
-      self.screens[4].windowOffset = Point(x2, 0)
-      self.screens[4]:setSize(quarterSize)
-      self.screens[1]:setSize(quarterSize)
-    end
-
-    for s, center in ipairs(oldCenters) do
-      self.screens[s]:setCenter(center)
-    end
+    table.insert(self.extraScreens, newScreen)
   end
 end
 
@@ -231,8 +180,21 @@ function World:draw()
   love.graphics.pop()
   love.graphics.setCanvas()
 
+  local screens = {self.mainScreen}
+  table.extend(screens, self.extraScreens)
+  local hud = self.huds[1]
+
   local sw, sh = self.worldCanvas:getDimensions()
-  for screen in values(self.screens) do
+  for screen in values(screens) do
+    if scren ~= self.mainScreen then
+      love.graphics.setColor(0,0,0)
+      local background = Rect(screen.windowOffset.x-1, screen.windowOffset.y-1, screen.w+2, screen.h+2 + hud.barHeight)
+      if background.y < self.mainScreen.h / 2 then
+        background.y = background.y - hud.barHeight
+      end
+      love.graphics.rectangle("fill", background.x, background.y, background.w, background.h)
+      love.graphics.setColor(255,255,255)
+    end
     local quad = love.graphics.newQuad(
       screen.x, screen.y,
       screen.w, screen.h,
@@ -246,7 +208,7 @@ function World:draw()
     local ind = self.indicators[i]
     local indSz = Size(ind.w, ind.h)
 
-    for s, screen in ipairs(self.screens) do
+    for s, screen in ipairs(screens) do
       local sco = screen.windowOffset
       local pos = player:center() - screen:origin() + sco
       pos.y = pos.y - (player.h)/2

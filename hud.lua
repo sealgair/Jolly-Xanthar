@@ -9,22 +9,22 @@ local PlayerColors = {
   { 255, 255, 0 },
 }
 
+local hudBorder = 6
+
 function HUD:init(player, playerIndex)
   self.player = player
+  self.index = playerIndex
+  self.barHeight = 8
 
-  self.rect = {
-    x = 0,
-    y = 0,
-    w = 64,
-    h = 32
-  }
-  if playerIndex == 2 or playerIndex == 4 then
-    self.rect.x = GameSize.w - self.rect.w
+  self.rect = Rect(hudBorder, hudBorder, 64, 32)
+  if self.index == 2 or self.index == 4 then
+    self.rect.x = GameSize.w - self.rect.w - hudBorder
   end
-  if playerIndex == 3 or playerIndex == 4 then
-    self.rect.y = GameSize.h - self.rect.h
+  if self.index == 3 or self.index == 4 then
+    self.rect.y = GameSize.h - self.rect.h - hudBorder
   end
-  self.color = PlayerColors[playerIndex]
+
+  self.color = PlayerColors[self.index]
   self.shadowColor = map(self.color, function(c)
     return c * 0.5
   end)
@@ -41,10 +41,13 @@ function HUD:drawBase()
   love.graphics.push()
 
   love.graphics.setColor(self.shadowColor)
-  local x = self.rect.x + 2
-  local y = self.rect.y + 2
-  local w = self.rect.w - 4
-  local h = 8
+  local x = self.rect.x
+  local y = self.rect.y
+  local w = self.rect.w
+  local h = self.barHeight
+  if self.index > 2 then
+    y = self.rect.y + self.rect.h - h
+  end
   love.graphics.rectangle("fill", x, y, w, h)
 
   love.graphics.setColor(self.color)
@@ -64,7 +67,7 @@ function HUD:drawBase()
   love.graphics.setColor(255, 255, 255)
   love.graphics.pop()
 
-  self.healthRect = { x = x, y = y, w = w, h = h, }
+  self.healthRect = Rect{ x = x, y = y, w = w, h = h, }
 end
 
 function HUD:update(dt)
@@ -106,9 +109,10 @@ function HUD:draw()
 
   local barWidth = w / self.player.maxHealth
   if barWidth >= 4 then
-    love.graphics.setColor(self.color)
+    healthColor = map(healthColor, function(c) return c * 0.75 end)
+    love.graphics.setColor(healthColor)
     local barX = x
-    for i = 1, self.player.health do
+    for i = 1, self.player.health - 1 do
       barX = barX + barWidth
       love.graphics.rectangle("fill", barX, y, 1, h)
     end
