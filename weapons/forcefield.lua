@@ -45,7 +45,8 @@ function Bubble:update(dt)
     end
     self.despawnTimer = self.despawnTimer - dt
   end
-
+  self.direction = self.owner.direction
+  self.speed = self.owner.speed
   Bite.super.update(self, dt)
-  self:positionToOwner()
+  self.owner:setCenter(self:center())
 end

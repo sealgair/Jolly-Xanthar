@@ -29,7 +29,7 @@ function World:load()
     self.bumpWorld,
     10
   )
-  local playerCount = 1
+  local playerCount = 2
   self.gobs = {}
   self.players = {}
   self.behaviors = {}

@@ -84,6 +84,12 @@ function Gob:center()
   return self:rect():center()
 end
 
+function Gob:setCenter(newCenter)
+  local rect = self:rect()
+  rect:setCenter(newCenter)
+  self.position = rect:origin()
+end
+
 function Gob:setDirection(newDirection)
   self.direction = newDirection
   if self.direction ~= Direction(0, 0) then
