@@ -28,11 +28,17 @@ Bubble = Impactor:extend('Bubble')
 function Bubble:init(opts)
   Bubble.super.init(self, opts)
   self.scaleCanvas = love.graphics.newCanvas()
+  self.spawnTime = 0.3
+  self.despawnTime = 0.5
 end
 
 function Bubble:impact(other)
-  self.despawnTimer = 0.5
-  self:shove(map(other:facingDirection():vector(), function(n) return n * 16 end), 100)
+  if other.facingDirection then
+    if self.despawnTimer == nil then
+      self.despawnTimer = self.despawnTime
+    end
+    self:shove(map(other:facingDirection():vector(), function(n) return n * 16 end), 100)
+  end
 end
 
 function Bubble:update(dt)
@@ -40,11 +46,13 @@ function Bubble:update(dt)
     self.starting = self.starting - dt
     if self.starting <= 0 then self.starting = nil end
   end
-  if self.despawnTimer then
-    if self.despawnTimer == nil then
-      self.despawnTimer = 0.5
+  if self.age > self.spawnTime and self.despawnTimer then
+    if self.despawnTimer <= 0 then
+      self.despawnTimer = nil
+      World:despawn(self)
+    else
+      self.despawnTimer = self.despawnTimer - dt
     end
-    self.despawnTimer = self.despawnTimer - dt
   end
   self.direction = self.owner.direction
   self.speed = self.owner.speed
@@ -55,14 +63,18 @@ end
 function easeInOut(t)
   local ts = (t) * t
   local tc = ts * t
-  return (11.5475 * tc * ts + -21.6925 * ts * ts + 7.495 * tc + 3.1 * ts + 0.55 * t)
+  return (6.2975 * tc * ts + -14.9425 * ts * ts + 8.595 * tc + 0.5 * ts + 0.55 * t)
 end
 
 function Bubble:draw()
-  local spawnTime = 0.3
-  if self.age < spawnTime then
-    local scale = easeInOut(self.age / spawnTime)
+  local scale = 1
+  if self.age < self.spawnTime then
+    scale = easeInOut(self.age / self.spawnTime)
+  elseif self.despawnTimer then
+    scale = easeInOut(self.despawnTimer / self.despawnTime)
+  end
 
+  if scale ~= 1 then
     local oldCavnas = love.graphics.getCanvas()
     self.scaleCanvas:clear()
 
