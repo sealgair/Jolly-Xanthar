@@ -52,10 +52,17 @@ function Bubble:update(dt)
   self.owner:setCenter(self:center())
 end
 
+function easeInOut(t)
+  local ts = (t) * t
+  local tc = ts * t
+  return (11.5475 * tc * ts + -21.6925 * ts * ts + 7.495 * tc + 3.1 * ts + 0.55 * t)
+end
+
 function Bubble:draw()
-  local spawnTime = 0.25
+  local spawnTime = 0.3
   if self.age < spawnTime then
-    local scale = self.age / spawnTime
+    local scale = easeInOut(self.age / spawnTime)
+
     local oldCavnas = love.graphics.getCanvas()
     self.scaleCanvas:clear()
 
