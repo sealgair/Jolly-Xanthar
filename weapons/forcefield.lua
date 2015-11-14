@@ -27,6 +27,7 @@ Bubble = Impactor:extend('Bubble')
 
 function Bubble:init(opts)
   Bubble.super.init(self, opts)
+  self.scaleCanvas = love.graphics.newCanvas()
 end
 
 function Bubble:impact(other)
@@ -49,4 +50,30 @@ function Bubble:update(dt)
   self.speed = self.owner.speed
   Bite.super.update(self, dt)
   self.owner:setCenter(self:center())
+end
+
+function Bubble:draw()
+  local spawnTime = 0.25
+  if self.age < spawnTime then
+    local scale = self.age / spawnTime
+    local oldCavnas = love.graphics.getCanvas()
+    self.scaleCanvas:clear()
+
+    love.graphics.push()
+      love.graphics.setCanvas(self.scaleCanvas)
+
+      local translate = Point(self.position) * -scale
+      love.graphics.translate(translate.x, translate.y)
+      love.graphics.scale(scale)
+      Bubble.super.draw(self)
+
+      love.graphics.setCanvas(oldCavnas)
+    love.graphics.pop()
+
+    local offset = (Point(self.w, self.h) / 2) * (1-scale)
+    local scaledPos = Point(self.position) + offset
+    love.graphics.draw(self.scaleCanvas, scaledPos.x, scaledPos.y)
+  else
+    Bubble.super.draw(self)
+  end
 end
