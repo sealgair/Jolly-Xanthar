@@ -66,7 +66,8 @@ function World:load()
 end
 
 function World:spawn(gob)
-  table.insert(self.gobs, gob)
+  -- handle newest collisions first
+  table.insert(self.gobs, 1, gob)
   self.bumpWorld:add(gob,
     gob.position.x + gob.hitbox.x,
     gob.position.y + gob.hitbox.y,
