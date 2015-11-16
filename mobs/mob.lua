@@ -148,7 +148,9 @@ end
 function Mob:hurt(damage, collision)
   self.agressor = collision.other.owner
   self.health = self.health - damage
-  self:shove(map(collision.other.direction:vector(), function(n) return n * damage * 8 end), 75 * damage)
+  if not self:dead() then
+    self:shove(Point(collision.other.direction) * damage * 8, 75 * damage)
+  end
   self.hurting = self.animInterval
 
   local splatDir = Direction(collision.normal.x, collision.normal.y)

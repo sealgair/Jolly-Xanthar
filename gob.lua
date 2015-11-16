@@ -97,10 +97,12 @@ function Gob:setDirection(newDirection)
   end
 end
 
-function Gob:shove(vector, speed)
+function Gob:shove(vector, speed, duration)
   self.impulse.x = self.impulse.x + vector.x
   self.impulse.y = self.impulse.y + vector.y
-  self.impulse.time = self.impulse.time + self.animInterval
+  self.impulse.speed = speed
+  if duration == nil then duration = self.animInterval end
+  self.impulse.time = self.impulse.time + duration
 end
 
 function Gob:facingDirection()

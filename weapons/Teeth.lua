@@ -7,6 +7,8 @@ function Teeth:init(owner)
     owner = owner,
     confFile = 'assets/weapons/bite.json',
     ProjectileClass = Bite,
+    collideType = 'cross',
+    collidePriority = 15,
     speed = 0,
     damage = 3,
   })
