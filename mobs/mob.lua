@@ -25,6 +25,7 @@ function Mob:init(opts)
 
   self.actions = {}
   self.weapons = {}
+  self.hasHurt = {}
 end
 
 function Mob:setDirection(newDirection)
@@ -169,8 +170,9 @@ function Mob:collide(cols)
   Mob.super.collide(self, cols)
   if self:dead() then return end
   for _, col in pairs(cols) do
-    if col.other.damage and col.other.damage > 0 then
+    if col.other.damage and col.other.damage > 0 and not self.hasHurt[col.other] then
       self:hurt(col.other.damage, col)
+      self.hasHurt[col.other] = true  -- hurt me once, shame on you... (TODO: timeout?)
     end
   end
 end

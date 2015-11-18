@@ -32,6 +32,7 @@ function Bubble:init(opts)
   self.despawnTime = 0.5
   self.baseHitbox = self.hitbox
   self.scale = 1
+  self.damage = 3
 end
 
 function Bubble:impact(other)
@@ -48,9 +49,13 @@ function Bubble:update(dt)
   self.scale = 1
   if self.age < self.spawnTime then
     self.scale = easeInOut(self.age / self.spawnTime)
-  elseif self.despawnTimer then
-    self.scale = easeInOut(self.despawnTimer / self.despawnTime)
+  else
+    self.damage = 0
+    if self.despawnTimer then
+      self.scale = easeInOut(self.despawnTimer / self.despawnTime)
+    end
   end
+
   if self.scale ~= oldScale then
     self.hitbox = self.baseHitbox * math.max(self.scale, 0.1)
     self.hitbox:setCenter(self.baseHitbox:center())
@@ -79,6 +84,14 @@ function easeInOut(t)
   local ts = (t) * t
   local tc = ts * t
   return 24.0475 * tc * ts + -48.9925 * ts * ts + 23.895 * tc + 1.9 * ts + 0.15 * t
+end
+
+function Bubble:animState()
+  if self.damage > 0 then
+    return "attack"
+  else
+    Bubble.super.animState(self)
+  end
 end
 
 function Bubble:draw()
