@@ -87,13 +87,13 @@ function Size:__tostring()
 end
 
 function Size:__mul(s)
-  assert(tonumber(s), "invalid input: " .. x .. " is not a number")
-  return Size(self.w * s, self.h * x)
+  assert(tonumber(s), "invalid input: " .. s .. " is not a number")
+  return Size(self.w * s, self.h * s)
 end
 
 function Size:__div(s)
-  assert(tonumber(s), "invalid input: " .. x .. " is not a number")
-  return Size(self.w / s, self.h / x)
+  assert(tonumber(s), "invalid input: " .. s .. " is not a number")
+  return Size(self.w / s, self.h / s)
 end
 
 Rect = class('Rect')
@@ -200,4 +200,11 @@ end
 function Rect:__sub(other)
   assert(class.isInstance(other, Point), "Cannot subtract "..type(other).." '".."' from Rect")
   return Rect(self:origin() - other, self.w, self.h)
+end
+
+function Rect:__mul(s)
+  assert(tonumber(s), "invalid input: " .. s .. " is not a number")
+  local scaled = Rect(self:origin(), self:size() * s)
+  scaled:setCenter(self:center())
+  return scaled
 end

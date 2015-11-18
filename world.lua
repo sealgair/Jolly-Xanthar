@@ -6,6 +6,7 @@ require 'mobs.behavior'
 require 'indicator'
 require 'hud'
 local bump = require 'lib.bump.bump'
+DEBUG_BUMP = false
 
 World = {}
 
@@ -21,7 +22,7 @@ setmetatable(World, {
 })
 
 function World:load()
-  self.bumpWorld = bump.newWorld(8)
+  self.bumpWorld = bump.newWorld(16)
   self.worldCanvas = love.graphics.newCanvas()
   self.map = WorldMap(
     "assets/worlds/ship1.world",
@@ -86,6 +87,13 @@ function World:update(dt)
 
     -- handle collisions
     local goal = gob:getBoundingBox()
+
+    if gob.hitbox.updated then
+      local newhb = Rect(gob.hitbox) + Point(gob.position)
+      self.bumpWorld:update(gob, newhb.x, newhb.y, newhb.w, newhb.h)
+      gob.hitbox.updated = nil
+    end
+
     local x, y, cols, len = self.bumpWorld:move(gob, goal.x, goal.y, Gob.collideFilter)
     gob:setBoundingBox(Point(x, y))
     collisions[gob] = cols
@@ -180,7 +188,12 @@ function World:draw()
 
   for i, dude in ipairs(self.gobs) do
     dude:draw()
+    if DEBUG_BUMP then
+      local x, y, w, h = self.bumpWorld:getRect(dude)
+      love.graphics.rectangle("line", x, y, w, h)
+    end
   end
+
 
   love.graphics.pop()
   love.graphics.setCanvas()

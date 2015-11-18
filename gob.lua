@@ -102,7 +102,7 @@ function Gob:shove(vector, speed, duration)
   self.impulse.y = self.impulse.y + vector.y
   self.impulse.speed = speed
   if duration == nil then duration = self.animInterval end
-  self.impulse.time = self.impulse.time + duration
+  self.impulse.time = self.impulse.time + self.animInterval
 end
 
 function Gob:facingDirection()

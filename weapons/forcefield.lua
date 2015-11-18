@@ -28,8 +28,10 @@ Bubble = Impactor:extend('Bubble')
 function Bubble:init(opts)
   Bubble.super.init(self, opts)
   self.scaleCanvas = love.graphics.newCanvas()
-  self.spawnTime = 0.3
+  self.spawnTime = 0.5
   self.despawnTime = 0.5
+  self.baseHitbox = self.hitbox
+  self.scale = 1
 end
 
 function Bubble:impact(other)
@@ -42,6 +44,19 @@ function Bubble:impact(other)
 end
 
 function Bubble:update(dt)
+  local oldScale = self.scale
+  self.scale = 1
+  if self.age < self.spawnTime then
+    self.scale = easeInOut(self.age / self.spawnTime)
+  elseif self.despawnTimer then
+    self.scale = easeInOut(self.despawnTimer / self.despawnTime)
+  end
+  if self.scale ~= oldScale then
+    self.hitbox = self.baseHitbox * math.max(self.scale, 0.1)
+    self.hitbox:setCenter(self.baseHitbox:center())
+    self.hitbox.updated = true
+  end
+
   if self.starting then
     self.starting = self.starting - dt
     if self.starting <= 0 then self.starting = nil end
@@ -63,17 +78,10 @@ end
 function easeInOut(t)
   local ts = (t) * t
   local tc = ts * t
-  return (6.2975 * tc * ts + -14.9425 * ts * ts + 8.595 * tc + 0.5 * ts + 0.55 * t)
+  return 24.0475 * tc * ts + -48.9925 * ts * ts + 23.895 * tc + 1.9 * ts + 0.15 * t
 end
 
 function Bubble:draw()
-  local scale = 1
-  if self.age < self.spawnTime then
-    scale = easeInOut(self.age / self.spawnTime)
-  elseif self.despawnTimer then
-    scale = easeInOut(self.despawnTimer / self.despawnTime)
-  end
-
   if scale ~= 1 then
     local oldCavnas = love.graphics.getCanvas()
     self.scaleCanvas:clear()
@@ -81,15 +89,15 @@ function Bubble:draw()
     love.graphics.push()
       love.graphics.setCanvas(self.scaleCanvas)
 
-      local translate = Point(self.position) * -scale
+      local translate = Point(self.position) * -self.scale
       love.graphics.translate(translate.x, translate.y)
-      love.graphics.scale(scale)
+      love.graphics.scale(self.scale)
       Bubble.super.draw(self)
 
       love.graphics.setCanvas(oldCavnas)
     love.graphics.pop()
 
-    local offset = (Point(self.w, self.h) / 2) * (1-scale)
+    local offset = (Point(self.w, self.h) / 2) * (1-self.scale)
     local scaledPos = Point(self.position) + offset
     love.graphics.draw(self.scaleCanvas, scaledPos.x, scaledPos.y)
   else
