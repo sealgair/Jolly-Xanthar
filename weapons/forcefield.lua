@@ -11,6 +11,7 @@ function ForceField:init(owner)
     collidePriority = 20,
     speed = 0,
     damage = 0,
+    rateLimit = 0.5,
   })
 end
 
@@ -19,8 +20,11 @@ function ForceField:start()
 end
 
 function ForceField:stop()
-  World:despawn(self.bubble)
-  self.bubble = nil
+  if self.bubble ~= nil then
+    World:despawn(self.bubble)
+    self.cooldown = math.min(self.rateLimit, self.bubble.age)
+    self.bubble = nil
+  end
 end
 
 Bubble = Impactor:extend('Bubble')
@@ -69,7 +73,7 @@ function Bubble:update(dt)
   if self.age > self.spawnTime and self.despawnTimer then
     if self.despawnTimer <= 0 then
       self.despawnTimer = nil
-      World:despawn(self)
+      self.weapon:stop()
     else
       self.despawnTimer = self.despawnTimer - dt
     end

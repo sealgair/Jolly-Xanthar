@@ -6,6 +6,7 @@
     "idle": [1, 2],
     "attack": [3, 4]
   },
+  "animInterval": 0.1,
   "hitbox": {
     "x": 0, "y": 0, "w": 32, "h": 32
   }

@@ -14,6 +14,7 @@ function Weapon:init(opts)
   else
     self.ProjectileClass = opts.ProjectileClass
   end
+  opts.weapon = self
   self.cooldown = 0
 
   -- save time on expensive processing when creating new bullets on the fly
@@ -51,6 +52,7 @@ function Impactor:init(opts)
   -- required: confFile, owner
   -- optional: speed, damage
   self.owner = opts.owner
+  self.weapon = opts.weapon
   opts.dir = self.owner:facingDirection()
   if opts.speed == nil then
     opts.speed = 0
