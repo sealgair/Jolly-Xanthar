@@ -44,7 +44,8 @@ function Bubble:impact(other)
     if self.despawnTimer == nil then
       self.despawnTimer = self.despawnTime
     end
-    other:shove(Point(self.direction) * 8, 150)
+    local vec = -(self.position - other.position)
+    other:shove(vec, self.speed * 2)
   end
 end
 

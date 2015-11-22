@@ -6,6 +6,18 @@ function round(num)
   end
 end
 
+function math.sum(...)
+  local res = 0
+  for i = 1, select('#', ...) do
+    res = res + select(i, ...)
+  end
+  return res
+end
+
+function math.avg(...)
+  return math.sum(...) / select('#', ...)
+end
+
 function invert(t)
   local inverted = {}
   for key, value in pairs(t) do

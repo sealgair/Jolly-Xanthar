@@ -12,6 +12,7 @@ function Mob:init(opts)
 
   self.maxHealth = coalesce(opts.health, 10)
   self.health = self.maxHealth
+  self.momentum = coalesce(opts.momentum, 10)
 
   self.splatImg = love.graphics.newImage("assets/particles/damage.png")
   self.splat = love.graphics.newParticleSystem(self.splatImg, 64)
@@ -150,7 +151,7 @@ function Mob:hurt(damage, collision)
   self.agressor = collision.other.owner
   self.health = self.health - damage
   if not self:dead() then
-    self:shove(Point(collision.other.direction) * damage * 8, 75 * damage)
+    self:shove(Point(collision.other.direction), 75 * damage)
   end
   self.hurting = self.animInterval
 

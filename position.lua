@@ -64,6 +64,18 @@ function Point:abs()
   return Point(math.abs(self.x), math.abs(self.y))
 end
 
+function Point:magnitude()
+  return math.sqrt(self.x * self.x + self.y * self.y)
+end
+
+function Point:normalize()
+  return self / self:magnitude()
+end
+
+function Point:isZero()
+  return self.x == 0 and self.y == 0
+end
+
 
 Size = class('Size')
 

@@ -4,6 +4,19 @@ require 'utils'
 require 'direction'
 require 'position'
 
+
+local Shove = class("Shove")
+
+function Shove:init(vector, speed, time)
+  self.vector = Point(vector):normalize()
+  self.speed = speed
+  self.time = time
+end
+
+function Shove:offset(dt)
+  return self.vector * (self.speed * dt)
+end
+
 Gob = class('Gob')
 DefaultAnimateInterval = 0.15 --seconds
 
@@ -27,13 +40,7 @@ function Gob:init(opts)
   self.direction = coalesce(opts.dir, Direction(0, 0))
   self.animInterval = coalesce(opts.animInterval, self.conf.animInterval, DefaultAnimateInterval)
   self.collisions = {}
-  self.impulse = {
-    time = 0,
-    x = 0,
-    y = 0,
-    speed = self.speed
-  }
-
+  self.shoves = {}
   if opts.image then
     self.image = opts.image
   else
@@ -98,11 +105,11 @@ function Gob:setDirection(newDirection)
 end
 
 function Gob:shove(vector, speed, duration)
-  self.impulse.x = self.impulse.x + vector.x
-  self.impulse.y = self.impulse.y + vector.y
-  self.impulse.speed = speed
+  if Point(vector):isZero() then
+    return
+  end
   if duration == nil then duration = self.animInterval end
-  self.impulse.time = self.impulse.time + self.animInterval
+  table.insert(self.shoves, Shove(vector, speed, duration))
 end
 
 function Gob:facingDirection()
@@ -141,8 +148,17 @@ end
 function Gob:update(dt)
   self.turnDelay = self.turnDelay - dt
   self.animDelay = self.animDelay - dt
-  if self.impulse.time > 0 then
-    self.impulse.time = math.max(self.impulse.time - dt, 0)
+
+  local removals = {}
+  for shove in values(self.shoves) do
+    if shove.time <= 0 then
+      -- remove before decrementing to give a shove with an arbitrarily small time at least one tick to work
+      table.insert(removals, shove)
+    end
+    shove.time = shove.time - dt
+  end
+  for shove in values(removals) do
+    table.removeValue(self.shoves, shove)
   end
 
   if self.animDelay <= 0 then
@@ -162,21 +178,10 @@ function Gob:update(dt)
     distance = distance / 1.414
   end
 
-  self.position = self.position + (Point(self.direction) * distance)
-
-  if self.impulse.time > 0 then
-    local distance = dt * self.impulse.speed
-
-    for k in values({ 'x', 'y' }) do
-      if self.impulse[k] ~= 0 then
-        local ds = sign(self.impulse[k])
-        self.position[k] = self.position[k] + distance * ds
-        self.impulse[k] = self.impulse[k] - distance * ds
-        if sign(self.impulse[k]) ~= ds then
-          self.impulse[k] = 0
-        end
-      end
-    end
+  self.position = self.position + Point(self.direction) * distance
+  for shove in values(self.shoves) do
+    local ofst = shove:offset(dt)
+    self.position = self.position + ofst
   end
 end
 
@@ -196,6 +201,17 @@ end
 
 function Gob:collide(cols)
   self.collisions = cols
+  for col in values(cols) do
+    local other = col.other
+    if self.momentum ~= nil and other.momentum ~= nil then
+      local momentum = (self.momentum / (self.momentum + other.momentum)) * .5
+      local vec = Point(self.direction)
+      if self.direction == Direction(0, 0) then
+        vec = -Point(other.direction)
+      end
+      other:shove(vec, self.speed * momentum, 0.1)
+    end
+  end
 end
 
 function Gob:draw()

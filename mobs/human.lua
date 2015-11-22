@@ -32,6 +32,7 @@ function Human:init(coord)
     y = coord.y,
     confFile = 'assets/mobs/human.json',
     speed = 50,
+    momentum = 20,
     shader = self.shader
   })
   self.weapons.a = Bolter(self)

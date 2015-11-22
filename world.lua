@@ -253,7 +253,8 @@ function World:draw()
             pos.x = p.x + indSz.w
           end
         end
-      else
+      end
+      if dir == "" then
         dir = "down"
       end
 
