@@ -69,11 +69,13 @@ end
 function World:spawn(gob)
   -- handle newest collisions first
   table.insert(self.gobs, 1, gob)
-  self.bumpWorld:add(gob,
-    gob.position.x + gob.hitbox.x,
-    gob.position.y + gob.hitbox.y,
-    gob.hitbox.w, gob.hitbox.h)
-  gob.bumpWorld = self.bumpWorld
+  if gob.hitbox.w > 0 and gob.hitbox.h > 0 then
+    self.bumpWorld:add(gob,
+      gob.position.x + gob.hitbox.x,
+      gob.position.y + gob.hitbox.y,
+      gob.hitbox.w, gob.hitbox.h)
+    gob.bumpWorld = self.bumpWorld
+  end
 end
 
 function World:despawn(gob)
@@ -94,9 +96,11 @@ function World:update(dt)
       gob.hitbox.updated = nil
     end
 
-    local x, y, cols, len = self.bumpWorld:move(gob, goal.x, goal.y, Gob.collideFilter)
-    gob:setBoundingBox(Point(x, y))
-    collisions[gob] = cols
+    if self.bumpWorld:hasItem(gob) then
+      local x, y, cols, len = self.bumpWorld:move(gob, goal.x, goal.y, Gob.collideFilter)
+      gob:setBoundingBox(Point(x, y))
+      collisions[gob] = cols
+    end
   end
 
   -- resolve collisions

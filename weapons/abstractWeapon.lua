@@ -25,7 +25,7 @@ function Weapon:init(opts)
   prototype.confFile = nil
 end
 
-function Weapon:start()
+function Weapon:fire()
   if self.cooldown <= 0 then
     local bullet = self.ProjectileClass(self.projectileOpts)
     World:spawn(bullet)
@@ -34,6 +34,10 @@ function Weapon:start()
     end
     return bullet
   end
+end
+
+function Weapon:start()
+  return self:fire()
 end
 
 function Weapon:stop()
@@ -51,6 +55,8 @@ Impactor = Gob:extend("Impactor")
 function Impactor:init(opts)
   -- required: confFile, owner
   -- optional: speed, damage
+  if opts == nil then opts = {} end
+
   self.owner = opts.owner
   self.weapon = opts.weapon
   opts.dir = self.owner:facingDirection()

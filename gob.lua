@@ -33,8 +33,12 @@ function Gob:init(opts)
 
   self.w = self.conf.w
   self.h = self.conf.h
-  self.hitbox = Rect(self.conf.hitbox)
-  self.animations = self.conf.animations
+  if self.conf.hitbox then
+    self.hitbox = Rect(self.conf.hitbox)
+  else
+    self.hitbox = Rect(0,0,0,0)
+  end
+  self.animations = coalesce(self.conf.animations, {})
 
   self.speed = coalesce(opts.speed, 40)
   self.direction = coalesce(opts.dir, Direction(0, 0))
@@ -43,31 +47,34 @@ function Gob:init(opts)
   self.shoves = {}
   if opts.image then
     self.image = opts.image
-  else
+  elseif self.conf.image then
     self.image = love.graphics.newImage(self.conf.image)
   end
-  local tw, th = self.image:getWidth(), self.image:getHeight()
-  if opts.shader then
-    local canvas = love.graphics.newCanvas(tw, th)
-    love.graphics.setCanvas(canvas)
-    love.graphics.setShader(opts.shader)
-    love.graphics.draw(self.image)
-    love.graphics.setShader()
-    love.graphics.setCanvas()
-    self.image = canvas
-  end
 
-  self.quads = opts.quads
-  if opts.quads == nil then
-    self.quads = {}
-    for i, dir in ipairs(Direction.keys) do
-      local quadList = {}
-      local y = (i - 1) * self.h
-      if y >= th then y = 0 end
-      for x = 0, tw - self.w, self.w do
-        table.insert(quadList, love.graphics.newQuad(x, y, self.w, self.h, tw, th))
+  if self.image then
+    local tw, th = self.image:getWidth(), self.image:getHeight()
+    if opts.shader then
+      local canvas = love.graphics.newCanvas(tw, th)
+      love.graphics.setCanvas(canvas)
+      love.graphics.setShader(opts.shader)
+      love.graphics.draw(self.image)
+      love.graphics.setShader()
+      love.graphics.setCanvas()
+      self.image = canvas
+    end
+
+    self.quads = opts.quads
+    if opts.quads == nil then
+      self.quads = {}
+      for i, dir in ipairs(Direction.keys) do
+        local quadList = {}
+        local y = (i - 1) * self.h
+        if y >= th then y = 0 end
+        for x = 0, tw - self.w, self.w do
+          table.insert(quadList, love.graphics.newQuad(x, y, self.w, self.h, tw, th))
+        end
+        self.quads[dir] = quadList
       end
-      self.quads[dir] = quadList
     end
   end
 
@@ -134,7 +141,7 @@ function Gob:setBoundingBox(box)
 end
 
 function Gob:animState()
-  if self.direction ~= Direction(0, 0) then
+  if self.speed > 0 and self.direction ~= Direction(0, 0) then
     return "walk"
   else
     return "idle"
@@ -142,7 +149,7 @@ function Gob:animState()
 end
 
 function Gob:animFrames()
-  return coalesce(self.animations[self:animState()], self.animations["idle"])
+  return coalesce(self.animations[self:animState()], self.animations["idle"], {})
 end
 
 function Gob:update(dt)

@@ -27,6 +27,8 @@ function Mob:init(opts)
   self.actions = {}
   self.weapons = {}
   self.hasHurt = {}
+
+  self.modifiers = {}
 end
 
 function Mob:setDirection(newDirection)
@@ -97,6 +99,12 @@ function Mob:animState()
 end
 
 function Mob:update(dt)
+  local modified = {}
+  for k, modifier in pairs(self.modifiers) do
+    modified[k] = self[k]
+    self[k] = modifier(self[k])
+  end
+
   if self.agressor and self.agressor:dead() then
     self.agressor = nil
   end
@@ -122,6 +130,10 @@ function Mob:update(dt)
   self.splat:update(dt)
   for k, weapon in pairs(self.weapons) do
     weapon:update(dt)
+  end
+
+  for k, val in pairs(modified) do
+    self[k] = val
   end
 end
 

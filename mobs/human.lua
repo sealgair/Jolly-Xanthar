@@ -1,5 +1,6 @@
 require 'mobs.mob'
 require 'weapons.bolter'
+require 'weapons.laser'
 require 'weapons.forcefield'
 
 Human = Mob:extend('Human')
@@ -35,6 +36,6 @@ function Human:init(coord)
     momentum = 20,
     shader = self.shader
   })
-  self.weapons.a = Bolter(self)
+  self.weapons.a = LaserRifle(self)
   self.weapons.b = ForceField(self)
 end
