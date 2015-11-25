@@ -28,11 +28,18 @@ function LaserRifle:stop()
   if self.tracer then
     World:despawn(self.tracer)
     self.laser = self:fire(Laser)
-    self.owner.modifiers.newDirection = function() return nil end
+    self.owner.modifiers.newDirection = function(new)
+      if new ~= nil then
+        self.doneDirection = new
+      end
+      return nil
+    end
 
     local finish = function()
       self.owner.modifiers.speed = nil
       self.owner.modifiers.newDirection = nil
+      self.owner:setDirection(self.doneDirection)
+      self.doneDirection = nil
     end
 
     if self.laser ~= nil then

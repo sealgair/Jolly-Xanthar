@@ -38,7 +38,7 @@ function Mob:setDirection(newDirection)
   end
 
   if self.modifiers.newDirection then
-    newDirection = self.modifiers.newDirection(oldDirection, newDirection)
+    newDirection = self.modifiers.newDirection(newDirection)
   end
 
   if newDirection == self.direction or newDirection == nil then
