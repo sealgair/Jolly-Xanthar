@@ -56,18 +56,30 @@ function Tracer:update(dt)
   self:setCenter(self.owner:center())
 end
 
+function Tracer:width()
+  return 1
+end
+
 function Tracer:draw()
   local dir = Point(self.owner:facingDirection())
   local from = self.position + dir * 4
   local to = from + dir * 200
+
   local r, g, b, a = love.graphics.getColor()
+  local oldWidth = love.graphics.getLineWidth()
+  local width = self:width()
+
   love.graphics.setColor(self.color)
+  love.graphics.setLineWidth(width)
+
   love.graphics.line(from.x, from.y, to.x, to.y)
+
   love.graphics.setColor(r, g, b, a)
+  love.graphics.setLineWidth(oldWidth)
 end
 
 
-Laser = Impactor:extend("Laser")
+Laser = Tracer:extend("Laser")
 
 function Laser:init(opts)
   Laser.super.init(self, opts)
@@ -77,7 +89,6 @@ end
 
 function Laser:update(dt)
   Laser.super.update(self, dt)
-  self:setCenter(self.owner:center())
   if self.done then
     if self.finish then
       self.finish()
@@ -86,24 +97,7 @@ function Laser:update(dt)
   end
 end
 
-function ease(x)
+function Laser:width()
+  local x = self.age / self.maxAge
   return -12*x*x + 12*x + .5
-end
-
-function Laser:draw()
-  local dir = Point(self.owner:facingDirection())
-  local from = self.position + dir * 4
-  local to = from + dir * 200
-
-  local r, g, b, a = love.graphics.getColor()
-  local oldWidth = love.graphics.getLineWidth()
-  local width = ease(self.age / self.maxAge)
-
-  love.graphics.setColor(self.color)
-  love.graphics.setLineWidth(width)
-
-  love.graphics.line(from.x, from.y, to.x, to.y)
-
-  love.graphics.setColor(r, g, b, a)
-  love.graphics.setLineWidth(oldWidth)
 end
