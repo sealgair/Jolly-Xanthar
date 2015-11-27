@@ -7,6 +7,5 @@ function Wall:collidesWith(b)
   return "slide", 1
 end
 
-
 function Wall:collide(cols)
 end

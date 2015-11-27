@@ -101,13 +101,32 @@ function World:update(dt)
       gob:setBoundingBox(Point(x, y))
       collisions[gob] = cols
     end
+    if gob.hitLine then
+      local itemInfo, len = self.bumpWorld:querySegmentWithCoords(
+        gob.hitLine.x1, gob.hitLine.y1,
+        gob.hitLine.x2, gob.hitLine.y2
+      )
+      if gob.hitLineStop then
+        local limitedInfo = {}
+        for info in values(itemInfo) do
+          table.insert(limitedInfo, info)
+          if gob:hitLineStop(info.item) then
+            gob.hitLine.x2 = info.x1
+            gob.hitLine.y2 = info.y1
+            break
+          end
+        end
+        itemInfo = limitedInfo
+      end
+      collisions[gob] = itemInfo
+    end
   end
 
   -- resolve collisions
   for gob, cols in pairs(collisions) do
     gob:collide(cols)
     for _, col in pairs(cols) do
-      local other = col.other
+      local other = coalesce(col.other, col.item)
       if other.collide then
         col.other = gob
         other:collide({col})

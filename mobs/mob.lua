@@ -171,8 +171,10 @@ function Mob:hurt(damage, collision)
   end
   self.hurting = self.animInterval
 
-  local splatDir = Direction(collision.normal.x, collision.normal.y)
-  self.splat:setDirection(splatDir:radians())
+  if collision.normal then
+    local splatDir = Direction(collision.normal.x, collision.normal.y)
+    self.splat:setDirection(splatDir:radians())
+  end
   self.splat:setEmitterLifetime(0.1)
   self.splat:start()
 

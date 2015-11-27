@@ -44,11 +44,13 @@ function Behavior:wander(dt)
     local newx = self.wanderDirection.x
     local newy = self.wanderDirection.y
     for _, col in pairs(self.mob.collisions) do
-      if col.normal.x ~= 0 then
-        newx = col.normal.x
-      end
-      if col.normal.y ~= 0 then
-        newy = col.normal.y
+      if col.normal then
+        if col.normal.x ~= 0 then
+          newx = col.normal.x
+        end
+        if col.normal.y ~= 0 then
+          newy = col.normal.y
+        end
       end
     end
     self.wanderDirection = Direction(newx, newy)
