@@ -104,10 +104,31 @@ function Laser:init(opts)
   self.color = {250, 0, 0, 255}
   self.maxAge = 0.5
   self.damage = 3
+  self.splatImg = love.graphics.newImage("assets/particles/laser.png")
+  self.splats = {}
 end
 
 function Laser:hitLineStop(item)
   return class.isInstance(item, Wall)
+end
+
+function Laser:collide(cols)
+  Laser.super.collide(self, cols)
+  for col in values(cols) do
+    if col.item ~= self.owner then
+      local splat = love.graphics.newParticleSystem(self.splatImg, 64)
+      splat:setEmissionRate(16)
+      splat:setSpread(math.pi)
+      splat:setSizeVariation(1)
+      splat:setParticleLifetime(0.1, 0.3)
+      splat:setRotation(0, 2 * math.pi)
+      splat:setSpeed(50)
+      splat:setEmitterLifetime(0.1)
+      splat:start()
+      splat:setPosition(col.x1, col.y1)
+      table.insert(self.splats, splat)
+    end
+  end
 end
 
 function Laser:update(dt)
@@ -117,6 +138,17 @@ function Laser:update(dt)
       self.finish()
     end
     World:despawn(self)
+  end
+  for splat in values(self.splats) do
+    splat:update(dt)
+  end
+end
+
+function Laser:draw()
+  Laser.super.draw(self)
+  for splat in values(self.splats) do
+    local x, y = splat:getPosition()
+    love.graphics.draw(splat)
   end
 end
 
