@@ -7,6 +7,8 @@ require 'menu.controls'
 GameSize = Size{ w = 256, h = 240 }
 GameScale = { x = 3, y = 3 }
 
+Fonts = {}
+
 local StateMachine = {
   states = {},
   transitions = {},
@@ -39,6 +41,14 @@ function love.load(arg)
   if arg[#arg] == "-debug" then require("mobdebug").start() end
   love.window.setMode(GameSize.w * GameScale.x, GameSize.h * GameScale.y)
   love.graphics.setDefaultFilter("nearest", "nearest")
+
+  local glyphs = " "..
+  "abcdefghijklmnopqrstuvwxyz"..
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZ"..
+  "1234567890"..
+  ".,!?-+/():;%&`'*#=[]\\\""..
+  "ϙϘ"
+  Fonts[5] = love.graphics.newImageFont("assets/fonts/font5.png", glyphs)
 
   Controller:load()
   StateMachine.states = {

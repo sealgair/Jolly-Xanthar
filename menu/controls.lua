@@ -19,7 +19,7 @@ function Controls:load(fsm)
     return love.graphics.newQuad(ww + x, y, w, h, sw, sh)
   end
 
-  local cw = 56
+  local cw = 65
   local ch = 74
   local pw = 34
   local ph = 46
@@ -27,14 +27,14 @@ function Controls:load(fsm)
     done = selectQuad(0, 0, 64, 24),
     setAll = selectQuad(72, 0, 64, 24),
     reset = selectQuad(160, 0, 80, 24),
-    up = selectQuad(16, 36, cw, ch),
-    down = selectQuad(73, 36, cw, ch),
-    left = selectQuad(129, 36, cw, ch),
-    right = selectQuad(185, 36, cw, ch),
-    select = selectQuad(16, 110, cw, ch),
-    start = selectQuad(73, 110, cw, ch),
-    b = selectQuad(129, 110, cw, ch),
-    a = selectQuad(185, 110, cw, ch),
+    up =    selectQuad(0, 36, cw, ch),
+    down =  selectQuad(64, 36, cw, ch),
+    left =  selectQuad(128, 36, cw, ch),
+    right = selectQuad(192, 36, cw, ch),
+    select = selectQuad(0, 110, cw, ch),
+    start =  selectQuad(64, 110, cw, ch),
+    b =      selectQuad(128, 110, cw, ch),
+    a =      selectQuad(192, 110, cw, ch),
   }
   self.playerQuads = {
     selectQuad(46, 182, pw, ph),
@@ -50,17 +50,17 @@ function Controls:load(fsm)
   Controller:register(self, 1)
 
   self.controlLocations = {
-    up = { x = 21, y = 59, w = 46, h = 46 },
-    down = { x = 77, y = 59, w = 46, h = 46 },
-    left = { x = 133, y = 59, w = 46, h = 46 },
-    right = { x = 189, y = 59, w = 46, h = 46 },
-    select = { x = 21, y = 129, w = 46, h = 46 },
-    start = { x = 77, y = 129, w = 46, h = 46 },
-    b = { x = 133, y = 129, w = 46, h = 46 },
-    a = { x = 189, y = 129, w = 46, h = 46 },
+    up =    { x = 2,   y = 59, w = 60, h = 46 },
+    down =  { x = 68,  y = 59, w = 60, h = 46 },
+    left =  { x = 130, y = 59, w = 60, h = 46 },
+    right = { x = 194, y = 59, w = 60, h = 46 },
+    select = { x = 2,  y = 129, w = 60, h = 46 },
+    start =  { x = 68, y = 129, w = 60, h = 46 },
+    b =      { x = 130, y = 129, w = 60, h = 46 },
+    a =      { x = 194, y = 129, w = 60, h = 46 },
   }
-  self.controlFont = love.graphics.newFont(7)
-  self.setterFont = love.graphics.newFont(9)
+  self.controlFont = Fonts[5]
+  self.setterFont = Fonts[5]
 end
 
 function Controls:activate()
