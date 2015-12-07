@@ -1,6 +1,6 @@
 require 'weapons.abstractWeapon'
 
-ForceField = Weapon:extend('ForceField')
+ForceField = Weapon:extend('Shield')
 
 function ForceField:init(owner)
   ForceField.super.init(self, {

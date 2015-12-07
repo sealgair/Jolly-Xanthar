@@ -1,7 +1,7 @@
 require 'weapons.abstractWeapon'
 require 'wall'
 
-LaserRifle = Weapon:extend('LaserRifle')
+LaserRifle = Weapon:extend('Laser')
 
 function LaserRifle:init(owner)
   LaserRifle.super.init(self, {

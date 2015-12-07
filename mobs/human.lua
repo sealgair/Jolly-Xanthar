@@ -52,7 +52,21 @@ function Human:init(coord, colors, weapons, name)
   end
 
   if name == nil then
-    self.name = "Bilge Rat"
+    local forenames = {}
+    for n in love.filesystem.lines("assets/forenames.txt") do
+      table.insert(forenames, n)
+    end
+    local forename = forenames[math.random(#forenames)]
+    forenames = nil
+
+    local surnames = {}
+    for n in love.filesystem.lines("assets/surnames.txt") do
+      table.insert(surnames, n)
+    end
+    local surname = surnames[math.random(#surnames)]
+    surnames = nil
+
+    self.name = forename .. " " .. surname
   else
     self.name = name
   end
