@@ -115,7 +115,7 @@ function Controls:keyreleased(key)
     self.setKeysFor.keys[key] = nil
   end
   local n = 0
-  for k, t in pairs(self.setKeysFor.keys) do
+  for t in values(self.setKeysFor.keys) do
     if t <= 0 then
       n = n + 1
     end

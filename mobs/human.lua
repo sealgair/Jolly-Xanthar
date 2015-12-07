@@ -5,18 +5,21 @@ require 'weapons.forcefield'
 
 Human = Mob:extend('Human')
 
-function Human:init(coord)
+function Human:init(coord, colors, weapons, name)
   local palette = love.graphics.newImage('assets/palette.bmp'):getData()
   local choices = palette:getHeight()
 
-  local toColors = {}
+  local toColors = colors
   local seen = {}
-  for i = 1,3 do
-    local c
-    repeat c = math.random(0, choices) until seen[c] == nil
-    seen[c] = true
-    table.insert(toColors, {palette:getPixel(0, c)})
-    table.insert(toColors, {palette:getPixel(1, c)})
+  if toColors == nil then
+    toColors = {}
+    for i = 1,3 do
+      local c
+      repeat c = math.random(0, choices - 1) until seen[c] == nil
+      seen[c] = true
+      table.insert(toColors, {palette:getPixel(0, c)})
+      table.insert(toColors, {palette:getPixel(1, c)})
+    end
   end
 
   self.shader = palletSwapShader({
@@ -36,6 +39,21 @@ function Human:init(coord)
     momentum = 20,
     shader = self.shader
   })
-  self.weapons.a = LaserRifle(self)
-  self.weapons.b = ForceField(self)
+
+  if weapons == nil then
+    local allWeapons = {Bolter, LaserRifle, ForceField }
+    local a = math.random(1, #allWeapons)
+    local b
+    repeat b = math.random(1, #allWeapons) until b ~= a
+    self.weapons.a = allWeapons[a](self)
+    self.weapons.b = allWeapons[b](self)
+  else
+    self.weapons = weapons
+  end
+
+  if name == nil then
+    self.name = "Bilge Rat"
+  else
+    self.name = name
+  end
 end

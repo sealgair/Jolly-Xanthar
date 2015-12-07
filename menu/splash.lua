@@ -3,7 +3,8 @@ require "direction"
 
 Splash = {
   items = {
-    'start',
+    'continue',
+    'new',
     'controls'
   },
   SplashQuads = {}
@@ -17,10 +18,10 @@ function Splash:load(fsm)
   local sw, sh = self.menuImg:getWidth(), self.menuImg:getHeight()
   local w, h = 64, 16
   for i, item in ipairs(self.items) do
-    y = (i - 1) * h
+    local y = (i - 1) * h
     self.SplashQuads[i] = {
       inactive = love.graphics.newQuad(0, y, w, h, sw, sh),
-      active   = love.graphics.newQuad(w, y, w, h, sw, sh)
+      active   = love.graphics.newQuad(w, y, w, h, sw, sh),
     }
   end
 
@@ -53,7 +54,7 @@ function Splash:draw()
       state = 'active'
     end
     i = i - 1
-    y = 48 + (i * 16)
+    local y = 48 + (i * 16)
     love.graphics.draw(self.menuImg, quads[state], 160, y)
   end
 end
