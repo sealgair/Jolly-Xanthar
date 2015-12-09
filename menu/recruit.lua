@@ -37,13 +37,16 @@ function Slot:draw(active)
 
   self.lifeForm:draw()
   love.graphics.setFont(Fonts[5])
-  local pos = self.rect:origin() + Point(4, 22)
-  local weapons = "A:"..self.lifeForm.weapons.a.name
-  weapons = weapons.." B:"..self.lifeForm.weapons.b.name
-  love.graphics.printf(weapons, pos.x, pos.y, self.rect.w, "left")
+  local pos = self.rect:origin() + Point(22, 6)
+  love.graphics.printf(self.lifeForm.name, pos.x, pos.y, 126, "left")
 
-  local namePos = self.rect:origin() + Point(4, 36)
-  love.graphics.printf(self.lifeForm.name, namePos.x, namePos.y, 126, "left")
+  pos = self.rect:origin() + Point(4, 22)
+  local weapona = "A:"..self.lifeForm.weapons.a.name
+  love.graphics.printf(weapona, pos.x, pos.y, self.rect.w, "left")
+
+  pos = pos + Point(0, 11)
+  local weaponb = "B:"..self.lifeForm.weapons.b.name
+  love.graphics.printf(weaponb, pos.x, pos.y, self.rect.w, "left")
 
   love.graphics.pop()
 end
