@@ -1,7 +1,7 @@
 require 'controller'
 require 'utils'
 require 'world'
-require 'recruit'
+require 'menu.recruit'
 require 'menu.splash'
 require 'menu.controls'
 

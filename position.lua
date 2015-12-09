@@ -22,6 +22,10 @@ function Point:__tostring()
   return "("..self.x..", "..self.y..")"
 end
 
+function Point:__eq(other)
+  return self.x == other.x and self.y == other.y
+end
+
 function Point:__unm()
   return Point(-self.x, -self.y)
 end
@@ -202,6 +206,11 @@ function Rect:intersects(other)
        and self.y < other:bottom() and self:bottom() > other.y
   end
   return false
+end
+
+function Rect:inset(x, y)
+  y = coalesce(y, x)
+  return Rect(self.x + x, self.y + y, self.w - 2*x, self.h - 2*y)
 end
 
 function Rect:__add(other)
