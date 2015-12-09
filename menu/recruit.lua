@@ -41,11 +41,11 @@ function Slot:draw(active)
   love.graphics.printf(self.lifeForm.name, pos.x, pos.y, 126, "left")
 
   pos = self.rect:origin() + Point(4, 22)
-  local weapona = "A:"..self.lifeForm.weapons.a.name
+  local weapona = "A: "..self.lifeForm.weapons.a.name
   love.graphics.printf(weapona, pos.x, pos.y, self.rect.w, "left")
 
   pos = pos + Point(0, 11)
-  local weaponb = "B:"..self.lifeForm.weapons.b.name
+  local weaponb = "B: "..self.lifeForm.weapons.b.name
   love.graphics.printf(weaponb, pos.x, pos.y, self.rect.w, "left")
 
   love.graphics.pop()
@@ -64,13 +64,15 @@ function Recruit:load(fsm, remaining)
   local sx1, sx2 = 0, 129
 
   self.slots = {}
-
   for y = 49, GameSize.h, 48 do
     table.insert(self.slots,
       {Slot(Rect(sx1,  y, sw, sh)), Slot(Rect(sx2,  y, sw, sh))}
     )
   end
   self.activeID = Point(1, 1)
+
+  self.rotateSpeed = DefaultAnimateInterval
+  self.rotate = self.rotateSpeed
 end
 
 function Recruit:setDirection(direction)
@@ -82,20 +84,36 @@ function Recruit:setDirection(direction)
 end
 
 function Recruit:controlStop(action)
-  local item = self.slots[self.activeID.y][self.activeID.x]
+  local slot = self.slots[self.activeID.y][self.activeID.x]
   if action == 'a'then
-    item.recruited = true
+    slot.recruited = true
+    local lf = slot.lifeForm
+    lf:setDirection(Direction.down)
   end
   if action == 'b'then
-    if item.recruited then
-      item.recruited = false
+    if slot.recruited then
+      slot.recruited = false
     else
-      item:newLifeForm()
+      slot:newLifeForm()
     end
   end
 end
 
 function Recruit:update(dt)
+  if self.rotate <= 0 then
+    self.rotate = self.rotateSpeed
+
+    for slotRow in values(self.slots) do
+      for slot in values(slotRow) do
+        if not slot.recruited then
+          local lf = slot.lifeForm
+          lf:setDirection(lf:facingDirection():turnRight())
+        end
+      end
+    end
+  else
+    self.rotate = self.rotate - dt
+  end
 end
 
 function Recruit:draw()
@@ -104,7 +122,6 @@ function Recruit:draw()
   for y, slotRow in ipairs(self.slots) do
     for x, slot in ipairs(slotRow) do
       local active = self.activeID == Point(x, y)
---      print("slot", Point(x, y), self.activeID, active)
       slot:draw(active)
     end
   end
