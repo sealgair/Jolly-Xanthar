@@ -5,6 +5,7 @@ Abbie
 Abdallah
 Abigail
 Abubakr
+Adahy
 Adaline
 Addie
 Adelia
@@ -83,10 +84,14 @@ Asha
 Ashraqat
 Asteroid
 Astrid
+Ata'halne
 Atilla
+Atsadi
 Ava
 Avril
+Awenasa
 Aya
+Ayita
 Azucena
 Barb
 Barbie
@@ -215,6 +220,7 @@ Dean
 Deanna
 Debbie
 Debroah
+Degataga
 Delilah
 Deloris
 Delphia
@@ -226,6 +232,7 @@ Deonna
 Despina
 Devon
 Devona
+Dezba
 Dia
 Diamond
 Dianna
@@ -382,6 +389,7 @@ Hilda
 Hina
 Hinano
 Hiro
+Hok'ee
 Holli
 Hollis
 Homer
@@ -401,6 +409,7 @@ In
 Indira
 Inell
 Ingrid
+Inola
 Ioane
 Iola
 Ion
@@ -540,6 +549,7 @@ Leoma
 Leon
 Leonore
 Leontine
+Leotie
 Lera
 Les
 Leta
@@ -602,6 +612,7 @@ Major
 Malachite
 Malcom
 Malissa
+Manaba
 Manua
 Manual
 Maple
@@ -680,11 +691,13 @@ Myra
 Myrdin
 Myrta
 Na
+Naalnish
 Nadene
 Nadia
 Nakia
 Nakita
 Napoleon
+Nascha
 Neely
 Nerissa
 Nery
@@ -699,6 +712,7 @@ Nikau
 Niko
 Nikora
 Ning
+Ninovan
 Nita
 Noa
 Noah
@@ -723,6 +737,7 @@ Olga
 Oliver
 Olivia
 Onni
+Ooljee
 Opal
 Ora
 Oralia  
@@ -764,7 +779,6 @@ Qiong
 Quasar
 Quinnn
 Quyen
-Rachel
 Rae
 Rain
 Raina
@@ -817,6 +831,7 @@ Russel
 Ruth
 Saanvi
 Sahar
+Salal
 Salvador
 Samara
 Samhain
@@ -866,6 +881,7 @@ Shirl
 Shondra
 Shonna
 Shu
+Sicheii
 Sid
 Signe
 Sigrid
@@ -885,6 +901,7 @@ Sunny
 Susan
 Sybil
 Taha
+Tahoma
 Tai
 Takisha
 Tamar
@@ -921,6 +938,7 @@ Ti
 Tia
 Tiana
 Tiare
+Tibah
 Tigran
 Ting
 Tiny
@@ -943,10 +961,11 @@ Tracy
 Trinh
 Tristian
 Trula
+Tsintah
 Twana
 Twila
 Tyree
-Tyrone  
+Tyrone
 Uendi
 Vaea
 Valda
@@ -1005,6 +1024,7 @@ Yadira
 Yael
 Yagmur
 Yan
+Yanaha
 Yasmin
 Yasmine
 Yassin

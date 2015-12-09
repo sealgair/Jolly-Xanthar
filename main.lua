@@ -9,6 +9,7 @@ GameSize = Size{ w = 256, h = 240 }
 GameScale = { x = 3, y = 3 }
 
 Fonts = {}
+math.randomseed( os.time() )
 
 local StateMachine = {
   states = {},
