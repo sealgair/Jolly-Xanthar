@@ -1,6 +1,5 @@
 Aadhya
 Aarav
-Aaron
 Abbie
 Abdallah
 Abigail
@@ -115,9 +114,7 @@ Bi
 Bibi
 Big
 Bilal
-Billie
-Billy
-Birgit
+Brigit
 Black
 Blanche
 Bo
@@ -136,7 +133,6 @@ Britta
 Brock
 Bronwyn
 Brook  
-Bryan
 Buffy
 Byron
 Cadence
@@ -573,6 +569,7 @@ Livia
 Lizeth
 Lizzie
 Lloyd
+Llewyn
 Lois
 Lola
 Loma
@@ -838,7 +835,6 @@ Samhain
 Samuel
 Sanford
 Sang
-Sanjuana
 Sanora
 Santana
 Sarina
@@ -1043,3 +1039,4 @@ Zeke
 Zhen
 Zoe
 Zsofia
+Madge

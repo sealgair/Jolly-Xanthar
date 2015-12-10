@@ -36,7 +36,7 @@ function Slot:draw(active)
   end
 
   self.lifeForm:draw()
-  love.graphics.setFont(Fonts[5])
+  love.graphics.setFont(Fonts[10])
   local pos = self.rect:origin() + Point(22, 6)
   love.graphics.printf(self.lifeForm.name, pos.x, pos.y, 126, "left")
 
@@ -52,13 +52,14 @@ function Slot:draw(active)
 end
 
 Recruit = {
+  recruitCount = 0
 }
 
-function Recruit:load(fsm, remaining)
+function Recruit:load(fsm, total)
   self.fsm = fsm
   Controller:register(self, 1)
   self.background = love.graphics.newImage('assets/Recruit.png')
-  self.remaining = coalesce(remaining, 6)
+  self.total = coalesce(total, 6)
 
   local sw, sh = 127, 47
   local sx1, sx2 = 0, 129
@@ -103,11 +104,14 @@ function Recruit:update(dt)
   if self.rotate <= 0 then
     self.rotate = self.rotateSpeed
 
+    self.recruitCount = 0
     for slotRow in values(self.slots) do
       for slot in values(slotRow) do
         if not slot.recruited then
           local lf = slot.lifeForm
           lf:setDirection(lf:facingDirection():turnRight())
+        else
+          self.recruitCount = self.recruitCount + 1
         end
       end
     end
@@ -119,10 +123,14 @@ end
 function Recruit:draw()
   love.graphics.draw(self.background, 0, 0)
 
+  local r = 0
   for y, slotRow in ipairs(self.slots) do
     for x, slot in ipairs(slotRow) do
       local active = self.activeID == Point(x, y)
       slot:draw(active)
     end
   end
+
+  love.graphics.setFont(Fonts[16])
+  love.graphics.printf(self.recruitCount .. "/" .. self.total .. " Recruits", 0, 6, 256, "center")
 end

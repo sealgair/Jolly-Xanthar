@@ -59,8 +59,8 @@ function Controls:load(fsm)
     b =      { x = 130, y = 129, w = 60, h = 46 },
     a =      { x = 194, y = 129, w = 60, h = 46 },
   }
-  self.controlFont = Fonts[5]
-  self.setterFont = Fonts[5]
+  self.controlFont = Fonts[10]
+  self.setterFont = Fonts[10]
 end
 
 function Controls:activate()

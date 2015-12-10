@@ -48,9 +48,9 @@ function love.load(arg)
   "abcdefghijklmnopqrstuvwxyz"..
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ"..
   "1234567890"..
-  ".,!?-+/():;%&`'*#=[]\\\""..
-  "ϙϘ"
-  Fonts[5] = love.graphics.newImageFont("assets/fonts/font5.png", glyphs)
+  ".,!?-+/():;%&`'*#=[]\\\""
+  Fonts[10] = love.graphics.newImageFont("assets/fonts/font10.png", glyphs)
+  Fonts[16] = love.graphics.newImageFont("assets/fonts/font16.png", glyphs)
 
   Controller:load()
   StateMachine.states = {
