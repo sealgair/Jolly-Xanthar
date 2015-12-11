@@ -77,6 +77,10 @@ function Recruit:load(fsm, total)
   self.rotate = self.rotateSpeed
 end
 
+function Recruit:activate(ship)
+  self.ship = ship
+end
+
 function Recruit:setDirection(direction)
   if self:done() then return end
   if direction ~= self.controlDirection then
@@ -160,7 +164,7 @@ function Recruit:draw()
   end
 
   love.graphics.setFont(Fonts[16])
-  love.graphics.printf(self.recruitCount .. "/" .. self.total .. " Recruits", 0, 6, 256, "center")
+  love.graphics.printf(self.ship .. ": " ..self.recruitCount .. "/" .. self.total, 0, 6, 256, "center")
 
   if self:done() then
     love.graphics.setColor(0, 0, 0)

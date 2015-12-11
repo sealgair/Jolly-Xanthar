@@ -3,6 +3,7 @@ require 'utils'
 require 'world'
 require 'menu.recruit'
 require 'menu.splash'
+require 'menu.keyboard'
 require 'menu.controls'
 
 GameSize = Size{ w = 256, h = 240 }
@@ -48,7 +49,7 @@ function love.load(arg)
   "abcdefghijklmnopqrstuvwxyz"..
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ"..
   "1234567890"..
-  ".,!?-+/():;%&`'*#=[]\\\""
+  ".,!?-+/():;%&`'*#=[]\\\"_|Ø"
   Fonts[10] = love.graphics.newImageFont("assets/fonts/font10.png", glyphs)
   Fonts[16] = love.graphics.newImageFont("assets/fonts/font16.png", glyphs)
 
@@ -58,12 +59,16 @@ function love.load(arg)
     recruit = Recruit,
     menu = Splash,
     controls = Controls,
+    keyboard = Keyboard("Name Your Ship"),
   }
   StateMachine.transitions = {
     menu = {
       continue = "world",
-      new = "recruit",
+      new = "keyboard",
       controls = "controls",
+    },
+    keyboard = {
+      done = "recruit"
     },
     controls = {
       done = "world",

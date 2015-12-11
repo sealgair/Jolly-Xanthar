@@ -1,13 +1,8 @@
 class = require 'lib/30log/30log'
 
-MenuItem = class('MenuItem')
-
-function MenuItem:Init(rect, quads)
-end
-
 Menu = class('Menu')
 
-function Menu:Init(itemGrid, initialItem)
+function Menu:init(itemGrid, initialItem)
   self.itemGrid = itemGrid
   self.initial = coalesce(initialItem, {x=1, y=1})
 end
@@ -24,17 +19,20 @@ end
 function Menu:setDirection(direction)
   if self.direction ~= direction then
     self.direction = direction
-    self.selected.y = wrapping(self.selected.y + direction.y, #self.items)
-    local row = self.items[self.selected.y]
+    self.selected.y = wrapping(self.selected.y + direction.y, #self.itemGrid)
+    local row = self.itemGrid[self.selected.y]
     self.selected.x = wrapping(self.selected.x + direction.x, #row)
   end
 end
 
 function Menu:controlStop(action)
-  if action == 'a' or action == 'start' then
+  if action == 'a' then
     local item = self.itemGrid[self.selected.y][self.selected.x]
-    item:activate(action)
+    self:chooseItem(item)
   end
+end
+
+function Menu:chooseItem(item)
 end
 
 function Menu:draw(fsm)
