@@ -10,6 +10,10 @@ Splash = {
   SplashQuads = {}
 }
 
+function canContinue()
+  return love.filesystem.exists(RosterSaveFile)
+end
+
 function Splash:load(fsm)
   self.fsm = fsm
   self.background = love.graphics.newImage('assets/Splash.png')
@@ -25,7 +29,11 @@ function Splash:load(fsm)
     }
   end
 
-  self.activeItem = 1
+  if canContinue() then
+    self.activeItem = 1
+  else
+    self.activeItem = 2
+  end
   Controller:register(self, 1)
   self.controlDirection = Direction(0, 0)
 end
@@ -37,6 +45,10 @@ function Splash:setDirection(direction)
   if direction ~= self.controlDirection then
     self.controlDirection = direction
     self.activeItem = wrapping(self.activeItem + self.controlDirection.y, # self.items)
+    if self.activeItem == 1 and not canContinue() then
+      -- advance one more
+      self.activeItem = wrapping(self.activeItem + self.controlDirection.y, # self.items)
+    end
   end
 end
 
@@ -49,12 +61,18 @@ end
 function Splash:draw()
   love.graphics.draw(self.background, 0, 0)
   for i, quads in ipairs(self.SplashQuads) do
+    if i == 1 and not canContinue() then
+      love.graphics.setColor(127, 127, 127)
+    end
+
     local state = 'inactive'
     if self.activeItem == i then
       state = 'active'
     end
     i = i - 1
     local y = 48 + (i * 16)
+
     love.graphics.draw(self.menuImg, quads[state], 160, y)
+    love.graphics.setColor(255, 255, 255)
   end
 end
