@@ -7,7 +7,7 @@ require 'menu.controls'
 
 GameSize = Size{ w = 256, h = 240 }
 GameScale = { x = 3, y = 3 }
-
+RosterSaveFile = "roster.lua"
 Fonts = {}
 math.randomseed( os.time() )
 
@@ -33,7 +33,7 @@ function StateMachine:advance(input, options)
       self.current = next
       self:currentState().active = true
       if self:currentState().activate then
-        self:currentState():activate()
+        self:currentState():activate(options)
       end
     end
   end
@@ -70,7 +70,7 @@ function love.load(arg)
       quit = "menu",
     },
     recruit = {
-      done = "menu"
+      done = "world"
     },
     world = {
       quit = "menu"

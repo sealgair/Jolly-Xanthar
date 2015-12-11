@@ -54,6 +54,8 @@ function Gob:init(opts)
   if self.image then
     local tw, th = self.image:getWidth(), self.image:getHeight()
     if opts.shader then
+      love.graphics.push()
+      love.graphics.origin()
       local canvas = love.graphics.newCanvas(tw, th)
       love.graphics.setCanvas(canvas)
       love.graphics.setShader(opts.shader)
@@ -61,6 +63,7 @@ function Gob:init(opts)
       love.graphics.setShader()
       love.graphics.setCanvas()
       self.image = canvas
+      love.graphics.pop()
     end
 
     self.quads = opts.quads

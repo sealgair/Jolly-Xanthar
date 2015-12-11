@@ -2,6 +2,8 @@ class = require 'lib/30log/30log'
 require 'utils'
 require 'mobs.human'
 
+local serialize = require "lib/Ser/ser"
+
 Slot = class('Slot')
 
 function Slot:init(rect)
@@ -13,7 +15,7 @@ end
 function Slot:newLifeForm()
   love.graphics.push()
   love.graphics.origin()
-  self.lifeForm = Human(self.rect:origin() + Point(2,2))
+  self.lifeForm = Human(self.rect:origin() + Point(2, 2))
   love.graphics.pop()
 end
 
@@ -41,11 +43,11 @@ function Slot:draw(active)
   love.graphics.printf(self.lifeForm.name, pos.x, pos.y, 126, "left")
 
   pos = self.rect:origin() + Point(4, 22)
-  local weapona = "A: "..self.lifeForm.weapons.a.name
+  local weapona = "A: " .. self.lifeForm.weapons.a.name
   love.graphics.printf(weapona, pos.x, pos.y, self.rect.w, "left")
 
   pos = pos + Point(0, 11)
-  local weaponb = "B: "..self.lifeForm.weapons.b.name
+  local weaponb = "B: " .. self.lifeForm.weapons.b.name
   love.graphics.printf(weaponb, pos.x, pos.y, self.rect.w, "left")
 
   love.graphics.pop()
@@ -67,8 +69,7 @@ function Recruit:load(fsm, total)
   self.slots = {}
   for y = 49, GameSize.h, 48 do
     table.insert(self.slots,
-      {Slot(Rect(sx1,  y, sw, sh)), Slot(Rect(sx2,  y, sw, sh))}
-    )
+      { Slot(Rect(sx1, y, sw, sh)), Slot(Rect(sx2, y, sw, sh)) })
   end
   self.activeID = Point(1, 1)
 
@@ -77,27 +78,54 @@ function Recruit:load(fsm, total)
 end
 
 function Recruit:setDirection(direction)
+  if self:done() then return end
   if direction ~= self.controlDirection then
     self.controlDirection = direction
-    self.activeID.y = wrapping(self.activeID.y + self.controlDirection.y, # self.slots)
-    self.activeID.x = wrapping(self.activeID.x + self.controlDirection.x, # self.slots[self.activeID.y])
+    self.activeID.y = wrapping(self.activeID.y + self.controlDirection.y, #self.slots)
+    self.activeID.x = wrapping(self.activeID.x + self.controlDirection.x, #self.slots[self.activeID.y])
   end
 end
 
 function Recruit:controlStop(action)
+  if self:done() then
+    if action == 'a' then
+      self:save()
+      return
+    elseif action ~= 'b' then
+      return
+    end
+  end
+
   local slot = self.slots[self.activeID.y][self.activeID.x]
-  if action == 'a'then
+  if action == 'a' and self.recruitCount < self.total then
     slot.recruited = true
     local lf = slot.lifeForm
     lf:setDirection(Direction.down)
   end
-  if action == 'b'then
+  if action == 'b' then
     if slot.recruited then
       slot.recruited = false
     else
       slot:newLifeForm()
     end
   end
+end
+
+function Recruit:done()
+  return self.recruitCount >= self.total
+end
+
+function Recruit:save()
+  local roster = {}
+  for slotRow in values(self.slots) do
+    for slot in values(slotRow) do
+      if slot.recruited then
+        table.insert(roster, slot.lifeForm:serialize())
+      end
+    end
+  end
+  love.filesystem.write(RosterSaveFile, serialize(roster))
+  self.fsm:advance('done', roster)
 end
 
 function Recruit:update(dt)
@@ -133,4 +161,18 @@ function Recruit:draw()
 
   love.graphics.setFont(Fonts[16])
   love.graphics.printf(self.recruitCount .. "/" .. self.total .. " Recruits", 0, 6, 256, "center")
+
+  if self:done() then
+    love.graphics.setColor(0, 0, 0)
+    local w = GameSize.w / 3
+    local h = GameSize.h / 3
+    love.graphics.rectangle("fill", w, h, w, h)
+    love.graphics.setColor(255, 0, 0)
+    love.graphics.setLineWidth(2)
+    love.graphics.rectangle("line", w, h, w, h)
+    love.graphics.setColor(255, 255, 255)
+
+    love.graphics.setFont(Fonts[10])
+    love.graphics.printf("A: Accept\nB: Cancel", w, h + h / 2 - 14, w, "center")
+  end
 end

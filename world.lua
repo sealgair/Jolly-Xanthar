@@ -24,13 +24,10 @@ setmetatable(World, {
 function World:load()
   self.bumpWorld = bump.newWorld(16)
   self.worldCanvas = love.graphics.newCanvas()
-  self.map = WorldMap(
-    "assets/worlds/ship1.world",
+  self.map = WorldMap("assets/worlds/ship1.world",
     "assets/worlds/ship.png",
     self.bumpWorld,
-    10
-  )
-  local playerCount = 2
+    10)
   self.gobs = {}
   self.players = {}
   self.behaviors = {}
@@ -42,11 +39,28 @@ function World:load()
   self.mainScreen.windowOffset = Point()
   self.extraScreens = {}
 
+  -- add monsters
+  for i, coord in ipairs(self.map.monsterCoords) do
+    local monster = Monster(coord)
+    table.insert(self.behaviors, Behavior(monster))
+    self:spawn(monster)
+  end
+end
+
+function World:activate(roster)
+  -- try to load roster
+  local loaded = love.filesystem.load(RosterSaveFile)
+  if loaded then
+    roster = loaded()
+  end
+
   -- add players
   local center = Point()
+  local playerCount = 2
   for i, coord in ipairs(self.map.playerCoords) do
     if i <= playerCount then
-      local player = Human(coord)
+      local player = Human(coord, roster[i])
+      player.active = self.active
       Controller:register(player, i)
       self:spawn(player)
       self.players[i] = player
@@ -57,13 +71,6 @@ function World:load()
   end
   center = center / playerCount
   self.mainScreen:setCenter(center)
-
-  -- add monsters
-  for i, coord in ipairs(self.map.monsterCoords) do
-    local monster = Monster(coord)
-    table.insert(self.behaviors, Behavior(monster))
-    self:spawn(monster)
-  end
 end
 
 function World:spawn(gob)
@@ -102,10 +109,8 @@ function World:update(dt)
       collisions[gob] = cols
     end
     if gob.hitLine then
-      local itemInfo, len = self.bumpWorld:querySegmentWithCoords(
-        gob.hitLine.x1, gob.hitLine.y1,
-        gob.hitLine.x2, gob.hitLine.y2
-      )
+      local itemInfo, len = self.bumpWorld:querySegmentWithCoords(gob.hitLine.x1, gob.hitLine.y1,
+        gob.hitLine.x2, gob.hitLine.y2)
       if gob.hitLineStop then
         local limitedInfo = {}
         for info in values(itemInfo) do
@@ -129,7 +134,7 @@ function World:update(dt)
       local other = coalesce(col.other, col.item)
       if other.collide then
         col.other = gob
-        other:collide({col})
+        other:collide({ col })
       end
     end
   end
@@ -221,26 +226,24 @@ function World:draw()
   love.graphics.pop()
   love.graphics.setCanvas()
 
-  local screens = {self.mainScreen}
+  local screens = { self.mainScreen }
   table.extend(screens, self.extraScreens)
   local hud = self.huds[1]
 
   local sw, sh = self.worldCanvas:getDimensions()
   for screen in values(screens) do
     if scren ~= self.mainScreen then
-      love.graphics.setColor(0,0,0)
-      local background = Rect(screen.windowOffset.x-1, screen.windowOffset.y-1, screen.w+2, screen.h+2 + hud.barHeight)
+      love.graphics.setColor(0, 0, 0)
+      local background = Rect(screen.windowOffset.x - 1, screen.windowOffset.y - 1, screen.w + 2, screen.h + 2 + hud.barHeight)
       if background.y < self.mainScreen.h / 2 then
         background.y = background.y - hud.barHeight
       end
       love.graphics.rectangle("fill", background.x, background.y, background.w, background.h)
-      love.graphics.setColor(255,255,255)
+      love.graphics.setColor(255, 255, 255)
     end
-    local quad = love.graphics.newQuad(
-      screen.x, screen.y,
+    local quad = love.graphics.newQuad(screen.x, screen.y,
       screen.w, screen.h,
-      sw, sh
-    )
+      sw, sh)
     love.graphics.draw(self.worldCanvas, quad, screen.windowOffset.x, screen.windowOffset.y)
   end
 
@@ -252,7 +255,7 @@ function World:draw()
     for s, screen in ipairs(screens) do
       local sco = screen.windowOffset
       local pos = player:center() - screen:origin() + sco
-      pos.y = pos.y - (player.h)/2
+      pos.y = pos.y - (player.h) / 2
       local dir = ""
 
       if not Rect(screen.windowOffset, screen:size()):contains(pos) then

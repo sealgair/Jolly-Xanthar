@@ -31,10 +31,13 @@ function HUD:init(player, playerIndex)
 
   self.prevHealth = math.max(self.player.health / self.player.maxHealth, 0)
 
+  love.graphics.push()
+  love.graphics.origin()
   self.canvas = love.graphics.newCanvas()
   love.graphics.setCanvas(self.canvas)
   self:drawBase()
   love.graphics.setCanvas()
+  love.graphics.pop()
 end
 
 function HUD:drawBase()
