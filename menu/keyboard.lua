@@ -1,4 +1,3 @@
-class = require 'lib/30log/30log'
 require 'menu.abstractMenu'
 require 'position'
 

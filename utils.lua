@@ -139,6 +139,14 @@ function shallowCopy(t)
   return map(t, function(v) return v end)
 end
 
+function reverseCopy(t)
+  local reversed = {}
+  for v in values(t) do
+    table.insert(reversed, 1, v)
+  end
+  return reversed
+end
+
 function sign(n)
   if n > 0 then
     return 1

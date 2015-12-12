@@ -53,7 +53,7 @@ function World:activate(ship)
     ship = Save:shipNames()[1]
   end
   -- try to load roster
-  local roster = Save:loadShip(ship)
+  local roster = Save:shipRoster(ship)
 
   -- add players
   local center = Point()

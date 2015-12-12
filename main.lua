@@ -2,6 +2,7 @@ require 'controller'
 require 'utils'
 require 'world'
 require 'save'
+require 'menu.ships'
 require 'menu.recruit'
 require 'menu.splash'
 require 'menu.keyboard'
@@ -58,6 +59,7 @@ function love.load(arg)
   Controller:load()
   StateMachine.states = {
     world = World,
+    ships = Ships(),
     recruit = Recruit,
     menu = Splash,
     controls = Controls,
@@ -65,9 +67,12 @@ function love.load(arg)
   }
   StateMachine.transitions = {
     menu = {
-      continue = "world",
+      continue = "ships",
       new = "keyboard",
       controls = "controls",
+    },
+    ships = {
+      done = "world"
     },
     keyboard = {
       done = "recruit"

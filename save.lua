@@ -15,18 +15,28 @@ function Save:load()
 end
 
 function Save:saveShip(shipName, roster)
-  self.data[shipName] = roster
+  self.data[shipName] = {
+    name = shipName,
+    roster = roster,
+    saved = os.time(),
+  }
   love.filesystem.write(self.filename, serialize(self.data))
 end
 
-function Save:loadShip(shipName)
-  return self.data[shipName]
+function Save:shipRoster(shipName)
+  return self.data[shipName].roster
+end
+
+function Save:ships()
+  local ships = {}
+  for ship in values(self.data) do
+    table.insert(ships, ship)
+  end
+  table.sort(ships, function(a, b) return a.saved > b.saved end)
+  return ships
 end
 
 function Save:shipNames()
-  local names = {}
-  for name in keys(self.data) do
-    table.insert(names, name)
-  end
+  local names = map(self:ships(), function(v) return v.name end)
   return names
 end
