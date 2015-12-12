@@ -40,3 +40,8 @@ function Save:shipNames()
   local names = map(self:ships(), function(v) return v.name end)
   return names
 end
+
+function Save:nameIsValid(shipName)
+  local nameSet = invert(self:shipNames())
+  return nameSet[shipName] == nil
+end

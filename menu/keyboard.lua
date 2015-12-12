@@ -32,6 +32,13 @@ function Keyboard:init(prompt)
 end
 
 function Keyboard:controlStop(action)
+  if self.warning then
+    if action == 'a' or action == 'b' or action == 'start' then
+      self.warning = nil
+    end
+    return
+  end
+
   local actionMap = {
     Delete = 'b',
     Clear = 'select',
@@ -51,7 +58,11 @@ function Keyboard:controlStop(action)
   elseif action == 'select' then
     self.text = ""
   elseif action == 'start' then
-    self.fsm:advance('done', self.text)
+    if Save:nameIsValid(self.text) then
+      self.fsm:advance('done', self.text)
+    else
+      self.warning = "This name is already registered"
+    end
   end
 end
 
@@ -100,5 +111,23 @@ function Keyboard:draw()
       love.graphics.printf(key, x, y, 18, "center")
       love.graphics.setColor(255, 255, 255)
     end
+  end
+
+  if self.warning then
+    local rect = Rect(GameSize.w * (1/4), GameSize.h * (1/3),
+                      GameSize.w * (2/4), GameSize.h * (1/3))
+    love.graphics.setColor(127, 0, 0)
+    love.graphics.rectangle("fill", rect.x, rect.y, rect.w, rect.h)
+
+    rect = rect:inset(3)
+    love.graphics.setColor(0, 0, 0)
+    love.graphics.rectangle("fill", rect.x, rect.y, rect.w, rect.h)
+
+    rect = rect:inset(2)
+    love.graphics.setColor(255, 0, 0)
+    love.graphics.setFont(Fonts[10])
+    love.graphics.printf(self.warning, rect.x, rect.y, rect.w, "center")
+
+    love.graphics.setColor(255, 255, 255)
   end
 end
