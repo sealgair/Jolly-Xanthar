@@ -2,8 +2,6 @@ class = require 'lib/30log/30log'
 require 'utils'
 require 'mobs.human'
 
-local serialize = require "lib/Ser/ser"
-
 Slot = class('Slot')
 
 function Slot:init(rect)
@@ -128,8 +126,8 @@ function Recruit:save()
       end
     end
   end
-  love.filesystem.write(RosterSaveFile, serialize(roster))
-  self.fsm:advance('done', roster)
+  Save:saveShip(self.ship, roster)
+  self.fsm:advance('done', self.ship)
 end
 
 function Recruit:update(dt)

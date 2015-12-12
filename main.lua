@@ -1,6 +1,7 @@
 require 'controller'
 require 'utils'
 require 'world'
+require 'save'
 require 'menu.recruit'
 require 'menu.splash'
 require 'menu.keyboard'
@@ -8,7 +9,6 @@ require 'menu.controls'
 
 GameSize = Size{ w = 256, h = 240 }
 GameScale = { x = 3, y = 3 }
-RosterSaveFile = "roster.lua"
 Fonts = {}
 math.randomseed( os.time() )
 
@@ -41,6 +41,8 @@ function StateMachine:advance(input, options)
 end
 
 function love.load(arg)
+  Save:load()
+
   if arg[#arg] == "-debug" then require("mobdebug").start() end
   love.window.setMode(GameSize.w * GameScale.x, GameSize.h * GameScale.y)
   love.graphics.setDefaultFilter("nearest", "nearest")

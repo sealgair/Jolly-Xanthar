@@ -119,6 +119,14 @@ function values(t)
   end
 end
 
+function keys(t)
+  local k, v
+  return function()
+    k, v = next(t, k)
+    return k
+  end
+end
+
 function map(t, func)
   local result = {}
   for k, v in pairs(t) do

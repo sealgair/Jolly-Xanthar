@@ -5,6 +5,7 @@ require 'mobs.monster'
 require 'mobs.behavior'
 require 'indicator'
 require 'hud'
+require 'save'
 local bump = require 'lib.bump.bump'
 DEBUG_BUMP = false
 
@@ -47,12 +48,12 @@ function World:load()
   end
 end
 
-function World:activate(roster)
-  -- try to load roster
-  local loaded = love.filesystem.load(RosterSaveFile)
-  if loaded then
-    roster = loaded()
+function World:activate(ship)
+  if not ship then
+    ship = Save:shipNames()[1]
   end
+  -- try to load roster
+  local roster = Save:loadShip(ship)
 
   -- add players
   local center = Point()

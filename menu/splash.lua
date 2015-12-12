@@ -1,5 +1,6 @@
 require "controller"
 require "direction"
+require "save"
 
 Splash = {
   items = {
@@ -11,7 +12,7 @@ Splash = {
 }
 
 function canContinue()
-  return love.filesystem.exists(RosterSaveFile)
+  return #Save:shipNames() > 0
 end
 
 function Splash:load(fsm)
