@@ -62,20 +62,8 @@ function Human:init(coord, opts)
   self.weapons = map(self.weapons, function(w) return Weapons[w](self) end)
 
   if opts.name == nil then
-    local forenames = {}
-    for n in love.filesystem.lines("assets/forenames.txt") do
-      table.insert(forenames, n)
-    end
-    local forename = forenames[math.random(#forenames)]
-    forenames = nil
-
-    local surnames = {}
-    for n in love.filesystem.lines("assets/surnames.txt") do
-      table.insert(surnames, n)
-    end
-    local surname = surnames[math.random(#surnames)]
-    surnames = nil
-
+    local forename = randomLine("assets/names/forenames.txt")
+    local surname = randomLine("assets/names/surnames.txt")
     self.name = forename .. " " .. surname
   else
     self.name = name

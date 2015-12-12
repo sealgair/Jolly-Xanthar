@@ -219,3 +219,11 @@ function HSVtoRGB(h, s, v)
   else r, g, b = c, 0, x
   end return {(r + m) * 255, (g + m) * 255, (b + m) * 255}
 end
+
+function randomLine(filename)
+    local lines = {}
+    for l in love.filesystem.lines(filename) do
+      table.insert(lines, l)
+    end
+    return lines[math.random(#lines)]
+end

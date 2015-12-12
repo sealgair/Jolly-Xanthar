@@ -1,5 +1,6 @@
 require 'menu.abstractMenu'
 require 'position'
+require 'utils'
 
 Keyboard = Menu:extend('Keyboard')
 
@@ -7,7 +8,10 @@ local cursorDur = 0.5
 
 function Keyboard:init(prompt)
   self.prompt = prompt
-  self.text = "A Ship"
+  self.text = randomLine("assets/names/shipAdjectives.txt") .. " " .. randomLine("assets/names/shipNouns.txt")
+  if math.random(4) <= 3 then
+    self.text = "The " .. self.text
+  end
   self.maxLen = 18
   self.nextCursor = {
     ["Ø"] = "_",
