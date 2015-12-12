@@ -46,9 +46,12 @@ function Ships:draw()
     love.graphics.setFont(Fonts[10])
     love.graphics.print(os.date("%y.%m.%d[%H.%M.%S]", ship.saved), 4, y + 4 + 18)
 
-    local pos = Point(w, y + 4)
+    local yoff = 18
+    local xoff = yoff
+    local pos = Point(w - xoff/2, y + 4)
     for player in values(ship.roster) do
-      pos = pos - Point(player.w + 2, 0)
+      pos = pos + Point(-xoff/2, yoff)
+      yoff = yoff * -1
       player.position = pos
       player:draw()
     end
