@@ -76,7 +76,10 @@ Volant
 Fleet
 Express
 Fluid
-Superheated
 Scorched
 Absolute
-Platonic
+Svelte
+Sonorous
+Dashing
+Valiant
+Honrorable

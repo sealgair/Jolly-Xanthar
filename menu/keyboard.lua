@@ -8,10 +8,7 @@ local cursorDur = 0.5
 
 function Keyboard:init(prompt)
   self.prompt = prompt
-  self.text = randomLine("assets/names/shipAdjectives.txt") .. " " .. randomLine("assets/names/shipNouns.txt")
-  if math.random(4) <= 3 then
-    self.text = "The " .. self.text
-  end
+  self.text = "The " .. randomLine("assets/names/shipAdjectives.txt") .. " " .. randomLine("assets/names/shipNouns.txt")
   self.maxLen = 18
   self.nextCursor = {
     ["Ø"] = "_",

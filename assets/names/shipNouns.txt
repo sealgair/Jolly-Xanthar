@@ -84,3 +84,9 @@ Chaos
 Inertia
 Momentum
 Whisp
+Datum
+Dragonfly
+Hornet
+Wasp
+Firefly
+Harbinger
