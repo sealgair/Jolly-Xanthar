@@ -1,6 +1,6 @@
-class = require 'lib/30log/30log'
+require 'menu.abstractMenu'
 
-HUD = class('HUD')
+HUD = Menu:extend('HUD')
 
 local PlayerColors = {
   { 255, 0, 0 },
@@ -9,12 +9,14 @@ local PlayerColors = {
   { 255, 255, 0 },
 }
 
-local hudBorder = 6
+local hudBorder = 4
 
 function HUD:init(player, playerIndex)
+  HUD.super.init(self)
   self.player = player
   self.index = playerIndex
-  self.barHeight = 8
+  self.barHeight = 11
+  self.active = true
 
   self.rect = Rect(hudBorder, hudBorder, 64, 32)
   if self.index == 2 or self.index == 4 then
@@ -29,7 +31,11 @@ function HUD:init(player, playerIndex)
     return c * 0.5
   end)
 
-  self.prevHealth = math.max(self.player.health / self.player.maxHealth, 0)
+  if self.player then
+    self.prevHealth = math.max(self.player.health / self.player.maxHealth, 0)
+  else
+    self.prevHealth = 0
+  end
 
   love.graphics.push()
   love.graphics.origin()
@@ -73,10 +79,27 @@ function HUD:drawBase()
   self.healthRect = Rect{ x = x, y = y, w = w, h = h, }
 end
 
+function HUD:controlStop(action)
+  if self.player then
+  else
+    if action == 'start' then
+      local p = self:selectedItem()
+      if p then
+        World:addPlayer(p, self.index)
+        self.itemGrid = {}
+      else
+        self.itemGrid = { World:remainingRoster() }
+      end
+    end
+  end
+end
+
 function HUD:update(dt)
-  local newHealth = math.max(self.player.health / self.player.maxHealth, 0)
-  if self.prevHealth > newHealth then
-    self.prevHealth = self.prevHealth - dt / 3
+  if self.player then
+    local newHealth = math.max(self.player.health / self.player.maxHealth, 0)
+    if self.prevHealth > newHealth then
+      self.prevHealth = self.prevHealth - dt / 3
+    end
   end
 end
 
@@ -90,34 +113,45 @@ function HUD:draw()
   local w = self.healthRect.w
   local h = self.healthRect.h
 
-  local healthPercent = math.max(self.player.health / self.player.maxHealth, 0)
-  if healthPercent < self.prevHealth then
+  if self.player then
+    local healthPercent = math.max(self.player.health / self.player.maxHealth, 0)
+    if healthPercent < self.prevHealth then
+      local healthColor = {
+        255 * math.min(2 + (self.prevHealth * -2), 1),
+        255 * math.min(self.prevHealth * 2, 1),
+        0
+      }
+      healthColor = map(healthColor, function(c) return c * 0.75 end)
+      love.graphics.setColor(healthColor)
+      love.graphics.rectangle("fill", x, y, w * self.prevHealth, h)
+    end
+
     local healthColor = {
-      255 * math.min(2 + (self.prevHealth * -2), 1),
-      255 * math.min(self.prevHealth * 2, 1),
+      255 * math.min(2 + (healthPercent * -2), 1),
+      255 * math.min(healthPercent * 2, 1),
       0
     }
-    healthColor = map(healthColor, function(c) return c * 0.75 end)
     love.graphics.setColor(healthColor)
-    love.graphics.rectangle("fill", x, y, w * self.prevHealth, h)
-  end
+    love.graphics.rectangle("fill", x, y, w * healthPercent, h)
 
-  local healthColor = {
-    255 * math.min(2 + (healthPercent * -2), 1),
-    255 * math.min(healthPercent * 2, 1),
-    0
-  }
-  love.graphics.setColor(healthColor)
-  love.graphics.rectangle("fill", x, y, w * healthPercent, h)
-
-  local barWidth = w / self.player.maxHealth
-  if barWidth >= 4 then
-    healthColor = map(healthColor, function(c) return c * 0.75 end)
-    love.graphics.setColor(healthColor)
-    local barX = x
-    for i = 1, self.player.health - 1 do
-      barX = barX + barWidth
-      love.graphics.rectangle("fill", barX, y, 1, h)
+    local barWidth = w / self.player.maxHealth
+    if barWidth >= 4 then
+      healthColor = map(healthColor, function(c) return c * 0.75 end)
+      love.graphics.setColor(healthColor)
+      local barX = x
+      for i = 1, self.player.health - 1 do
+        barX = barX + barWidth
+        love.graphics.rectangle("fill", barX, y, 1, h)
+      end
+    end
+  else
+    love.graphics.setColor(255, 255, 255)
+    love.graphics.setFont(Fonts[10])
+    if #self.itemGrid > 0 then
+      local choice = self:selectedItem()
+      love.graphics.printf(choice.name, x, y, w, "center")
+    else
+      love.graphics.printf("Press Start", x, y, w, "center")
     end
   end
 

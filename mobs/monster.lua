@@ -1,7 +1,7 @@
 require 'mobs.mob'
 require 'weapons.teeth'
 
-Monster = Mob:extend('Human')
+Monster = Mob:extend('Monster')
 
 function Monster:init(coord)
   Monster.super.init(self, {

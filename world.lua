@@ -15,8 +15,8 @@ setmetatable(World, {
   __newindex = function(self, key, value)
     rawset(self, key, value)
     if key == 'active' then
-      for i, player in pairs(self.gobs) do
-        player.active = self.active
+      for gob in values(self.gobs) do
+        gob.active = self.active
       end
     end
   end
@@ -49,29 +49,53 @@ function World:load()
 end
 
 function World:activate(ship)
-  if not ship then
-    ship = Save:shipNames()[1]
-  end
-  -- try to load roster
-  local roster = Save:shipRoster(ship)
+  self.ship = coalesce(ship, Save:shipNames()[1])
+  local roster = Save:shipRoster(self.ship)
 
   -- add players
   local center = Point()
-  local playerCount = 2
+  local activePlayers = {1}
   for i, coord in ipairs(self.map.playerCoords) do
-    if i <= playerCount then
-      local player = Human(coord, roster[i])
-      player.active = self.active
-      Controller:register(player, i)
-      self:spawn(player)
-      self.players[i] = player
-      self.indicators[i] = Indicator(i)
-      self.huds[i] = HUD(player, i)
+    local hud = HUD(nil, i)
+    Controller:register(hud, i)
+    self.huds[i] = hud
+
+    if activePlayers[i] then
+      local player = self:addPlayer(roster[i], i, coord)
       center = center + player:center()
     end
   end
-  center = center / playerCount
+  center = center / #activePlayers
   self.mainScreen:setCenter(center)
+end
+
+function World:remainingRoster()
+  local activeNames = {}
+  for player in values(self.players) do
+    activeNames[player.name] = 1
+  end
+  local remaining = {}
+  for player in values(Save:shipRoster(self.ship)) do
+    if activeNames[player.name] == nil then
+      table.insert(remaining, player)
+    end
+  end
+  return remaining
+end
+
+function World:addPlayer(rosterData, index, coords)
+  if coords == nil then
+    coords = self.mainScreen:center() + Point(16, -8)
+  end
+  local player = Human(coords, rosterData)
+  player.active = self.active
+  Controller:register(player, index)
+  self:spawn(player)
+  self.players[index] = player
+  self.huds[index].player = player
+  self.indicators[index] = Indicator(index)
+
+  return player
 end
 
 function World:spawn(gob)

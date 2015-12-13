@@ -66,7 +66,7 @@ function Human:init(coord, opts)
     local surname = randomLine("assets/names/surnames.txt")
     self.name = forename .. " " .. surname
   else
-    self.name = name
+    self.name = opts.name
   end
 end
 
@@ -76,4 +76,8 @@ function Human:serialize()
     weapons = map(self.weapons, function(w) return w.name end),
     name = self.name,
   }
+end
+
+function Human:__tostring()
+  return self.name .. " the human"
 end
