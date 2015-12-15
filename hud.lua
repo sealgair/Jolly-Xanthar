@@ -16,9 +16,10 @@ function HUD:init(player, playerIndex)
   self.player = player
   self.index = playerIndex
   self.barHeight = 11
+  self.menuHeight = 64
   self.active = true
 
-  self.rect = Rect(hudBorder, hudBorder, 64, 32)
+  self.rect = Rect(hudBorder, hudBorder, 64, self.barHeight)
   if self.index == 2 or self.index == 4 then
     self.rect.x = GameSize.w - self.rect.w - hudBorder
   end
@@ -44,7 +45,12 @@ function HUD:init(player, playerIndex)
   self:drawBase()
   love.graphics.setCanvas()
   love.graphics.pop()
+
+  self.menuCanvas = love.graphics.newCanvas(self.rect.w, GameSize.h)
+  self.menuOffset = 0
+  self.newMenuOffset = self.menuOffset
 end
+
 
 function HUD:drawBase()
   love.graphics.push()
@@ -79,6 +85,42 @@ function HUD:drawBase()
   self.healthRect = Rect{ x = x, y = y, w = w, h = h, }
 end
 
+function HUD:drawMenuCanvas()
+  love.graphics.push()
+  love.graphics.setCanvas(self.menuCanvas)
+  love.graphics.origin()
+  love.graphics.setBackgroundColor(0, 0, 0, 127)
+  love.graphics.clear()
+
+  local y = 1
+  local w = self.rect.w
+  local font = Fonts[10]
+  love.graphics.setFont(font)
+  local fh = font:getHeight()
+
+  local offset = 0
+  for r, row in ipairs(self.itemGrid) do
+    local item = row[1]
+
+    local rowHeight = fh * math.ceil(font:getWidth(item.name) / w)
+
+    if r == self.selected.y then
+      love.graphics.setColor(255, 0, 0)
+      offset = y
+    else
+      love.graphics.setColor(255, 255, 255)
+    end
+    love.graphics.printf(item.name, 0, y, w, "center")
+    y = y + rowHeight + 1
+  end
+
+  love.graphics.setCanvas()
+  love.graphics.pop()
+  love.graphics.setColor(255, 255, 255)
+
+  self.newMenuOffset = math.min(offset, y - self.menuHeight)
+end
+
 function HUD:controlStop(action)
   if self.player then
   else
@@ -88,9 +130,17 @@ function HUD:controlStop(action)
         World:addPlayer(p, self.index)
         self.itemGrid = {}
       else
-        self.itemGrid = { World:remainingRoster() }
+        self.itemGrid = map(World:remainingRoster(), function(n) return {n} end)
+        self:drawMenuCanvas()
       end
     end
+  end
+end
+
+function HUD:setDirection(direction)
+  HUD.super.setDirection(self, direction)
+  if #self.itemGrid > 0 then
+    self:drawMenuCanvas()
   end
 end
 
@@ -100,6 +150,23 @@ function HUD:update(dt)
     if self.prevHealth > newHealth then
       self.prevHealth = self.prevHealth - dt / 3
     end
+  end
+
+  if #self.itemGrid > 0 then
+    local move = 150 * dt
+    if self.menuOffset > self.newMenuOffset then
+      self.menuOffset = math.max(
+        self.menuOffset - move,
+        self.newMenuOffset
+      )
+    elseif self.menuOffset < self.newMenuOffset then
+      self.menuOffset = math.min(
+        self.menuOffset + move,
+        self.newMenuOffset
+      )
+    end
+    local sw, sh = self.menuCanvas:getDimensions()
+    self.menuQuad = love.graphics.newQuad(0, self.menuOffset, sw, self.menuHeight, sw, sh)
   end
 end
 
@@ -147,12 +214,10 @@ function HUD:draw()
   else
     love.graphics.setColor(255, 255, 255)
     love.graphics.setFont(Fonts[10])
-    if #self.itemGrid > 0 then
-      local choice = self:selectedItem()
-      love.graphics.printf(choice.name, x, y, w, "center")
-    else
-      love.graphics.printf("Press Start", x, y, w, "center")
-    end
+    love.graphics.printf("Press Start", x, y, w, "center")
+  end
+  if #self.itemGrid > 0 then
+    love.graphics.draw(self.menuCanvas, self.menuQuad, self.rect.x, self.rect:bottom())
   end
 
   love.graphics.setColor(255, 255, 255)
