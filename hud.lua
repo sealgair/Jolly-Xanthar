@@ -16,7 +16,8 @@ function HUD:init(player, playerIndex)
   self.player = player
   self.index = playerIndex
   self.barHeight = 11
-  self.menuHeight = 64
+  self.maxMenuHeight = 64
+  self.menuHeight = self.maxMenuHeight
   self.active = true
 
   self.rect = Rect(hudBorder, hudBorder, 64, self.barHeight)
@@ -113,6 +114,7 @@ function HUD:drawMenuCanvas()
     love.graphics.printf(item.name, 0, y, w, "center")
     y = y + rowHeight + 1
   end
+  self.menuHeight = math.min(y, self.menuHeight)
 
   love.graphics.setCanvas()
   love.graphics.pop()
@@ -122,25 +124,41 @@ function HUD:drawMenuCanvas()
 end
 
 function HUD:controlStop(action)
-  if self.player then
-  else
-    if action == 'start' then
-      local p = self:selectedItem()
-      if p then
-        World:addPlayer(p, self.index)
+  if action == 'select' and #self.itemGrid > 0 then
+    self.selected.y = wrapping(self.selected.y + 1, #self.itemGrid)
+    self:drawMenuCanvas()
+  elseif action == 'start' then
+    local item = self:selectedItem()
+      if item then
+        if item.weapons then
+          World:addPlayer(item, self.index)
+        end
         self.itemGrid = {}
       else
-        self.itemGrid = map(World:remainingRoster(), function(n) return {n} end)
+        if self.player then
+          self.itemGrid = {
+            {{name = "Cancel"}},
+            {{name = "Pause"}},
+            {{name = "Quit"}},
+            {{name = "Switch"}},
+            {{name = "Controls"}},
+          }
+        else
+          self.itemGrid = map(World:remainingRoster(), function(n) return {n} end)
+        end
         self:drawMenuCanvas()
       end
-    end
   end
 end
 
 function HUD:setDirection(direction)
-  HUD.super.setDirection(self, direction)
-  if #self.itemGrid > 0 then
-    self:drawMenuCanvas()
+  if self.player then
+    -- don't use direction to swifch item
+  else
+    HUD.super.setDirection(self, direction)
+    if #self.itemGrid > 0 then
+      self:drawMenuCanvas()
+    end
   end
 end
 
@@ -216,10 +234,16 @@ function HUD:draw()
     love.graphics.setFont(Fonts[10])
     love.graphics.printf("Press Start", x, y, w, "center")
   end
-  if #self.itemGrid > 0 then
-    love.graphics.draw(self.menuCanvas, self.menuQuad, self.rect.x, self.rect:bottom())
-  end
-
   love.graphics.setColor(255, 255, 255)
+
+  if #self.itemGrid > 0 then
+    local x, y = self.rect.x, self.rect:bottom()
+
+    if self.index >= 3 then
+      local qx, qy, qw, qh = self.menuQuad:getViewport()
+      y = y - qh - self.rect.h
+    end
+    love.graphics.draw(self.menuCanvas, self.menuQuad, x, y)
+  end
   love.graphics.pop()
 end
