@@ -5,8 +5,8 @@ require 'mobs.human'
 
 Ships = Menu:extend('Ships')
 
-function Ships:init()
-  Ships.super.init(self, {})
+function Ships:init(fsm)
+  Ships.super.init(self, {fsm=fsm})
   self:loadSaved()
   self.canvas = love.graphics.newCanvas()
   self.offset = 0

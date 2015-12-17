@@ -51,15 +51,15 @@ function Slot:draw(active)
   love.graphics.pop()
 end
 
-Recruit = {
-  recruitCount = 0
-}
+Recruit = class("Recruit")
 
-function Recruit:load(fsm, total)
+function Recruit:init(fsm, ship)
   self.fsm = fsm
+  self.ship = ship
   Controller:register(self, 1)
   self.background = love.graphics.newImage('assets/Recruit.png')
-  self.total = coalesce(total, 6)
+  self.total = 6
+  self.recruitCount = 0
 
   local sw, sh = 127, 47
   local sx1, sx2 = 0, 129
@@ -73,10 +73,6 @@ function Recruit:load(fsm, total)
 
   self.rotateSpeed = DefaultAnimateInterval
   self.rotate = self.rotateSpeed
-end
-
-function Recruit:activate(ship)
-  self.ship = ship
 end
 
 function Recruit:setDirection(direction)

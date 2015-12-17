@@ -20,7 +20,7 @@ function Teeth:update(dt)
       self.despawnTimer = 0.25
     end
     if self.despawnTimer <= 0 then
-      World:despawn(self)
+      self.owner.world:despawn(self)
       return
     end
     self.despawnTimer = self.despawnTimer - dt
@@ -34,7 +34,7 @@ function Teeth:start()
 end
 
 function Teeth:stop()
-  World:despawn(self.bite)
+  self.owner.world:despawn(self.bite)
   self.bite = nil
 end
 
@@ -62,7 +62,7 @@ function Bite:update(dt)
       self.despawnTimer = 0.25
     end
     if self.despawnTimer <= 0 then
-      World:despawn(self)
+      self.owner.world:despawn(self)
       return
     end
     self.despawnTimer = self.despawnTimer - dt

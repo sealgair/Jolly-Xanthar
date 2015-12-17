@@ -6,7 +6,7 @@ Keyboard = Menu:extend('Keyboard')
 
 local cursorDur = 0.5
 
-function Keyboard:init(prompt)
+function Keyboard:init(fsm, prompt)
   self.prompt = prompt
   self.text = "The " .. randomLine("assets/names/shipAdjectives.txt") .. " " .. randomLine("assets/names/shipNouns.txt")
   self.maxLen = 18
@@ -17,7 +17,7 @@ function Keyboard:init(prompt)
   self.cursor = "_"
   self.cursorTime = cursorDur
 
-  Keyboard.super.init(self, {
+  local keys = {
     { "a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m" },
     { "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z" },
     { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M" },
@@ -25,6 +25,10 @@ function Keyboard:init(prompt)
     { "1", "2", "3", "4", "5", "6", "7", "8", "9", "0" },
     { ".", ",", "!", "?", "-", "/", ":", ";", "%", "&", "`", "'", "#" },
     { "Space", "Delete", "Clear", "Done" },
+  }
+  Keyboard.super.init(self, {
+    fsm=fsm,
+    itemGrid=keys
   })
 end
 
@@ -74,8 +78,10 @@ end
 function Keyboard:draw()
   love.graphics.setFont(Fonts[16])
 
-  love.graphics.setColor(0, 64, 255)
-  love.graphics.printf(self.prompt, 0, 4, GameSize.w, "center")
+  if self.prompt then
+    love.graphics.setColor(0, 64, 255)
+    love.graphics.printf(self.prompt, 0, 4, GameSize.w, "center")
+  end
 
   love.graphics.setLineWidth(2)
   love.graphics.line(8, 44, GameSize.w - 8, 45)

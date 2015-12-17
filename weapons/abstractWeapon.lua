@@ -29,7 +29,7 @@ function Weapon:fire(ProjectileClass)
   local ProjectileClass = coalesce(ProjectileClass, self.ProjectileClass)
   if self.cooldown <= 0 then
     local bullet = ProjectileClass(self.projectileOpts)
-    World:spawn(bullet)
+    self.owner.world:spawn(bullet)
     if self.rateLimit then
       self.cooldown = self.rateLimit
     end

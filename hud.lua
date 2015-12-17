@@ -11,9 +11,12 @@ local PlayerColors = {
 
 local hudBorder = 4
 
-function HUD:init(player, playerIndex)
-  HUD.super.init(self)
-  self.player = player
+function HUD:init(world, playerIndex)
+  HUD.super.init(self, {
+    controlPlayer=playerIndex
+  })
+
+  self.world = world
   self.index = playerIndex
   self.barHeight = 11
   self.maxMenuHeight = 64
@@ -123,6 +126,12 @@ function HUD:drawMenuCanvas()
   self.newMenuOffset = math.min(offset, y - self.menuHeight)
 end
 
+function HUD:playerAction(action)
+  if action.name == "Quit" then
+    self.world:removePlayer(self.index)
+  end
+end
+
 function HUD:controlStop(action)
   if action == 'select' and #self.itemGrid > 0 then
     self.selected.y = wrapping(self.selected.y + 1, #self.itemGrid)
@@ -130,8 +139,10 @@ function HUD:controlStop(action)
   elseif action == 'start' then
     local item = self:selectedItem()
       if item then
-        if item.weapons then
-          World:addPlayer(item, self.index)
+        if self.player then
+          self:playerAction(item)
+        else
+          self.world:addPlayer(item, self.index)
         end
         self.itemGrid = {}
       else
@@ -144,7 +155,7 @@ function HUD:controlStop(action)
             {{name = "Controls"}},
           }
         else
-          self.itemGrid = map(World:remainingRoster(), function(n) return {n} end)
+          self.itemGrid = map(self.world:remainingRoster(), function(n) return {n} end)
         end
         self:drawMenuCanvas()
       end

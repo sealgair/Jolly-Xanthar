@@ -2,15 +2,15 @@ class = require 'lib/30log/30log'
 
 Menu = class('Menu')
 
-function Menu:init(itemGrid, initialItem)
-  self.itemGrid = coalesce(itemGrid, {})
-  self.initial = coalesce(initialItem, {x=1, y=1})
+function Menu:init(opts)
+  -- opts: itemGrid, initialItem, controlPlayer
+  self.fsm = opts.fsm
+  self.itemGrid = coalesce(opts.itemGrid, {})
+  self.initial = coalesce(opts.initialItem, {x=1, y=1})
   self.selected = self.initial
-end
 
-function Menu:load(fsm)
-  self.fsm = fsm
-  Controller:register(self, 1)
+  local p = coalesce(opts.controlPlayer, 1)
+  Controller:register(self, p)
   self.selected = self.initial
 end
 

@@ -38,7 +38,7 @@ end
 function Bolt:update(dt)
   if self.done then
     if self.particleSystem:getCount() <= 0 then
-      World:despawn(self)
+      self.owner.world:despawn(self)
       return
     end
   end

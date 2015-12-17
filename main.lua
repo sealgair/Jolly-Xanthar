@@ -16,28 +16,24 @@ math.randomseed( os.time() )
 local StateMachine = {
   states = {},
   transitions = {},
-  current = "none"
 }
 
-function StateMachine:currentState()
-  return self.states[self.current]
-end
-
 function StateMachine:advance(input, options)
-  local transition = self.transitions[self.current]
-  if transition then
-    local next = transition[input]
-    if self.states[next] then
-      self:currentState().active = nil
-      if self:currentState().deactivate then
-        self:currentState():deactivate()
-      end
-      self.current = next
-      self:currentState().active = true
-      if self:currentState().activate then
-        self:currentState():activate(options)
-      end
+  local nextState
+  if self.currentState then
+    local transition = self.transitions[self.currentState.class]
+    nextState = transition[input]
+    self.currentState.active = false
+    if self.currentState.deactivate then
+      self.currentState:deactivate()
     end
+  else
+    nextState = self.transitions.initial[input]
+  end
+  self.currentState = nextState(self, options)
+  self.currentState.active = true
+  if self.currentState.activate then
+    self.currentState:activate()
   end
 end
 
@@ -57,57 +53,46 @@ function love.load(arg)
   Fonts[16] = love.graphics.newImageFont("assets/fonts/font16.png", glyphs)
 
   Controller:load()
-  StateMachine.states = {
-    world = World,
-    ships = Ships(),
-    recruit = Recruit,
-    menu = Splash,
-    controls = Controls,
-    keyboard = Keyboard("Name Your Ship"),
-  }
   StateMachine.transitions = {
-    menu = {
-      continue = "ships",
-      new = "keyboard",
-      controls = "controls",
+    initial = {
+      menu = Splash,
     },
-    ships = {
-      done = "world"
+    [Splash] = {
+      continue = Ships,
+      new = Keyboard,
+      controls = Controls,
     },
-    keyboard = {
-      done = "recruit"
+    [Ships] = {
+      done = World
     },
-    controls = {
-      done = "world",
-      quit = "menu",
+    [Keyboard] = {
+      done = Recruit
     },
-    recruit = {
-      done = "world"
+    [Controls] = {
+      done = Splash,
     },
-    world = {
-      quit = "menu"
+    [Recruit] = {
+      done = World
+    },
+    [World] = {
+      quit = Splash
     },
   }
-  StateMachine.current = "menu"
-  Splash.active = true
-
-  for k, state in pairs(StateMachine.states) do
-    state:load(StateMachine)
-  end
+  StateMachine:advance("menu")
 end
 
 function love.update(dt)
   Controller:update(dt)
-  local state = StateMachine:currentState()
-  if state.update then
+  local state = StateMachine.currentState
+  if state and state.update then
     state:update(dt)
   end
 end
 
 function love.draw()
   love.graphics.scale(GameScale.x, GameScale.y)
-  local state = StateMachine:currentState()
-  if state.draw then
+  local state = StateMachine.currentState
+  if state and state.draw then
     state:draw()
   end
 end

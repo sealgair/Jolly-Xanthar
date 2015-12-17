@@ -1,30 +1,33 @@
+class = require 'lib/30log/30log'
 require "controller"
 require "direction"
 require "save"
 
-Splash = {
-  items = {
-    'continue',
-    'new',
-    'controls'
-  },
-  SplashQuads = {}
-}
+Splash = class("Splash")
 
 function canContinue()
   return #Save:shipNames() > 0
 end
 
-function Splash:load(fsm)
+function Splash:init(fsm)
   self.fsm = fsm
   self.background = love.graphics.newImage('assets/Splash.png')
   self.menuImg = love.graphics.newImage('assets/Menu.png')
+  self.items = {
+    'continue',
+    'new',
+    'controls'
+  }
+  self.opts = {
+    new = "Name Your Ship"
+  }
+  self.splashQuads = {}
 
   local sw, sh = self.menuImg:getWidth(), self.menuImg:getHeight()
   local w, h = 64, 16
   for i, item in ipairs(self.items) do
     local y = (i - 1) * h
-    self.SplashQuads[i] = {
+    self.splashQuads[i] = {
       inactive = love.graphics.newQuad(0, y, w, h, sw, sh),
       active   = love.graphics.newQuad(w, y, w, h, sw, sh),
     }
@@ -55,13 +58,15 @@ end
 
 function Splash:controlStop(action)
   if action == 'a' or action == 'start' then
-    self.fsm:advance(self.items[self.activeItem])
+    local item = self.items[self.activeItem]
+    local opt = self.opts[item]
+    self.fsm:advance(item, opt)
   end
 end
 
 function Splash:draw()
   love.graphics.draw(self.background, 0, 0)
-  for i, quads in ipairs(self.SplashQuads) do
+  for i, quads in ipairs(self.splashQuads) do
     if i == 1 and not canContinue() then
       love.graphics.setColor(127, 127, 127)
     end

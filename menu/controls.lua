@@ -3,7 +3,7 @@ Controls = class('Controls')
 local keyTime = 1
 local controlTime = 1
 
-function Controls:load(fsm)
+function Controls:init(fsm)
   self.fsm = fsm
   self.image = love.graphics.newImage('assets/controls.png')
   local ww, wh = GameSize.w, GameSize.h

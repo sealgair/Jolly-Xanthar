@@ -101,7 +101,11 @@ function Controller:load()
   else
     self.playerControls = defaultControls
   end
+  local weakmeta = {
+    __mode = "k"
+  }
   self.listeners = {}
+  setmetatable(self.listeners, weakmeta)
   for player, controls in pairs(self.playerControls) do
     self.actions[player] = {}
     self.listeners[player] = {}
@@ -301,6 +305,10 @@ end
 
 function Controller:register(listener, player)
   table.insert(self.listeners[player], listener)
+end
+
+function Controller:unregister(listener, player)
+  table.removeValue(self.listeners[player], listener)
 end
 
 function Controller:forwardAll(to)

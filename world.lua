@@ -1,3 +1,4 @@
+class = require 'lib/30log/30log'
 require 'controller'
 require 'worldmap'
 require 'mobs.human'
@@ -9,36 +10,30 @@ require 'save'
 local bump = require 'lib.bump.bump'
 DEBUG_BUMP = false
 
-World = {}
+World = class("World")
 
-setmetatable(World, {
-  __newindex = function(self, key, value)
-    rawset(self, key, value)
-    if key == 'active' then
-      for gob in values(self.gobs) do
-        gob.active = self.active
-      end
-    end
-  end
-})
+function World:init(fsm, ship)
+  self.fsm = fsm
+  self.ship = coalesce(ship, Save:shipNames()[1])
 
-function World:load()
-  self.bumpWorld = bump.newWorld(16)
-  self.worldCanvas = love.graphics.newCanvas()
-  self.map = WorldMap("assets/worlds/ship1.world",
-    "assets/worlds/ship.png",
-    self.bumpWorld,
-    10)
+  self.mainScreen = Rect(Point(), GameSize)
+  self.mainScreen.windowOffset = Point()
+
   self.gobs = {}
   self.players = {}
   self.behaviors = {}
   self.indicators = {}
   self.huds = {}
   self.despawnQueue = {}
-
-  self.mainScreen = Rect(Point(), GameSize)
-  self.mainScreen.windowOffset = Point()
   self.extraScreens = {}
+
+  -- load the map
+  self.bumpWorld = bump.newWorld(16)
+  self.worldCanvas = love.graphics.newCanvas()
+  self.map = WorldMap("assets/worlds/ship1.world",
+    "assets/worlds/ship.png",
+    self.bumpWorld,
+    10)
 
   -- add monsters
   for i, coord in ipairs(self.map.monsterCoords) do
@@ -46,27 +41,32 @@ function World:load()
     table.insert(self.behaviors, Behavior(monster))
     self:spawn(monster)
   end
-end
-
-function World:activate(ship)
-  self.ship = coalesce(ship, Save:shipNames()[1])
-  local roster = Save:shipRoster(self.ship)
 
   -- add players
+  self.roster = Save:shipRoster(self.ship)
   local center = Point()
   local activePlayers = {1}
   for i, coord in ipairs(self.map.playerCoords) do
-    local hud = HUD(nil, i)
-    Controller:register(hud, i)
+    local hud = HUD(self, i)
     self.huds[i] = hud
 
     if activePlayers[i] then
-      local player = self:addPlayer(roster[i], i, coord)
+      local player = self:addPlayer(self.roster[i], i, coord)
       center = center + player:center()
     end
   end
   center = center / #activePlayers
   self.mainScreen:setCenter(center)
+end
+
+function World:activate()
+  for player in values(self.players) do
+    player.active = true
+  end
+end
+
+function World:deactivate()
+  Save:saveShip(self.ship, self.roster)
 end
 
 function World:remainingRoster()
@@ -75,7 +75,7 @@ function World:remainingRoster()
     activeNames[player.name] = 1
   end
   local remaining = {}
-  for player in values(Save:shipRoster(self.ship)) do
+  for player in values(self.roster) do
     if activeNames[player.name] == nil then
       table.insert(remaining, player)
     end
@@ -85,7 +85,7 @@ end
 
 function World:addPlayer(rosterData, index, coords)
   if coords == nil then
-    coords = self.mainScreen:center() + Point(16, -8)
+    coords = self.mainScreen:center()
   end
   local player = Human(coords, rosterData)
   player.active = self.active
@@ -98,9 +98,24 @@ function World:addPlayer(rosterData, index, coords)
   return player
 end
 
+function World:removePlayer(index)
+  local player = self.players[index]
+  self:despawn(player)
+  self.players[index] = nil
+  self.huds[index].player = nil
+  self.indicators[index] = nil
+
+  local left = false
+  for p in values(self.players) do left = true end
+  if not left then
+    self.fsm:advance('quit')
+  end
+end
+
 function World:spawn(gob)
   -- handle newest collisions first
   table.insert(self.gobs, 1, gob)
+  gob.world = self
   if gob.hitbox.w > 0 and gob.hitbox.h > 0 then
     self.bumpWorld:add(gob,
       gob.position.x + gob.hitbox.x,

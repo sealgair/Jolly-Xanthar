@@ -27,7 +27,7 @@ end
 
 function LaserRifle:stop()
   if self.tracer then
-    World:despawn(self.tracer)
+    self.owner.world:despawn(self.tracer)
     self.laser = self:fire(Laser)
     self.owner.modifiers.newDirection = function(new)
       if new ~= nil then
@@ -137,7 +137,7 @@ function Laser:update(dt)
     if self.finish then
       self.finish()
     end
-    World:despawn(self)
+    self.owner.world:despawn(self)
   end
   for splat in values(self.splats) do
     splat:update(dt)

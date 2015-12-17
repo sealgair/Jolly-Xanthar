@@ -21,7 +21,7 @@ end
 
 function ForceField:stop()
   if self.bubble ~= nil then
-    World:despawn(self.bubble)
+    self.owner.world:despawn(self.bubble)
     self.cooldown = math.min(self.rateLimit, self.bubble.age)
     self.bubble = nil
   end

@@ -126,7 +126,7 @@ function Mob:update(dt)
       self.corpseDecay = self.corpseDecay - dt
     end
     if self.corpseDecay <= 0 then
-      World:despawn(self)
+      self.world:despawn(self)
     end
   end
   Mob.super.update(self, dt)
