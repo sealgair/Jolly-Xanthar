@@ -107,6 +107,9 @@ function World:removePlayer(index)
 
   local left = false
   for p in values(self.players) do left = true end
+  for h in values(self.huds) do
+    if #h.itemGrid > 0 then left = true end
+  end
   if not left then
     self.fsm:advance('quit')
   end
@@ -209,17 +212,21 @@ function World:update(dt)
 
   local oldCenter = self.mainScreen:center()
   local newCenter = Point()
-  local count = 0
   local outsiders = {}
-  for p, player in pairs(self.players) do
-    if self.mainScreen:contains(player:center()) then
-      newCenter = newCenter + player:center()
-      count = count + 1
-    else
-      outsiders[p] = player
+  if #self.players > 0 then
+    local count = 0
+    for p, player in pairs(self.players) do
+      if self.mainScreen:contains(player:center()) then
+        newCenter = newCenter + player:center()
+        count = count + 1
+      else
+        outsiders[p] = player
+      end
     end
+    newCenter = newCenter / count
+  else
+    newCenter = Point(self.map.playerCoords[1])
   end
-  newCenter = newCenter / count
 
   newCenter.x = math.max(newCenter.x, oldCenter.x - maxStep)
   newCenter.x = math.min(newCenter.x, oldCenter.x + maxStep)

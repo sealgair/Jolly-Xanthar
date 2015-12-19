@@ -129,6 +129,11 @@ end
 function HUD:playerAction(action)
   if action.name == "Quit" then
     self.world:removePlayer(self.index)
+  elseif action.name == "Switch" then
+    self.itemGrid = map(self.world:remainingRoster(), function(n) return {n} end)
+    self.selected.y = 1
+    self.world:removePlayer(self.index)
+    self:drawMenuCanvas()
   end
 end
 
@@ -137,28 +142,30 @@ function HUD:controlStop(action)
     self.selected.y = wrapping(self.selected.y + 1, #self.itemGrid)
     self:drawMenuCanvas()
   elseif action == 'start' then
+    self.menuOffset = 0
     local item = self:selectedItem()
-      if item then
-        if self.player then
-          self:playerAction(item)
-        else
-          self.world:addPlayer(item, self.index)
-        end
-        self.itemGrid = {}
+    if item then
+      self.itemGrid = {}
+      if self.player then
+        self:playerAction(item)
       else
-        if self.player then
-          self.itemGrid = {
-            {{name = "Cancel"}},
-            {{name = "Pause"}},
-            {{name = "Quit"}},
-            {{name = "Switch"}},
-            {{name = "Controls"}},
-          }
-        else
-          self.itemGrid = map(self.world:remainingRoster(), function(n) return {n} end)
-        end
-        self:drawMenuCanvas()
+        self.world:addPlayer(item, self.index)
       end
+    else
+      self.selected.y = 1
+      if self.player then
+        self.itemGrid = {
+          {{name = "Cancel"}},
+          {{name = "Pause"}},
+          {{name = "Quit"}},
+          {{name = "Switch"}},
+          {{name = "Controls"}},
+        }
+      else
+        self.itemGrid = map(self.world:remainingRoster(), function(n) return {n} end)
+      end
+      self:drawMenuCanvas()
+    end
   end
 end
 
