@@ -167,41 +167,35 @@ end
 
 function palletSwapShader(fromColors, toColors)
   local function serializeColors(colors)
-    return join(map(colors, function(color)
+    local newColors = {}
+    for color in values(colors) do
       local translated = map(color, function(c) return c / 255 end)
       if #translated == 3 then table.insert(translated, 1.0) end
-      return "vec4(" .. join(translated, ", ") .. ")"
-    end), ", ")
+      table.insert(newColors, translated)
+    end
+    return newColors
   end
 
   local fromArray = serializeColors(fromColors)
   local toArray = serializeColors(toColors)
 
-  local shader = love.graphics.newShader([[
-  vec4 fromColor[] = vec4[]( ]] .. fromArray .. [[ );
-  vec4 toColor[] = vec4[]( ]] .. toArray .. [[ );
-
-  bool same_color( vec4 a, vec4 b ) {
-    float tolerance = 1.0/255.0;
-    for (int i = 0; i < 4; i++) {
-      if (a[i] <= b[i] - tolerance || a[i] >= b[i] + tolerance) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  vec4 effect( vec4 color, Image texture, vec2 texture_coords, vec2 screen_coords ) {
-    vec4 texcolor = Texel(texture, texture_coords);
-
-    for (int i = 0; i < fromColor.length(); i++) {
-      if (same_color(texcolor, fromColor[i])) {
-        return toColor[i];
-      }
-    }
-    return texcolor;
-  }
-  ]])
+  local shader = love.graphics.newShader("shaders/palletSwap.glsl")
+  shader:send("fromColor",
+    fromArray[1],
+    fromArray[2],
+    fromArray[3],
+    fromArray[4],
+    fromArray[5],
+    fromArray[6]
+  )
+  shader:send("toColor",
+    toArray[1],
+    toArray[2],
+    toArray[3],
+    toArray[4],
+    toArray[5],
+    toArray[6]
+  )
   return shader
 end
 
