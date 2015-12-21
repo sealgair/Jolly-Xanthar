@@ -133,6 +133,10 @@ function World:despawn(gob)
 end
 
 function World:update(dt)
+  if self.paused then
+    return
+  end
+
   local collisions = {}
   for i, gob in ipairs(self.gobs) do
     gob:update(dt)
@@ -338,5 +342,18 @@ function World:draw()
 
   for hud in values(self.huds) do
     hud:draw()
+  end
+
+  if self.paused then
+    graphicsContext({ color={0, 0, 0, 127}, font=Fonts[16], lineWidth=2 },
+    function()
+      local rect = Rect(0, 0, 64, 18)
+      rect:setCenter(Point(GameSize.w / 2, GameSize.h / 2))
+      love.graphics.rectangle("fill", rect.x, rect.y, rect.w, rect.h)
+      love.graphics.setColor(255, 0, 0)
+      love.graphics.rectangle("line", rect.x, rect.y, rect.w, rect.h)
+      rect = rect:inset(2)
+      love.graphics.printf("Paused", rect.x, rect.y, rect.w, "center")
+    end)
   end
 end

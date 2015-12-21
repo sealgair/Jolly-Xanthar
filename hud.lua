@@ -134,6 +134,10 @@ function HUD:playerAction(action)
     self.selected.y = 1
     self.world:removePlayer(self.index)
     self:drawMenuCanvas()
+  elseif action.name == "Pause" then
+    self.world.paused = true
+  elseif action.name == "Resume" then
+    self.world.paused = false
   end
 end
 
@@ -154,12 +158,14 @@ function HUD:controlStop(action)
     else
       self.selected.y = 1
       if self.player then
+        local paused = "Pause"
+        if self.world.paused then paused = "Resume" end
         self.itemGrid = {
           {{name = "Cancel"}},
-          {{name = "Pause"}},
+          {{name = paused}},
           {{name = "Quit"}},
           {{name = "Switch"}},
-          {{name = "Controls"}},
+          --{{name = "Controls"}}, TODO
         }
       else
         self.itemGrid = map(self.world:remainingRoster(), function(n) return {n} end)
