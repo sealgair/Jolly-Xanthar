@@ -221,3 +221,37 @@ function randomLine(filename)
     end
     return lines[math.random(#lines)]
 end
+
+function graphicsContext(context, graphics)
+  love.graphics.push()
+  local old = {}
+  if context.font then
+    old.font = love.graphics.getFont()
+    love.graphics.setFont(context.font)
+  end
+  if context.color then
+    local r, g, b, a = love.graphics.getColor()
+    old.color = {r, g, b, a}
+    love.graphics.setColor(context.color)
+  end
+  if context.lineWidth then
+    old.lineWidth = love.graphics.getLineWidth()
+    love.graphics.setLineWidth(context.lineWidth)
+  end
+  if context.origin then
+    love.graphics.origin()
+  end
+
+  graphics(old)
+
+  if old.font then
+    love.graphics.setFont(old.font)
+  end
+  if old.color then
+    love.graphics.setColor(old.color)
+  end
+  if old.lineWidth then
+    love.graphics.setLineWidth(old.lineWidth)
+  end
+  love.graphics.pop()
+end

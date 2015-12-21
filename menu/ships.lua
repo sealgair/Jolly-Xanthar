@@ -61,9 +61,10 @@ function Ships:draw()
     local ship = row[1]
 
     if r == self.selected.y then
-      love.graphics.setColor(63, 0, 0)
-      love.graphics.rectangle("fill", 2, y+2, w-2, h-2)
-      love.graphics.setColor(255, 255, 255)
+      graphicsContext({color = {63, 0, 0}},
+      function()
+        love.graphics.rectangle("fill", 2, y+2, w-2, h-2)
+      end)
       centerY = y + h/2
     end
 
@@ -91,7 +92,7 @@ function Ships:draw()
   love.graphics.setCanvas()
   local offset = centerY - GameSize.h / 2
   offset = math.min(offset, maxY - GameSize.h)
-  offset = math.max(0, offset)
+  offset = math.max(1, offset)
   offset = -offset
   if offset ~= self.newOffset then
     self.newOffset = offset

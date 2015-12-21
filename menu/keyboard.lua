@@ -27,8 +27,8 @@ function Keyboard:init(fsm, prompt)
     { "Space", "Delete", "Clear", "Done" },
   }
   Keyboard.super.init(self, {
-    fsm=fsm,
-    itemGrid=keys
+    fsm = fsm,
+    itemGrid = keys
   })
 end
 
@@ -78,24 +78,25 @@ end
 function Keyboard:draw()
   love.graphics.setFont(Fonts[16])
 
-  if self.prompt then
-    love.graphics.setColor(0, 64, 255)
-    love.graphics.printf(self.prompt, 0, 4, GameSize.w, "center")
-  end
+  local blue = { 0, 128, 255 }
+  graphicsContext({ color = blue , lineWidth = 2},
+  function()
+    if self.prompt then
+      love.graphics.printf(self.prompt, 0, 4, GameSize.w, "center")
+    end
 
-  love.graphics.setLineWidth(2)
-  love.graphics.line(8, 44, GameSize.w - 8, 45)
+    love.graphics.line(8, 44, GameSize.w - 8, 45)
 
-  local w = GameSize.w / 2
-  local y = 68
-  love.graphics.printf("A: type", 0, y, w, "center")
-  love.graphics.printf("B: delete", w, y, w, "center")
+    local w = GameSize.w / 2
+    local y = 68
+    love.graphics.printf("A: type", 0, y, w, "center")
+    love.graphics.printf("B: delete", w, y, w, "center")
 
-  y = y + 18
-  love.graphics.printf("Select: clear", 0, y, w, "center")
-  love.graphics.printf("Start: done", w, y, w, "center")
+    y = y + 18
+    love.graphics.printf("Select: clear", 0, y, w, "center")
+    love.graphics.printf("Start: done", w, y, w, "center")
+  end)
 
-  love.graphics.setColor(255, 255, 255)
   love.graphics.printf(self.text .. self.cursor, 0, 32, GameSize.w, "center")
 
   local x, y
@@ -108,29 +109,34 @@ function Keyboard:draw()
         x = k * 60 - 30
       end
 
+      local color = { 255, 255, 255 }
       if Point(self.selected) == Point(k, r) then
-        love.graphics.setColor(255, 0, 0)
+        color = { 255, 0, 0 }
       end
-      love.graphics.printf(key, x, y, 18, "center")
-      love.graphics.setColor(255, 255, 255)
+      graphicsContext({
+        color = color
+      }, function()
+        love.graphics.printf(key, x, y, 18, "center")
+      end)
     end
   end
 
   if self.warning then
-    local rect = Rect(GameSize.w * (1/4), GameSize.h * (1/3),
-                      GameSize.w * (2/4), GameSize.h * (1/3))
-    love.graphics.setColor(127, 0, 0)
-    love.graphics.rectangle("fill", rect.x, rect.y, rect.w, rect.h)
+    local rect = Rect(GameSize.w * (1 / 4), GameSize.h * (1 / 3),
+      GameSize.w * (2 / 4), GameSize.h * (1 / 3))
+    graphicsContext({ color = { 127, 0, 0 } }, function()
+      love.graphics.rectangle("fill", rect.x, rect.y, rect.w, rect.h)
+    end)
 
     rect = rect:inset(3)
-    love.graphics.setColor(0, 0, 0)
-    love.graphics.rectangle("fill", rect.x, rect.y, rect.w, rect.h)
+    graphicsContext({ color = { 0, 0, 0 } }, function()
+      love.graphics.rectangle("fill", rect.x, rect.y, rect.w, rect.h)
+    end)
 
     rect = rect:inset(2)
-    love.graphics.setColor(255, 0, 0)
-    love.graphics.setFont(Fonts[10])
-    love.graphics.printf(self.warning, rect.x, rect.y, rect.w, "center")
-
-    love.graphics.setColor(255, 255, 255)
+    graphicsContext({ color = { 255, 0, 0 }, font = Fonts[10] },
+    function()
+      love.graphics.printf(self.warning, rect.x, rect.y, rect.w, "center")
+    end)
   end
 end
