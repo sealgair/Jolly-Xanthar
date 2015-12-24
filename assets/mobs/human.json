@@ -4,7 +4,9 @@
   "h": 16,
   "animations": {
     "walk": [2, 3],
-    "idle": [1]
+    "idle": [1],
+    "stunned": [4],
+    "dead": [5]
   },
   "hitbox": {
     "x": 4, "y": 4, "w": 8, "h": 8

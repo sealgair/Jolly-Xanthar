@@ -45,7 +45,7 @@ function World:init(fsm, ship)
   -- add players
   self.roster = Save:shipRoster(self.ship)
   local center = Point()
-  local activePlayers = {1}
+  local activePlayers = {1, 2}
   for i, coord in ipairs(self.map.playerCoords) do
     local hud = HUD(self, i)
     self.huds[i] = hud
@@ -98,9 +98,11 @@ function World:addPlayer(rosterData, index, coords)
   return player
 end
 
-function World:removePlayer(index)
+function World:removePlayer(index, keepBody)
   local player = self.players[index]
-  self:despawn(player)
+  if keepBody ~= true then
+    self:despawn(player)
+  end
   self.players[index] = nil
   self.huds[index].player = nil
   self.indicators[index] = nil
@@ -135,6 +137,16 @@ end
 function World:update(dt)
   if self.paused then
     return
+  end
+
+  for p, player in pairs(self.players) do
+    if player:stunned() then
+      self.huds[p].player = nil
+      self.indicators[p] = nil
+    end
+    if player:dead() then
+      self:removePlayer(p, true)
+    end
   end
 
   local collisions = {}
@@ -301,7 +313,6 @@ function World:draw()
   local drawn = {}
   for i, player in pairs(self.players) do
     local ind = self.indicators[i]
-    local indSz = Size(ind.w, ind.h)
 
     for s, screen in ipairs(screens) do
       local sco = screen.windowOffset
@@ -325,9 +336,12 @@ function World:draw()
           pos.x = sco.x
         end
 
-        for p in values(drawn) do
-          if Rect(p, indSz):intersects(Rect(pos, indSz)) then
-            pos.x = p.x + indSz.w
+        if ind then
+          local indSz = Size(ind.w, ind.h)
+          for p in values(drawn) do
+            if Rect(p, indSz):intersects(Rect(pos, indSz)) then
+              pos.x = p.x + indSz.w
+            end
           end
         end
       end
@@ -335,7 +349,9 @@ function World:draw()
         dir = "down"
       end
 
-      ind:draw(pos.x, pos.y, dir)
+      if ind then
+        ind:draw(pos.x, pos.y, dir)
+      end
       table.insert(drawn, pos)
     end
   end

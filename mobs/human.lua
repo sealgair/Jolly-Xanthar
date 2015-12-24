@@ -46,6 +46,7 @@ function Human:init(coord, opts)
     confFile = 'assets/mobs/human.json',
     speed = 50,
     momentum = 20,
+    stunFactor = 1.5,
     shader = self.shader
   })
 

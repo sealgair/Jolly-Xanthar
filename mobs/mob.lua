@@ -8,11 +8,13 @@ require 'weapons.teeth'
 Mob = Gob:extend('Mob')
 
 function Mob:init(opts)
-  Mob.super.init(self, opts)
-
   self.maxHealth = coalesce(opts.health, 10)
   self.health = self.maxHealth
   self.momentum = coalesce(opts.momentum, 10)
+  self.stunFactor = coalesce(opts.stunFactor, 0)
+  self.minHealth = -self.stunFactor * self.maxHealth
+
+  Mob.super.init(self, opts)
 
   self.splatImg = love.graphics.newImage("assets/particles/damage.png")
   self.splat = love.graphics.newParticleSystem(self.splatImg, 64)
@@ -32,7 +34,7 @@ function Mob:init(opts)
 end
 
 function Mob:setDirection(newDirection)
-  if self:dead() then
+  if self:stunned() then
     self.direction = Direction(0, 0)
     return
   end
@@ -75,7 +77,7 @@ function Mob:setDirection(newDirection)
 end
 
 function Mob:controlStart(action)
-  if self:dead() then return end
+  if self:stunned() then return end
   self.actions[action] = true
 
   local weapon = self.weapons[action]
@@ -85,7 +87,7 @@ function Mob:controlStart(action)
 end
 
 function Mob:controlStop(action)
-  if self:dead() then return end
+  if self:stunned() then return end
   self.actions[action] = nil
 
   local weapon = self.weapons[action]
@@ -95,7 +97,9 @@ function Mob:controlStop(action)
 end
 
 function Mob:animState()
-  if self:dead() then
+  if self:stunned() then
+    return "stunned"
+  elseif self:dead() then
     return "dead"
   else
     return Mob.super.animState(self)
@@ -119,7 +123,9 @@ function Mob:update(dt)
     end
   end
 
-  if self:dead() then
+  if self:stunned() then
+    self.health = self.health - dt
+  elseif self:dead() then
     if self.corpseDecay == nil then
       self.corpseDecay = 10
     else
@@ -151,6 +157,17 @@ function Mob:draw()
   local center = self:center()
   love.graphics.draw(self.splat, center.x, center.y)
   love.graphics.pop()
+
+  if self:stunned() then
+    graphicsContext({
+      color={255, 0, 0 },
+      font=Fonts[10],
+    },
+    function()
+      local coord = self:center() - Point(self.w/2, self.h)
+      love.graphics.printf(math.ceil(self.health - self.minHealth), coord.x, coord.y, self.w, "center")
+    end)
+  end
 end
 
 function Mob:collidesWith(other)
@@ -196,6 +213,10 @@ function Mob:collide(cols)
   end
 end
 
+function Mob:stunned()
+  return not self:dead() and self.health <= 0
+end
+
 function Mob:dead()
-  return self.health <= 0
+  return self.health <= self.minHealth
 end
