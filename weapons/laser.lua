@@ -6,7 +6,7 @@ LaserRifle = Weapon:extend('Laser')
 function LaserRifle:init(owner)
   LaserRifle.super.init(self, {
     owner = owner,
-    damage = 2,
+    damage = 5,
     rateLimit = 0.15,
     conf = {
       w = 0,
@@ -103,7 +103,7 @@ function Laser:init(opts)
   Laser.super.init(self, opts)
   self.color = {250, 0, 0, 255}
   self.maxAge = 0.5
-  self.damage = 3
+  self.damage = opts.damage
   self.splatImg = love.graphics.newImage("assets/particles/laser.png")
   self.splats = {}
 end
