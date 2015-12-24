@@ -145,6 +145,15 @@ function World:update(dt)
       self.indicators[p] = nil
     end
     if player:dead() then
+      local rosterIndex
+      for r, data in ipairs(self.roster) do
+        if data.name == player.name then
+          rosterIndex = r
+          break
+        end
+      end
+      table.remove(self.roster, rosterIndex)
+      Save:saveShip(self.ship, self.roster)
       self:removePlayer(p, true)
     end
   end
