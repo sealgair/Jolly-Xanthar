@@ -97,10 +97,10 @@ function Mob:controlStop(action)
 end
 
 function Mob:animState()
-  if self:stunned() then
-    return "stunned"
-  elseif self:dead() then
+  if self:dead() then
     return "dead"
+  elseif self:stunned() then
+    return "stunned"
   else
     return Mob.super.animState(self)
   end
@@ -123,11 +123,7 @@ function Mob:update(dt)
     end
   end
 
-  if self:stunned() then
-    if self.rescueTime == nil then
-      self.health = self.health - dt
-    end
-  elseif self:dead() then
+  if self:dead() then
     if self.corpseDecay == nil then
       self.corpseDecay = 10
     else
@@ -135,6 +131,10 @@ function Mob:update(dt)
     end
     if self.corpseDecay <= 0 then
       self.world:despawn(self)
+    end
+  elseif self:stunned() then
+    if self.rescueTime == nil then
+      self.health = self.health - dt
     end
   end
   Mob.super.update(self, dt)
@@ -160,7 +160,7 @@ function Mob:draw()
   love.graphics.draw(self.splat, center.x, center.y)
   love.graphics.pop()
 
-  if self:stunned() then
+  if self:stunned() and not self:dead() then
     graphicsContext({
       color={255, 0, 0 },
       font=Fonts.medium,
@@ -216,7 +216,7 @@ function Mob:collide(cols)
 end
 
 function Mob:stunned()
-  return not self:dead() and self.health <= 0
+  return self.health <= 0
 end
 
 function Mob:dead()

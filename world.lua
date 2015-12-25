@@ -345,7 +345,7 @@ function World:draw()
       local x, y, w, h = self.bumpWorld:getRect(dude)
       love.graphics.rectangle("line", x, y, w, h)
     end
-    if dude.stunned and dude:stunned() then
+    if dude.stunned and dude:stunned() and not dude:dead() then
       self:drawRescue(dude)
     end
   end
