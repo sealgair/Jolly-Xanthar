@@ -195,6 +195,10 @@ function Gob:update(dt)
   end
 end
 
+function Gob:isMoving()
+  return self.direction ~= Direction()
+end
+
 function Gob:collidesWith(other)
   return "slide", 0
 end

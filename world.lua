@@ -143,6 +143,28 @@ function World:update(dt)
     if player:stunned() then
       self.huds[p].player = nil
       self.indicators[p] = nil
+
+      local others = invert(self.players)
+      others[player] = nil
+      local r = player:rect():inset(-16)
+      local items, len = self.bumpWorld:queryRect(r.x, r.y, r.w, r.h, function(item)
+        return others[item]
+      end)
+      if len == 0 then
+        player.rescueTime = nil
+      else
+        for other in values(items) do
+          if player.rescueTime == nil then player.rescueTime = 0 end
+          if not other:isMoving() then
+            player.rescueTime = player.rescueTime + dt
+          else
+            player.rescueTime = math.max(0, player.rescueTime - dt * .5)
+          end
+        end
+        if player.rescueTime > 3 then
+          self:removePlayer(p)
+        end
+      end
     end
     if player:dead() then
       local rosterIndex
@@ -275,6 +297,37 @@ function World:update(dt)
   end
 end
 
+function World:drawRescue(player)
+  local font = Fonts[10]
+  graphicsContext({
+    font=font,
+    color={0, 0, 0, 127},
+    lineWidth=1
+  },
+  function()
+    local rescueRect = Rect(player:center(), font:getWidth("Rescue"), font:getHeight())
+    rescueRect = rescueRect + Point(-rescueRect.w/2, player.h / 2 + 5)
+    rescueRect = rescueRect:inset(-2)
+    rescueRect:draw("fill")
+
+    local alpha
+    if player.rescueTime ~= nil then
+      love.graphics.setColor(127, 0, 0, 255)
+      local w = rescueRect.w
+      rescueRect.w = w * (player.rescueTime / 3)
+      rescueRect:draw("fill")
+      rescueRect.w = w
+      alpha = 255
+    else
+      alpha = 127
+    end
+    love.graphics.setColor(255, 0, 0)
+    rescueRect:draw("line")
+    love.graphics.setColor(255, 255, 255, alpha)
+    love.graphics.print("Rescue", rescueRect.x + 2, rescueRect.y + 2)
+  end)
+end
+
 function World:draw()
   love.graphics.push()
   love.graphics.origin()
@@ -291,6 +344,9 @@ function World:draw()
     if DEBUG_BUMP then
       local x, y, w, h = self.bumpWorld:getRect(dude)
       love.graphics.rectangle("line", x, y, w, h)
+    end
+    if dude.stunned and dude:stunned() then
+      self:drawRescue(dude)
     end
   end
 

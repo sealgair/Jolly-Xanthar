@@ -124,7 +124,9 @@ function Mob:update(dt)
   end
 
   if self:stunned() then
-    self.health = self.health - dt
+    if self.rescueTime == nil then
+      self.health = self.health - dt
+    end
   elseif self:dead() then
     if self.corpseDecay == nil then
       self.corpseDecay = 10

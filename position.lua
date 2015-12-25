@@ -213,6 +213,10 @@ function Rect:inset(x, y)
   return Rect(self.x + x, self.y + y, self.w - 2*x, self.h - 2*y)
 end
 
+function Rect:draw(style)
+  love.graphics.rectangle(style, self.x, self.y, self.w, self.h)
+end
+
 function Rect:__add(other)
   assert(class.isInstance(other, Point), "Cannot add "..type(other).." '".."' to Rect")
   return Rect(self:origin() + other, self.w, self.h)

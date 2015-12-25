@@ -225,6 +225,10 @@ end
 function graphicsContext(context, graphics)
   love.graphics.push()
   local old = {}
+  if context.canvas then
+    old.canvas = love.graphics.getCanvas()
+    love.graphics.setCanvas(context.canvas)
+  end
   if context.font then
     old.font = love.graphics.getFont()
     love.graphics.setFont(context.font)
@@ -252,6 +256,9 @@ function graphicsContext(context, graphics)
   end
   if old.lineWidth then
     love.graphics.setLineWidth(old.lineWidth)
+  end
+  if old.canvas then
+    love.graphics.setCanvas(old.canvas)
   end
   love.graphics.pop()
 end
