@@ -8,6 +8,8 @@ Controller = {
   axisTracker = {},
 }
 
+local gamepadPrefix = "gp"
+
 local buttonSymbols = {
   a = "A",
   b = "B",
@@ -50,6 +52,27 @@ local extraMappings = {
       buttonSymbols.back,
       buttonSymbols.start,
     }
+  },
+  ["USB Gamepad"] = {
+    axes = {
+      '',
+      '',
+      '',
+      axisSymbols.leftx,
+      axisSymbols.lefty,
+    },
+    buttons = {
+      '',
+      buttonSymbols.a,
+      buttonSymbols.b,
+      '',
+      '',
+      '',
+      '',
+      '',
+      buttonSymbols.back,
+      buttonSymbols.start,
+    }
   }
 }
 
@@ -57,6 +80,7 @@ function gamepadButton(joystick, button)
   local jsName = joystick:getName()
   if extraMappings[jsName] then
     local result = extraMappings[jsName].buttons[button]
+    print('mapping', jsName, button, result)
     return result
   elseif joystick:isGamepad() then
     for key, symbol in pairs(buttonSymbols) do
@@ -139,7 +163,7 @@ function Controller:actionsForKey(key)
 end
 
 function Controller:actionsForButton(joystick, button)
-  local key = "joy" .. joystick:getID() .. ":" .. button
+  local key = gamepadPrefix .. joystick:getID() .. ":" .. button
   return self:actionsForKey(key)
 end
 
@@ -217,14 +241,14 @@ end
 function Controller:joystickpressed(joystick, button)
   if button == nil then return end
   button = gamepadButton(joystick, button)
-  local key = "joy" .. joystick:getID() .. ":" .. button
+  local key = gamepadPrefix .. joystick:getID() .. ":" .. button
   self:keypressed(key)
 end
 
 function Controller:joystickreleased(joystick, button)
   if button == nil then return end
   button = gamepadButton(joystick, button)
-  local key = "joy" .. joystick:getID() .. ":" .. button
+  local key = gamepadPrefix .. joystick:getID() .. ":" .. button
   self:keyreleased(key)
 end
 
@@ -232,7 +256,7 @@ function Controller:joystickaxis(joystick, axis, value)
   if axis == nil then return end
 
   axis = gamepadAxis(joystick, axis)
-  local key = "joy" .. joystick:getID() .. ":" .. axis
+  local key = gamepadPrefix .. joystick:getID() .. ":" .. axis
 
   local oldDir = self.axisTracker[key]
   if string.find(axis, "[LR]-Trig") then
