@@ -76,7 +76,7 @@ function Keyboard:update(dt)
 end
 
 function Keyboard:draw()
-  love.graphics.setFont(Fonts[16])
+  love.graphics.setFont(Fonts.large)
 
   local blue = { 0, 128, 255 }
   graphicsContext({ color = blue , lineWidth = 2},
@@ -134,7 +134,7 @@ function Keyboard:draw()
     end)
 
     rect = rect:inset(2)
-    graphicsContext({ color = { 255, 0, 0 }, font = Fonts[10] },
+    graphicsContext({ color = { 255, 0, 0 }, font = Fonts.medium },
     function()
       love.graphics.printf(self.warning, rect.x, rect.y, rect.w, "center")
     end)

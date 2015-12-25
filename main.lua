@@ -49,8 +49,12 @@ function love.load(arg)
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ"..
   "1234567890"..
   ".,!?-+/():;%&`'*#=[]\\\"_|Ø"
-  Fonts[10] = love.graphics.newImageFont("assets/fonts/font10.png", glyphs)
-  Fonts[16] = love.graphics.newImageFont("assets/fonts/font16.png", glyphs)
+  for fontFile in values(love.filesystem.getDirectoryItems("assets/fonts")) do
+    if fontFile:find(".png$") then
+      local fontName = fontFile:gsub(".png", "")
+      Fonts[fontName] = love.graphics.newImageFont("assets/fonts/" .. fontFile, glyphs)
+    end
+  end
 
   Controller:load()
   StateMachine.transitions = {

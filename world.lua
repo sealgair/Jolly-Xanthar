@@ -298,7 +298,7 @@ function World:update(dt)
 end
 
 function World:drawRescue(player)
-  local font = Fonts[10]
+  local font = Fonts.small
   graphicsContext({
     font=font,
     color={0, 0, 0, 127},
@@ -307,12 +307,12 @@ function World:drawRescue(player)
   function()
     local rescueRect = Rect(player:center(), font:getWidth("Rescue"), font:getHeight())
     rescueRect = rescueRect + Point(-rescueRect.w/2, player.h / 2 + 5)
-    rescueRect = rescueRect:inset(-2)
+    rescueRect = rescueRect:inset(-1)
     rescueRect:draw("fill")
 
     local alpha
     if player.rescueTime ~= nil then
-      love.graphics.setColor(127, 0, 0, 255)
+      love.graphics.setColor(255, 0, 0)
       local w = rescueRect.w
       rescueRect.w = w * (player.rescueTime / 3)
       rescueRect:draw("fill")
@@ -324,7 +324,7 @@ function World:drawRescue(player)
     love.graphics.setColor(255, 0, 0)
     rescueRect:draw("line")
     love.graphics.setColor(255, 255, 255, alpha)
-    love.graphics.print("Rescue", rescueRect.x + 2, rescueRect.y + 2)
+    love.graphics.print("Rescue", rescueRect.x + 1, rescueRect.y + 1)
   end)
 end
 
@@ -426,7 +426,7 @@ function World:draw()
   end
 
   if self.paused then
-    graphicsContext({ color={0, 0, 0, 127}, font=Fonts[16], lineWidth=2 },
+    graphicsContext({ color={0, 0, 0, 127}, font=Fonts.large, lineWidth=2 },
     function()
       local rect = Rect(0, 0, 64, 18)
       rect:setCenter(Point(GameSize.w / 2, GameSize.h / 2))

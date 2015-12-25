@@ -59,8 +59,8 @@ function Controls:init(fsm)
     b =      { x = 130, y = 129, w = 60, h = 46 },
     a =      { x = 194, y = 129, w = 60, h = 46 },
   }
-  self.controlFont = Fonts[10]
-  self.setterFont = Fonts[10]
+  self.controlFont = Fonts.small
+  self.setterFont = Fonts.medium
 end
 
 function Controls:activate()
@@ -166,7 +166,7 @@ function Controls:draw()
 
   love.graphics.setFont(self.controlFont)
   for action, keyset in pairs(Controller.playerControls[self.selectedPlayer]) do
-    local fontHeight = love.graphics.getFont():getHeight()
+    local fontHeight = love.graphics.getFont():getHeight() + 1
     local loc = self.controlLocations[action]
     local ystart = loc.y + (loc.h - (fontHeight * keyCount(keyset))) / 2
     for key, _ in pairs(keyset) do

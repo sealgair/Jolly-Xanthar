@@ -163,7 +163,7 @@ function Mob:draw()
   if self:stunned() then
     graphicsContext({
       color={255, 0, 0 },
-      font=Fonts[10],
+      font=Fonts.medium,
     },
     function()
       local coord = self:center() - Point(self.w/2, self.h)

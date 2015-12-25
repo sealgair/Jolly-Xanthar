@@ -70,9 +70,9 @@ function Ships:draw()
 
     maxY = math.max(maxY, y + 1 + h)
     love.graphics.rectangle("line", 1, y+1, w, h)
-    love.graphics.setFont(Fonts[16])
+    love.graphics.setFont(Fonts.large)
     love.graphics.print(ship.name, 4, y + 4)
-    love.graphics.setFont(Fonts[10])
+    love.graphics.setFont(Fonts.medium)
     love.graphics.print(os.date("%y.%m.%d[%H.%M.%S]", ship.saved), 4, y + 4 + 18)
 
     local yoff = 18

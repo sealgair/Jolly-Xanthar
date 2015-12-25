@@ -36,7 +36,7 @@ function Slot:draw(active)
   end
 
   self.lifeForm:draw()
-  love.graphics.setFont(Fonts[10])
+  love.graphics.setFont(Fonts.medium)
   local pos = self.rect:origin() + Point(22, 6)
   love.graphics.printf(self.lifeForm.name, pos.x, pos.y, 126, "left")
 
@@ -157,7 +157,7 @@ function Recruit:draw()
     end
   end
 
-  love.graphics.setFont(Fonts[16])
+  love.graphics.setFont(Fonts.large)
   love.graphics.printf(self.ship .. ": " ..self.recruitCount .. "/" .. self.total, 0, 6, 256, "center")
 
   if self:done() then
@@ -170,7 +170,7 @@ function Recruit:draw()
     love.graphics.rectangle("line", w, h, w, h)
     love.graphics.setColor(255, 255, 255)
 
-    love.graphics.setFont(Fonts[10])
+    love.graphics.setFont(Fonts.medium)
     love.graphics.printf("A: Accept\nB: Cancel", w, h + h / 2 - 14, w, "center")
   end
 end

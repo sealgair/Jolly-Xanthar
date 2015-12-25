@@ -15,10 +15,10 @@ function HUD:init(world, playerIndex)
   HUD.super.init(self, {
     controlPlayer=playerIndex
   })
-
+  self.font = Fonts.small
   self.world = world
   self.index = playerIndex
-  self.barHeight = 11
+  self.barHeight = self.font:getHeight() + 4
   self.maxMenuHeight = 64
   self.menuHeight = self.maxMenuHeight
   self.active = true
@@ -98,7 +98,7 @@ function HUD:drawMenuCanvas()
 
   local y = 1
   local w = self.rect.w
-  local font = Fonts[10]
+  local font = self.font
   love.graphics.setFont(font)
   local fh = font:getHeight()
 
@@ -255,7 +255,7 @@ function HUD:draw()
     end
   else
     love.graphics.setColor(255, 255, 255)
-    love.graphics.setFont(Fonts[10])
+    love.graphics.setFont(self.font)
     love.graphics.printf("Press Start", x, y, w, "center")
   end
   love.graphics.setColor(255, 255, 255)
