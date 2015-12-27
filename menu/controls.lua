@@ -1,3 +1,5 @@
+require('utils')
+
 Controls = class('Controls')
 
 local keyTime = 1
@@ -11,36 +13,65 @@ function Controls:init(fsm)
   self.screenQuad = love.graphics.newQuad(0, 0, ww, wh, sw, sh)
 
   self.items = {
-    { 'done', 'setAll', 'reset' },
-    { 'up', 'down', 'left', 'right' },
-    { 'select', 'start', 'b', 'a' },
+    { 'Done', 'Set All', 'Reset' },
+    { 'up' },
+    { 'left', 'right', 'select', 'start', 'b', 'a' },
+    { 'down' },
   }
+  self.itemCoords = {}
+  for y, row in ipairs(self.items) do
+    for x, item in ipairs(row) do
+      self.itemCoords[item] = Point(x, y)
+    end
+  end
+  self.itemRemap = {
+    Reset = {
+      down = self.itemCoords.b,
+    },
+    ['Set All'] = {
+      down = self.itemCoords.select,
+    },
+    up = {
+      left = self.itemCoords.left,
+      right = self.itemCoords.right,
+    },
+    down = {
+      left = self.itemCoords.left,
+      right = self.itemCoords.right,
+    },
+    select = {
+      up = self.itemCoords['Set All'],
+      down = self.itemCoords['Set All'],
+    },
+    start = {
+      up = self.itemCoords['Set All'],
+      down = self.itemCoords['Set All'],
+    },
+    a = {
+      up = self.itemCoords.Reset,
+      down = self.itemCoords.Reset,
+    },
+    b = {
+      up = self.itemCoords.Reset,
+      down = self.itemCoords.Reset,
+    },
+  }
+
   local function selectQuad(x, y, w, h)
     return love.graphics.newQuad(ww + x, y, w, h, sw, sh)
   end
 
-  local cw = 65
-  local ch = 74
-  local pw = 34
-  local ph = 46
   self.selectedQuads = {
-    done = selectQuad(0, 0, 64, 24),
-    setAll = selectQuad(72, 0, 64, 24),
-    reset = selectQuad(160, 0, 80, 24),
-    up =    selectQuad(0, 36, cw, ch),
-    down =  selectQuad(64, 36, cw, ch),
-    left =  selectQuad(128, 36, cw, ch),
-    right = selectQuad(192, 36, cw, ch),
-    select = selectQuad(0, 110, cw, ch),
-    start =  selectQuad(64, 110, cw, ch),
-    b =      selectQuad(128, 110, cw, ch),
-    a =      selectQuad(192, 110, cw, ch),
-  }
-  self.playerQuads = {
-    selectQuad(46, 182, pw, ph),
-    selectQuad(88, 182, pw, ph),
-    selectQuad(142, 182, pw, ph),
-    selectQuad(188, 182, pw, ph),
+    up =    selectQuad(56, 64, 16, 16),
+    down =  selectQuad(56, 96, 16, 16),
+    left =  selectQuad(40, 80, 16, 16),
+    right = selectQuad(72, 80, 16, 16),
+
+    select = selectQuad(104, 80, 32, 15),
+    start =  selectQuad(137, 80, 32, 15),
+
+    b = selectQuad(182, 79, 18, 18),
+    a = selectQuad(200, 79, 18, 18),
   }
 
   self.selected = { x = 1, y = 1 }
@@ -72,12 +103,25 @@ function Controls:selectedItem()
 end
 
 function Controls:setDirection(direction)
-  if self.direction ~= direction then
-    self.direction = direction
-    self.selected.y = wrapping(self.selected.y + direction.y, #self.items)
-    local row = self.items[self.selected.y]
-    self.selected.x = wrapping(self.selected.x + direction.x, #row)
+  if self.direction == direction then return end
+  self.direction = direction
+  if self.direction == Direction() then return end
+
+  local selected = self:selectedItem()
+  local dirstr = tostring(direction)
+  local remap = self.itemRemap[selected]
+  if remap then
+    local newSelected = remap[dirstr]
+    if newSelected then
+      self.selected.x = newSelected.x
+      self.selected.y = newSelected.y
+      return
+    end
   end
+
+  self.selected.y = wrapping(self.selected.y + direction.y, #self.items)
+  local row = self.items[self.selected.y]
+  self.selected.x = wrapping(self.selected.x + direction.x, #row)
 end
 
 function Controls:controlStop(action)
@@ -154,20 +198,32 @@ function Controls:draw()
   love.graphics.setColor(255, 255, 255)
   love.graphics.draw(self.image, self.screenQuad, 0, 0)
   local selectedItem = self:selectedItem()
-  local selectedQuad = self.selectedQuads[selectedItem]
-  local playerQuad = self.playerQuads[self.selectedPlayer]
-  local qx, qy, qw, qh = selectedQuad:getViewport()
-  qx = qx - GameSize.w
-  love.graphics.draw(self.image, selectedQuad, qx, qy)
 
-  qx, qy, qw, qh = playerQuad:getViewport()
-  qx = qx - GameSize.w
-  love.graphics.draw(self.image, playerQuad, qx, qy)
+  love.graphics.setFont(Fonts.large)
+  local p = Point(15, 15)
+  for i, item in ipairs(self.items[1]) do
+    if item == selectedItem then
+      love.graphics.setColor(255, 0, 0)
+    end
+    love.graphics.print(item, p.x, p.y)
+    p = p + Point(Fonts.large:getWidth(item) + 25, 0)
+    love.graphics.setColor(255, 255, 255)
+  end
+
+  love.graphics.setColor(255, 255, 255)
+  local selectedQuad = self.selectedQuads[selectedItem]
+  if selectedQuad then
+    local qx, qy, qw, qh = selectedQuad:getViewport()
+    qx = qx - GameSize.w
+    love.graphics.draw(self.image, selectedQuad, qx, qy)
+  end
 
   love.graphics.setFont(self.controlFont)
-  for action, keyset in pairs(Controller.playerControls[self.selectedPlayer]) do
+  local controls = Controller.playerControls[self.selectedPlayer]
+  local keyset = controls[selectedItem]
+  if keyset then
     local fontHeight = love.graphics.getFont():getHeight() + 1
-    local loc = self.controlLocations[action]
+    local loc = Rect(48, 144, 128, 128)
     local ystart = loc.y + (loc.h - (fontHeight * keyCount(keyset))) / 2
     for key, _ in pairs(keyset) do
       love.graphics.printf(key, loc.x, ystart, loc.w, "center")
