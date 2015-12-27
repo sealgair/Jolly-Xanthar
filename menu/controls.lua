@@ -56,6 +56,12 @@ function Controls:init(fsm)
       down = self.itemCoords.Reset,
     },
   }
+  self.renames = {
+    up = "↑",
+    down = "↓",
+    left = "←",
+    right = "→",
+  }
 
   local function selectQuad(x, y, w, h)
     return love.graphics.newQuad(ww + x, y, w, h, sw, sh)
@@ -218,16 +224,20 @@ function Controls:draw()
     love.graphics.draw(self.image, selectedQuad, qx, qy)
   end
 
-  love.graphics.setFont(self.controlFont)
   local controls = Controller.playerControls[self.selectedPlayer]
   local keyset = controls[selectedItem]
   if keyset then
-    local fontHeight = love.graphics.getFont():getHeight() + 1
-    local loc = Rect(48, 144, 128, 128)
-    local ystart = loc.y + (loc.h - (fontHeight * keyCount(keyset))) / 2
+    local pos = Point(30, 135)
+    love.graphics.setFont(Fonts.large)
+    local itemName = coalesce(self.renames[selectedItem], selectedItem:upper())
+    love.graphics.print("["..itemName.."]", pos.x, pos.y)
+    pos = pos + Point(0, Fonts.large:getHeight() + 3)
+
+    local lineHeight = Fonts.small:getHeight() + 2
+    love.graphics.setFont(Fonts.small)
     for key, _ in pairs(keyset) do
-      love.graphics.printf(key, loc.x, ystart, loc.w, "center")
-      ystart = ystart + fontHeight
+      love.graphics.print(key, pos.x, pos.y)
+      pos = pos + Point(0, lineHeight)
     end
   end
 
