@@ -114,27 +114,22 @@ function Controls:setDirection(direction)
   if self.direction == Direction() then return end
 
   if self.selectedKey ~= nil then
-    local keyset = self:currentKeyset()
-    self.selectedKey = wrapping(self.selectedKey + direction.y, dictSize(keyset))
-    print('new selected key', self.selectedKey)
-    return
-  end
-
-  local selected = self:selectedItem()
-  local dirstr = tostring(direction)
-  local remap = self.itemRemap[selected]
-  if remap then
-    local newSelected = remap[dirstr]
-    if newSelected then
+    self.selectedKey = wrapping(self.selectedKey + direction.y, #self.keyList)
+  else
+    local selected = self:selectedItem()
+    local dirstr = tostring(direction)
+    local remap = self.itemRemap[selected]
+    if remap and remap[dirstr] then
+      local newSelected = remap[dirstr]
       self.selected.x = newSelected.x
       self.selected.y = newSelected.y
-      return
+    else
+      self.selected.y = wrapping(self.selected.y + direction.y, #self.items)
+      local row = self.items[self.selected.y]
+      self.selected.x = wrapping(self.selected.x + direction.x, #row)
     end
+    self:setKeyList()
   end
-
-  self.selected.y = wrapping(self.selected.y + direction.y, #self.items)
-  local row = self.items[self.selected.y]
-  self.selected.x = wrapping(self.selected.x + direction.x, #row)
 end
 
 function Controls:currentKeyset()
@@ -143,17 +138,50 @@ function Controls:currentKeyset()
   return controls[selectedItem]
 end
 
-function Controls:controlStop(action)
+function Controls:setKeyList()
   local keyset = self:currentKeyset()
-  if keyset then
+  if keyset == nil then
+    self.keyList = nil
+  else
+    self.keyList = {}
+    for key in keys(keyset) do
+      table.insert(self.keyList, key)
+    end
+  end
+end
+
+function Controls:controlStop(action)
+  local selectedItem = self:selectedItem()
+  if self:currentKeyset() then
     if self.selectedKey == nil then
       if action == 'a' or action == 'start' then
         self.selectedKey = 1
       end
     else
-      if action == 'start' then
+      if action == 'a' then
+      elseif action == 'b' then
+        table.remove(self.keyList, self.selectedKey)
+      elseif action == 'select' then
+        self.keyList = {}
+      elseif action == 'start' then
+        if self.selectedPlayer == 1 and #self.keyList == 0 then
+          -- don't let player 1 set keys to nil: they need to work the menu!
+          self:setKeyList()
+        else
+          Controller.playerControls[self.selectedPlayer][selectedItem] = valuesSet(self.keyList)
+        end
         self.selectedKey = nil
       end
+    end
+  else
+    print('got here')
+    if selectedItem == 'Done' then
+      Controller:saveControls()
+      self.fsm:advance('done')
+    elseif selectedItem == 'Reset' then
+      Controller:resetControls()
+      self:setKeyList()
+      self.selectedPlayer = 1
     end
   end
 end
@@ -248,17 +276,17 @@ function Controls:draw()
 
     local lineHeight = Fonts.small:getHeight() + 2
     love.graphics.setFont(Fonts.small)
-    local k = 1
-    for key, _ in pairs(keyset) do
-      local color = Colors.white
-      if k == self.selectedKey then
-        color = Colors.red
+    if self.keyList ~= nil then
+      for k, key in ipairs(self.keyList) do
+        local color = Colors.white
+        if k == self.selectedKey then
+          color = Colors.red
+        end
+        graphicsContext({color=color}, function()
+          love.graphics.print(key, pos.x, pos.y)
+        end)
+        pos = pos + Point(0, lineHeight)
       end
-      graphicsContext({color=color}, function()
-        love.graphics.print(key, pos.x, pos.y)
-      end)
-      pos = pos + Point(0, lineHeight)
-      k = k + 1
     end
   end
 end

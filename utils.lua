@@ -70,6 +70,14 @@ function dictSize(dict)
   return i
 end
 
+function valuesSet(list)
+  local set = {}
+  for v in values(list) do
+    set[v] = true
+  end
+  return set
+end
+
 function wrapping(value, max, min)
   if min == nil then
     min = 1
