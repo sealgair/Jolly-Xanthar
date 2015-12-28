@@ -63,6 +63,13 @@ function Controls:init(fsm)
     right = "→",
   }
 
+  self.keyMenuExtras = {
+    "New key",
+    "Save",
+    "Clear",
+    "Cancel",
+  }
+
   local function selectQuad(x, y, w, h)
     return love.graphics.newQuad(ww + x, y, w, h, sw, sh)
   end
@@ -114,7 +121,7 @@ function Controls:setDirection(direction)
   if self.direction == Direction() then return end
 
   if self.selectedKey ~= nil then
-    self.selectedKey = wrapping(self.selectedKey + direction.y, #self.keyList)
+    self.selectedKey = wrapping(self.selectedKey + direction.y, #self:keyMenu())
   else
     local selected = self:selectedItem()
     local dirstr = tostring(direction)
@@ -150,6 +157,21 @@ function Controls:setKeyList()
   end
 end
 
+function Controls:keyMenu()
+  if self.keyList ~= nil then
+    local menu = {}
+    for key in values(self.keyList) do
+      table.insert(menu, key)
+    end
+    for item in values(self.keyMenuExtras) do
+      table.insert(menu, item)
+    end
+    return menu
+  else
+    return nil
+  end
+end
+
 function Controls:controlStop(action)
   local selectedItem = self:selectedItem()
   if self:currentKeyset() then
@@ -158,19 +180,29 @@ function Controls:controlStop(action)
         self.selectedKey = 1
       end
     else
-      if action == 'a' then
-      elseif action == 'b' then
-        table.remove(self.keyList, self.selectedKey)
-      elseif action == 'select' then
-        self.keyList = {}
-      elseif action == 'start' then
-        if self.selectedPlayer == 1 and #self.keyList == 0 then
-          -- don't let player 1 set keys to nil: they need to work the menu!
-          self:setKeyList()
+      if action == 'start' or action == 'a' then
+        if self.selectedKey <= #self.keyList then
+          table.remove(self.keyList, self.selectedKey)
         else
-          Controller.playerControls[self.selectedPlayer][selectedItem] = valuesSet(self.keyList)
+          local keyAction = self:keyMenu()[self.selectedKey]
+          if keyAction == "New key" then
+            Controller:forwardAll(self)
+            self.selectedKey = #self.keyList + 1  -- off the edge
+            self.keyListener = {}
+          elseif keyAction == "Save" then
+            if #self.keyList > 0 or self.selectedPlayer ~= 1 then
+              -- don't let player 1 set keys to nil: they need to work the menu!
+              Controller.playerControls[self.selectedPlayer][selectedItem] = valuesSet(self.keyList)
+            end
+            self:setKeyList()
+            self.selectedKey = nil
+          elseif keyAction == "Clear" then
+            self.keyList = {}
+          elseif keyAction == "Cancel" then
+            self:setKeyList()
+            self.selectedKey = nil
+          end
         end
-        self.selectedKey = nil
       end
     end
   else
@@ -187,45 +219,27 @@ function Controls:controlStop(action)
 end
 
 function Controls:keypressed(key)
-  self.setKeysFor.keys[key] = keyTime
-  self.setKeysFor.finalTimer = nil
+  if self.keyListener.key == nil then
+    self.keyListener.key = key
+    self.keyListener.time = keyTime
+  end
 end
 
 function Controls:keyreleased(key)
-  if self.setKeysFor.keys[key] and self.setKeysFor.keys[key] > 0 then
-    self.setKeysFor.keys[key] = nil
-  end
-  local n = 0
-  for t in values(self.setKeysFor.keys) do
-    if t <= 0 then
-      n = n + 1
-    end
-  end
-  if n > 0 then
-    self.setKeysFor.finalTimer = controlTime
+  if self.keyListener and self.keyListener.key == key then
+    self.keyListener.key = nil
+    self.keyListener.time = nil
   end
 end
 
 function Controls:update(dt)
-  if self.setKeysFor then
-    for key, time in pairs(self.setKeysFor.keys) do
-      self.setKeysFor.keys[key] = time - dt
-    end
-
-    if self.setKeysFor.finalTimer then
-      self.setKeysFor.finalTimer = self.setKeysFor.finalTimer - dt
-      if self.setKeysFor.finalTimer < 0 then
-        Controller:updatePlayerAction(self.setKeysFor.player,
-          self.setKeysFor.action,
-          self.setKeysFor.keys)
-        if self.setKeysFor.nextAction and #self.setKeysFor.nextAction > 0 then
-          self.setKeysFor.action = table.remove(self.setKeysFor.nextAction, 1)
-          self.setKeysFor.keys = {}
-          self.setKeysFor.finalTimer = nil
-        else
-          Controller:endForward(self)
-          self.setKeysFor = nil
-        end
+  if self.keyListener then
+    if self.keyListener.time ~= nil then
+      self.keyListener.time = self.keyListener.time - dt
+      if self.keyListener.time <= 0 then
+        table.insert(self.keyList, self.keyListener.key)
+        self.keyListener = nil
+        Controller:endForward(self)
       end
     end
   end
@@ -258,33 +272,69 @@ function Controls:draw()
   local controls = Controller.playerControls[self.selectedPlayer]
   local keyset = controls[selectedItem]
   if keyset then
-    if self.selectedKey ~= nil then
-      graphicsContext({font=Fonts.medium, color=Colors.menuRed}, function()
-        local keys = "[B]\n[A]\n[SELECT]\n[START]"
-        local actions = "delete key\nadd key\nclear keys\nsave keys"
-        local x, y, w = 115, 133, 64
-        love.graphics.printf(keys, x, y, w, "right")
-        love.graphics.setColor(Colors.menuBlue)
-        love.graphics.print(actions, x + w + 3, y)
-      end)
-    end
     local pos = Point(30, 135)
-    love.graphics.setFont(Fonts.large)
+    love.graphics.setFont(Fonts.medium)
     local itemName = coalesce(self.renames[selectedItem], selectedItem:upper())
-    love.graphics.print("["..itemName.."]", pos.x, pos.y)
-    pos = pos + Point(0, Fonts.large:getHeight() + 3)
+    graphicsContext({ color = Colors.menuBlue }, function()
+      love.graphics.print("Edit keys for ["..itemName.."] button", pos.x, pos.y)
+    end)
+    pos = pos + Point(0, Fonts.medium:getHeight() + 3)
 
     local lineHeight = Fonts.small:getHeight() + 2
     love.graphics.setFont(Fonts.small)
     if self.keyList ~= nil then
-      for k, key in ipairs(self.keyList) do
-        local color = Colors.white
-        if k == self.selectedKey then
-          color = Colors.red
+      local items = self.keyList
+      if self.selectedKey ~= nil then
+        items = self:keyMenu()
+      end
+      for k, key in ipairs(items) do
+        if self.selectedKey == k then
+          love.graphics.setColor(Colors.red)
+        else
+          love.graphics.setColor(Colors.white)
         end
-        graphicsContext({color=color}, function()
-          love.graphics.print(key, pos.x, pos.y)
-        end)
+        if k <= #self.keyList then
+          if k == self.selectedKey then
+            love.graphics.printf("X", pos.x-16, pos.y, 16, "right")
+          end
+          graphicsContext({color=Colors.white}, function()
+            love.graphics.print(key, pos.x, pos.y)
+          end)
+        else
+          local w = 64
+          local rect = Rect(pos, w, lineHeight)
+          if key == "New key" then
+            if self.keyListener then
+              if self.keyListener.time ~= nil then
+                love.graphics.setColor(Colors.menuRed)
+                rect.w = rect.w * (1 - (self.keyListener.time / keyTime))
+                rect:draw("fill")
+                rect.w = w
+
+                love.graphics.setColor(Colors.white)
+                love.graphics.print(self.keyListener.key, rect.x + 1, rect.y + 1)
+              else
+                love.graphics.setColor(Colors.menuGray)
+                love.graphics.print("hold a key", rect.x + 1, rect.y + 1)
+              end
+              love.graphics.setColor(Colors.red)
+            else
+              if self.selectedKey == #self.keyList + 1 then
+                love.graphics.setColor(Colors.red)
+              else
+                love.graphics.setColor(Colors.white)
+              end
+              love.graphics.print(key, rect.x + 1, rect.y + 1)
+            end
+            pos = pos + Point(0, 2)
+          else
+            pos = pos + Point(1, 1)
+            love.graphics.print(key, pos.x, pos.y)
+            pos = pos + Point(-1, 1)
+          end
+          rect:draw("line")
+        end
+
         pos = pos + Point(0, lineHeight)
       end
     end
