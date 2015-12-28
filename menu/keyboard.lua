@@ -78,8 +78,7 @@ end
 function Keyboard:draw()
   love.graphics.setFont(Fonts.large)
 
-  local blue = { 0, 128, 255 }
-  graphicsContext({ color = blue , lineWidth = 2},
+  graphicsContext({ color = Colors.menuBlue , lineWidth = 2},
   function()
     if self.prompt then
       love.graphics.printf(self.prompt, 0, 4, GameSize.w, "center")

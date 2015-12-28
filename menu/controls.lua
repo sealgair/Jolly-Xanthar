@@ -113,6 +113,13 @@ function Controls:setDirection(direction)
   self.direction = direction
   if self.direction == Direction() then return end
 
+  if self.selectedKey ~= nil then
+    local keyset = self:currentKeyset()
+    self.selectedKey = wrapping(self.selectedKey + direction.y, dictSize(keyset))
+    print('new selected key', self.selectedKey)
+    return
+  end
+
   local selected = self:selectedItem()
   local dirstr = tostring(direction)
   local remap = self.itemRemap[selected]
@@ -130,28 +137,24 @@ function Controls:setDirection(direction)
   self.selected.x = wrapping(self.selected.x + direction.x, #row)
 end
 
+function Controls:currentKeyset()
+  local selectedItem = self:selectedItem()
+  local controls = Controller.playerControls[self.selectedPlayer]
+  return controls[selectedItem]
+end
+
 function Controls:controlStop(action)
-  if action == 'a' or action == 'start' then
-    if self:selectedItem() == 'done' then
-      Controller:saveControls()
-      self.fsm:advance('done')
-    elseif self:selectedItem() == 'reset' then
-      Controller:resetControls()
-      self.selectedPlayer = 1
+  local keyset = self:currentKeyset()
+  if keyset then
+    if self.selectedKey == nil then
+      if action == 'a' or action == 'start' then
+        self.selectedKey = 1
+      end
     else
-      Controller:forwardAll(self)
-      self.setKeysFor = {
-        player = self.selectedPlayer,
-        action = self:selectedItem(),
-        keys = {},
-      }
-      if self:selectedItem() == 'setAll' then
-        self.setKeysFor.action = 'up'
-        self.setKeysFor.nextAction = { 'down', 'left', 'right', 'select', 'start', 'b', 'a' }
+      if action == 'start' then
+        self.selectedKey = nil
       end
     end
-  elseif action == 'select' then
-    self.selectedPlayer = wrapping(self.selectedPlayer + 1, 4)
   end
 end
 
@@ -227,6 +230,16 @@ function Controls:draw()
   local controls = Controller.playerControls[self.selectedPlayer]
   local keyset = controls[selectedItem]
   if keyset then
+    if self.selectedKey ~= nil then
+      graphicsContext({font=Fonts.medium, color=Colors.menuRed}, function()
+        local keys = "[B]\n[A]\n[SELECT]\n[START]"
+        local actions = "delete key\nadd key\nclear keys\nsave keys"
+        local x, y, w = 115, 133, 64
+        love.graphics.printf(keys, x, y, w, "right")
+        love.graphics.setColor(Colors.menuBlue)
+        love.graphics.print(actions, x + w + 3, y)
+      end)
+    end
     local pos = Point(30, 135)
     love.graphics.setFont(Fonts.large)
     local itemName = coalesce(self.renames[selectedItem], selectedItem:upper())
@@ -235,57 +248,17 @@ function Controls:draw()
 
     local lineHeight = Fonts.small:getHeight() + 2
     love.graphics.setFont(Fonts.small)
+    local k = 1
     for key, _ in pairs(keyset) do
-      love.graphics.print(key, pos.x, pos.y)
-      pos = pos + Point(0, lineHeight)
-    end
-  end
-
-  if self.setKeysFor then
-    love.graphics.push()
-    love.graphics.setFont(self.setterFont)
-
-    local x, y, w, h = 85, 80, 85, 80
-    local fontHeight = love.graphics.getFont():getHeight()
-    love.graphics.setColor(0, 0, 0)
-    love.graphics.rectangle("fill", x, y, w, h)
-    love.graphics.setColor(128, 0, 0)
-    love.graphics.setLineWidth(3)
-    love.graphics.rectangle("line", x, y, w, h)
-    love.graphics.setColor(255, 0, 0)
-    love.graphics.setLineWidth(1)
-    love.graphics.rectangle("line", x, y, w, h)
-    love.graphics.printf(self.setKeysFor.action:upper(), x, y + 5, w, "center")
-
-    x = x + 2
-    w = w - 4
-
-    local th = fontHeight + 2
-    if self.setKeysFor.finalTimer then
-      local ty = y + h - th - 2
-      local tw = w * (self.setKeysFor.finalTimer / controlTime)
-      love.graphics.setColor(128, 0, 0)
-      love.graphics.rectangle("fill", x, ty, tw, th)
-      love.graphics.setColor(255, 255, 255)
-      love.graphics.rectangle("line", x, ty, w, th)
-      ty = ty + 1
-      love.graphics.printf("Finalizing...", x, ty, w, "center")
-    end
-
-    y = y + 5
-    for key, time in pairs(self.setKeysFor.keys) do
-      y = y + fontHeight + 2
-      if time > 0 then
-        local tw = w * (time / keyTime)
-        love.graphics.setColor(128, 0, 0)
-        love.graphics.rectangle("fill", x, y, tw, th)
-        love.graphics.setColor(255, 255, 255)
-        love.graphics.rectangle("line", x, y, w, th)
+      local color = Colors.white
+      if k == self.selectedKey then
+        color = Colors.red
       end
-      y = y + 1
-      love.graphics.setColor(255, 255, 255)
-      love.graphics.printf(key, x, y, w, "center")
+      graphicsContext({color=color}, function()
+        love.graphics.print(key, pos.x, pos.y)
+      end)
+      pos = pos + Point(0, lineHeight)
+      k = k + 1
     end
-    love.graphics.pop()
   end
 end

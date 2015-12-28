@@ -13,6 +13,15 @@ GameScale = { x = 3, y = 3 }
 Fonts = {}
 math.randomseed( os.time() )
 
+Colors = {
+  red      = { 255, 0, 0 },
+  white    = { 255, 255, 255 },
+  menuBlue = { 0, 128, 255 },
+  menuGray = { 128, 128, 128 },
+  menuRed  = { 128, 0, 0 },
+}
+
+
 local StateMachine = {
   states = {},
   transitions = {},

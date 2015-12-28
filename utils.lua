@@ -48,6 +48,10 @@ function string:contains(substring)
   return self:find(substring) ~= nil
 end
 
+function string:trim()
+  return (self:gsub("^%s*(.-)%s*$", "%1"))
+end
+
 function bounded(min, value, max)
   if value < min then
     return min
@@ -56,6 +60,14 @@ function bounded(min, value, max)
   else
     return value
   end
+end
+
+function dictSize(dict)
+  local i = 0
+  for _, _ in pairs(dict) do
+    i = i + 1
+  end
+  return i
 end
 
 function wrapping(value, max, min)
