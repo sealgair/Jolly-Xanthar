@@ -93,7 +93,7 @@ function KeyMenu:init(player, action)
     KeyMenuItem('Cancel', opts),
     KeyMenuItem('Clear', opts),
   }
-  self.newKeyItem = KeyMenuItem('New key', {width=64})
+  self.newKeyItem = KeyMenuItem('Add New key', {width=64})
   self:buildMenu()
 end
 
@@ -329,23 +329,19 @@ function Controls:setDirection(direction)
   self.direction = direction
   if self.direction == Direction() then return end
 
-  if self.selectedKey ~= nil then
-    self.selectedKey = wrapping(self.selectedKey + direction.y, #self:keyMenu())
+  local selected = self:selectedItem()
+  local dirstr = tostring(direction)
+  local remap = self.itemRemap[selected]
+  if remap and remap[dirstr] then
+    local newSelected = remap[dirstr]
+    self.selected.x = newSelected.x
+    self.selected.y = newSelected.y
   else
-    local selected = self:selectedItem()
-    local dirstr = tostring(direction)
-    local remap = self.itemRemap[selected]
-    if remap and remap[dirstr] then
-      local newSelected = remap[dirstr]
-      self.selected.x = newSelected.x
-      self.selected.y = newSelected.y
-    else
-      self.selected.y = wrapping(self.selected.y + direction.y, #self.items)
-      local row = self.items[self.selected.y]
-      self.selected.x = wrapping(self.selected.x + direction.x, #row)
-    end
-    self:setKeyMenu()
+    self.selected.y = wrapping(self.selected.y + direction.y, #self.items)
+    local row = self.items[self.selected.y]
+    self.selected.x = wrapping(self.selected.x + direction.x, #row)
   end
+  self:setKeyMenu()
 end
 
 function Controls:currentKeyset()
@@ -380,6 +376,19 @@ function Controls:controlStop(action)
     elseif selectedItem == 'Reset' then
       Controller:resetControls()
       self.selectedPlayer = 1
+    elseif selectedItem == 'Set All' then
+      self.selected = self.itemCoords.up
+      self:setKeyMenu()
+      self.keyMenu.active = true
+      self.nextSelected = {
+        self.itemCoords.down,
+        self.itemCoords.left,
+        self.itemCoords.right,
+        self.itemCoords.select,
+        self.itemCoords.start,
+        self.itemCoords.b,
+        self.itemCoords.a,
+      }
     end
   end
 end
@@ -387,6 +396,14 @@ end
 function Controls:update(dt)
   if self.keyMenu then
     self.keyMenu:update(dt)
+    if self.nextSelected and self.keyMenu.active == false then
+      self.selected = table.remove(self.nextSelected, 1)
+      self:setKeyMenu()
+      self.keyMenu.active = true
+      if #self.nextSelected <= 0 then
+        self.nextSelected = nil
+      end
+    end
   end
 end
 
