@@ -4,14 +4,15 @@ Menu = class('Menu')
 
 function Menu:init(opts)
   -- opts: itemGrid, initialItem, controlPlayer
+  if opts == nil then opts = {} end
   self.fsm = opts.fsm
   self.itemGrid = coalesce(opts.itemGrid, {})
-  self.initial = coalesce(opts.initialItem, {x=1, y=1})
+  self.initial = coalesce(opts.initialItem, Point(1, 1))
   self.selected = self.initial
 
   local p = coalesce(opts.controlPlayer, 1)
   Controller:register(self, p)
-  self.selected = self.initial
+  self.selected = Point(self.initial)
 end
 
 function Menu:update(dt)

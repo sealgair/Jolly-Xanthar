@@ -1,9 +1,170 @@
 require('utils')
+require('menu.abstractMenu')
+
+KeyMenuItem = class('KeyMenuItem')
+
+function KeyMenuItem:init(text, opts)
+  opts = coalesce(opts, {})
+  self.text = text
+  self.font = coalesce(opts.font, Fonts.small)
+  self.border = coalesce(opts.border, true)
+  self.showInactive = opts.showInactive
+  self.w = opts.width
+end
+
+function KeyMenuItem:draw(pos, selected)
+  local color
+  if selected then
+    color = Colors.red
+  else
+    color = Colors.white
+  end
+
+  graphicsContext({font=self.font, color=color, lineWidth=1}, function()
+    if self.border then
+      local border = Rect(pos, self:width(), self:height(0))
+      border:draw("line")
+      pos = pos + Point(1, 1)
+    end
+    love.graphics.print(self.text, pos.x, pos.y)
+  end)
+end
+
+function KeyMenuItem:width()
+  if self.w then return self.w end
+  local w = self.font:getWidth(self.text)
+  if self.border then w = w + 2 end
+  return w
+end
+
+function KeyMenuItem:height(padding)
+  if padding == nil then padding = 2 end
+  local h = self.font:getHeight() + padding
+  if self.border then h = h + 2 end
+  return h
+end
+
+KeyMenuKey = KeyMenuItem:extend('KeyMenuKey')
+
+function KeyMenuKey:init(text, opts)
+  opts = coalesce(opts, {})
+  opts.showInactive = true
+  opts.border = false
+  KeyMenuKey.super.init(self, text, opts)
+  self.key = true
+end
+
+function KeyMenuKey:draw(pos, selected)
+  KeyMenuKey.super.draw(self, pos)
+  if selected then
+    graphicsContext({color=Colors.red, font=self.font}, function()
+      love.graphics.printf("X", pos.x - 16, pos.y, 16, "right")
+    end)
+  end
+end
+
+EmptyMenuItem = KeyMenuItem:extend('EmptyMenuKey')
+
+function EmptyMenuItem:init()
+  EmptyMenuItem.super.init(self, '', {border=false})
+  self.selectable = false
+end
+
+KeyMenu = Menu:extend('KeyMenu')
+
+function KeyMenu:init(player, action)
+  KeyMenu.super.init(self)
+  self.player = player
+  self.action = action
+  local controls = Controller.playerControls[player]
+  self.keyset = controls[action]
+  self.originalKeyset = self.keyset
+
+  local opts = {fonts=Fonts.medium}
+  self.rightItems = {
+    KeyMenuItem('Save', opts),
+    KeyMenuItem('Cancel', opts),
+    KeyMenuItem('Clear', opts),
+  }
+  self.newKeyItem = KeyMenuItem('New key', {width=64})
+  self:buildMenu()
+end
+
+function KeyMenu:buildMenu()
+  self.leftItems = {
+    self.newKeyItem
+  }
+  for key in keys(self.keyset) do
+    local item = KeyMenuKey(key)
+    table.insert(self.leftItems, item)
+  end
+  self.itemColumns = {self.leftItems, self.rightItems}
+end
+
+function KeyMenu:setDirection(direction)
+  if self.direction ~= direction then
+    self.direction = direction
+
+    self.selected.y = wrapping(self.selected.y + direction.y, #self.itemColumns[self.selected.x])
+    self.selected.x = wrapping(self.selected.x + direction.x, 2)
+    if self.selected.x == 1 then
+      self.selected.y = wrapping(self.selected.y, #self.leftItems)
+    else
+      self.selected.y = wrapping(self.selected.y, #self.rightItems)
+    end
+  end
+end
+
+function KeyMenu:selectedItem(action)
+  return self.itemColumns[self.selected.x][self.selected.y]
+end
+
+function KeyMenu:chooseItem(item)
+  print('chose', item.text, item.key)
+  if item.key then
+    self.keyset[item.text] = nil
+    self:buildMenu()
+  elseif item.text == "New key" then
+    Controller:forwardAll(self)
+    self.keyListener = {}
+  elseif item.text == "Save" then
+    self.originalKeyset = self.keyset
+    if dictSize(self.keyset) > 0 or self.player ~= 1 then
+      -- don't let player 1 set keys to nil: they need to work the menu!
+      Controller.playerControls[self.player][self.action] = self.keySet
+    end
+    self.active = false
+  elseif item.text == "Clear" then
+    self.keyset = {}
+    self:buildMenu()
+  elseif item.text == "Cancel" then
+    self.keyset = self.originalKeyset
+    self:buildMenu()
+    self.active = false
+  end
+end
+
+function KeyMenu:draw(pos)
+  local lpos = Point(pos)
+  local rpos = lpos + Point(96, 0)
+
+  for i, item in ipairs(self.leftItems) do
+    if self.active or item.showInactive then
+      item:draw(lpos, Point(1, i) == Point(self.selected))
+    end
+    lpos = lpos + Point(0, item:height())
+  end
+  if self.active then
+    for i, item in ipairs(self.rightItems) do
+      item:draw(rpos, Point(2, i) == Point(self.selected))
+      rpos = rpos + Point(0, item:height())
+    end
+  end
+end
 
 Controls = class('Controls')
 
 local keyTime = 1
-local controlTime = 1
 
 function Controls:init(fsm)
   self.fsm = fsm
@@ -93,16 +254,6 @@ function Controls:init(fsm)
 
   Controller:register(self, 1)
 
-  self.controlLocations = {
-    up =    { x = 2,   y = 59, w = 60, h = 46 },
-    down =  { x = 68,  y = 59, w = 60, h = 46 },
-    left =  { x = 130, y = 59, w = 60, h = 46 },
-    right = { x = 194, y = 59, w = 60, h = 46 },
-    select = { x = 2,  y = 129, w = 60, h = 46 },
-    start =  { x = 68, y = 129, w = 60, h = 46 },
-    b =      { x = 130, y = 129, w = 60, h = 46 },
-    a =      { x = 194, y = 129, w = 60, h = 46 },
-  }
   self.controlFont = Fonts.small
   self.setterFont = Fonts.medium
 end
@@ -116,6 +267,11 @@ function Controls:selectedItem()
 end
 
 function Controls:setDirection(direction)
+  if self.keyMenu and self.keyMenu.active then
+    self.keyMenu:setDirection(direction)
+    return
+  end
+
   if self.direction == direction then return end
   self.direction = direction
   if self.direction == Direction() then return end
@@ -135,7 +291,7 @@ function Controls:setDirection(direction)
       local row = self.items[self.selected.y]
       self.selected.x = wrapping(self.selected.x + direction.x, #row)
     end
-    self:setKeyList()
+    self:setKeyMenu()
   end
 end
 
@@ -145,74 +301,31 @@ function Controls:currentKeyset()
   return controls[selectedItem]
 end
 
-function Controls:setKeyList()
-  local keyset = self:currentKeyset()
-  if keyset == nil then
-    self.keyList = nil
+function Controls:setKeyMenu()
+  local selectedItem = self:selectedItem()
+  if self:currentKeyset() then
+    self.keyMenu = KeyMenu(self.selectedPlayer, self:selectedItem())
   else
-    self.keyList = {}
-    for key in keys(keyset) do
-      table.insert(self.keyList, key)
-    end
-  end
-end
-
-function Controls:keyMenu()
-  if self.keyList ~= nil then
-    local menu = {}
-    for key in values(self.keyList) do
-      table.insert(menu, key)
-    end
-    for item in values(self.keyMenuExtras) do
-      table.insert(menu, item)
-    end
-    return menu
-  else
-    return nil
+    self.keyMenu = nil
   end
 end
 
 function Controls:controlStop(action)
   local selectedItem = self:selectedItem()
-  if self:currentKeyset() then
-    if self.selectedKey == nil then
-      if action == 'a' or action == 'start' then
-        self.selectedKey = 1
-      end
+  if self.keyMenu then
+    if self.keyMenu.active then
+      self.keyMenu:controlStop(action)
     else
-      if action == 'start' or action == 'a' then
-        if self.selectedKey <= #self.keyList then
-          table.remove(self.keyList, self.selectedKey)
-        else
-          local keyAction = self:keyMenu()[self.selectedKey]
-          if keyAction == "New key" then
-            Controller:forwardAll(self)
-            self.selectedKey = #self.keyList + 1  -- off the edge
-            self.keyListener = {}
-          elseif keyAction == "Save" then
-            if #self.keyList > 0 or self.selectedPlayer ~= 1 then
-              -- don't let player 1 set keys to nil: they need to work the menu!
-              Controller.playerControls[self.selectedPlayer][selectedItem] = valuesSet(self.keyList)
-            end
-            self:setKeyList()
-            self.selectedKey = nil
-          elseif keyAction == "Clear" then
-            self.keyList = {}
-          elseif keyAction == "Cancel" then
-            self:setKeyList()
-            self.selectedKey = nil
-          end
-        end
+      if action == 'a' or action == 'start' then
+        self.keyMenu.active = true
       end
     end
   else
-    print('got here')
     if selectedItem == 'Done' then
       Controller:saveControls()
       self.fsm:advance('done')
     elseif selectedItem == 'Reset' then
       Controller:resetControls()
-      self:setKeyList()
       self.selectedPlayer = 1
     end
   end
@@ -269,9 +382,7 @@ function Controls:draw()
     love.graphics.draw(self.image, selectedQuad, qx, qy)
   end
 
-  local controls = Controller.playerControls[self.selectedPlayer]
-  local keyset = controls[selectedItem]
-  if keyset then
+  if self.keyMenu then
     local pos = Point(30, 135)
     love.graphics.setFont(Fonts.medium)
     local itemName = coalesce(self.renames[selectedItem], selectedItem:upper())
@@ -279,64 +390,6 @@ function Controls:draw()
       love.graphics.print("Edit keys for ["..itemName.."] button", pos.x, pos.y)
     end)
     pos = pos + Point(0, Fonts.medium:getHeight() + 3)
-
-    local lineHeight = Fonts.small:getHeight() + 2
-    love.graphics.setFont(Fonts.small)
-    if self.keyList ~= nil then
-      local items = self.keyList
-      if self.selectedKey ~= nil then
-        items = self:keyMenu()
-      end
-      for k, key in ipairs(items) do
-        if self.selectedKey == k then
-          love.graphics.setColor(Colors.red)
-        else
-          love.graphics.setColor(Colors.white)
-        end
-        if k <= #self.keyList then
-          if k == self.selectedKey then
-            love.graphics.printf("X", pos.x-16, pos.y, 16, "right")
-          end
-          graphicsContext({color=Colors.white}, function()
-            love.graphics.print(key, pos.x, pos.y)
-          end)
-        else
-          local w = 64
-          local rect = Rect(pos, w, lineHeight)
-          if key == "New key" then
-            if self.keyListener then
-              if self.keyListener.time ~= nil then
-                love.graphics.setColor(Colors.menuRed)
-                rect.w = rect.w * (1 - (self.keyListener.time / keyTime))
-                rect:draw("fill")
-                rect.w = w
-
-                love.graphics.setColor(Colors.white)
-                love.graphics.print(self.keyListener.key, rect.x + 1, rect.y + 1)
-              else
-                love.graphics.setColor(Colors.menuGray)
-                love.graphics.print("hold a key", rect.x + 1, rect.y + 1)
-              end
-              love.graphics.setColor(Colors.red)
-            else
-              if self.selectedKey == #self.keyList + 1 then
-                love.graphics.setColor(Colors.red)
-              else
-                love.graphics.setColor(Colors.white)
-              end
-              love.graphics.print(key, rect.x + 1, rect.y + 1)
-            end
-            pos = pos + Point(0, 2)
-          else
-            pos = pos + Point(1, 1)
-            love.graphics.print(key, pos.x, pos.y)
-            pos = pos + Point(-1, 1)
-          end
-          rect:draw("line")
-        end
-
-        pos = pos + Point(0, lineHeight)
-      end
-    end
+    self.keyMenu:draw(pos)
   end
 end
