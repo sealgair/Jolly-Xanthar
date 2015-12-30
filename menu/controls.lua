@@ -73,12 +73,10 @@ end
 KeyMenu = Menu:extend('KeyMenu')
 
 function KeyMenu:init(player, action)
-  KeyMenu.super.init(self)
+  KeyMenu.super.init(self, {skipRegister = true})
   self.player = player
   self.action = action
-  local controls = Controller.playerControls[player]
-  self.keyset = controls[action]
-  self.originalKeyset = self.keyset
+  self:resetKeyset()
 
   local opts = {fonts=Fonts.medium}
   self.rightItems = {
@@ -88,6 +86,11 @@ function KeyMenu:init(player, action)
   }
   self.newKeyItem = KeyMenuItem('New key', {width=64})
   self:buildMenu()
+end
+
+function KeyMenu:resetKeyset()
+  local controls = Controller.playerControls[self.player]
+  self.keyset = shallowCopy(controls[self.action])
 end
 
 function KeyMenu:buildMenu()
@@ -120,15 +123,12 @@ function KeyMenu:selectedItem(action)
 end
 
 function KeyMenu:chooseItem(item)
-  print('chose', item.text, item.key)
   if item.key then
     self.keyset[item.text] = nil
-    self:buildMenu()
   elseif item.text == "New key" then
     Controller:forwardAll(self)
     self.keyListener = {}
   elseif item.text == "Save" then
-    self.originalKeyset = self.keyset
     if dictSize(self.keyset) > 0 or self.player ~= 1 then
       -- don't let player 1 set keys to nil: they need to work the menu!
       Controller.playerControls[self.player][self.action] = self.keySet
@@ -136,11 +136,13 @@ function KeyMenu:chooseItem(item)
     self.active = false
   elseif item.text == "Clear" then
     self.keyset = {}
-    self:buildMenu()
   elseif item.text == "Cancel" then
-    self.keyset = self.originalKeyset
-    self:buildMenu()
+    self:resetKeyset()
     self.active = false
+  end
+  self:buildMenu()
+  if not self.active then
+    self.selected = self.initial
   end
 end
 

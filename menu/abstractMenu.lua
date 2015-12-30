@@ -11,7 +11,9 @@ function Menu:init(opts)
   self.selected = self.initial
 
   local p = coalesce(opts.controlPlayer, 1)
-  Controller:register(self, p)
+  if not opts.skipRegister then
+    Controller:register(self, p)
+  end
   self.selected = Point(self.initial)
 end
 
