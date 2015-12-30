@@ -1,6 +1,8 @@
 require('utils')
 require('menu.abstractMenu')
 
+local keyTime = 1
+
 KeyMenuItem = class('KeyMenuItem')
 
 function KeyMenuItem:init(text, opts)
@@ -12,7 +14,7 @@ function KeyMenuItem:init(text, opts)
   self.w = opts.width
 end
 
-function KeyMenuItem:draw(pos, selected)
+function KeyMenuItem:draw(pos, selected, text)
   local color
   if selected then
     color = Colors.red
@@ -20,13 +22,20 @@ function KeyMenuItem:draw(pos, selected)
     color = Colors.white
   end
 
+  if text == nil then text = self.text end
+
   graphicsContext({font=self.font, color=color, lineWidth=1}, function()
+    if self.fillPercent then
+      local fill = Rect(pos, self:width() * self.fillPercent, self:height(0))
+      fill:draw("fill")
+      love.graphics.setColor(Colors.menuGray)
+    end
     if self.border then
       local border = Rect(pos, self:width(), self:height(0))
       border:draw("line")
       pos = pos + Point(1, 1)
     end
-    love.graphics.print(self.text, pos.x, pos.y)
+    love.graphics.print(text, pos.x, pos.y)
   end)
 end
 
@@ -125,13 +134,13 @@ end
 function KeyMenu:chooseItem(item)
   if item.key then
     self.keyset[item.text] = nil
-  elseif item.text == "New key" then
+  elseif item == self.newKeyItem then
     Controller:forwardAll(self)
     self.keyListener = {}
   elseif item.text == "Save" then
     if dictSize(self.keyset) > 0 or self.player ~= 1 then
       -- don't let player 1 set keys to nil: they need to work the menu!
-      Controller.playerControls[self.player][self.action] = self.keySet
+      Controller.playerControls[self.player][self.action] = self.keyset
     end
     self.active = false
   elseif item.text == "Clear" then
@@ -146,13 +155,57 @@ function KeyMenu:chooseItem(item)
   end
 end
 
+
+function KeyMenu:keypressed(key)
+  if self.keyListener.key == nil then
+    self.keyListener.key = key
+    self.keyListener.time = keyTime
+  end
+end
+
+function KeyMenu:keyreleased(key)
+  if self.keyListener and self.keyListener.key == key then
+    self.keyListener.key = nil
+    self.keyListener.time = nil
+  end
+end
+
+function KeyMenu:update(dt)
+  if self.keyListener then
+    if self.keyListener.time ~= nil then
+      self.keyListener.time = self.keyListener.time - dt
+      if self.keyListener.time <= 0 then
+        self.keyset[self.keyListener.key] = true
+        self:buildMenu()
+        self.keyListener = nil
+        Controller:endForward(self)
+        return
+      end
+    end
+    if self.keyListener.time then
+      self.newKeyItem.fillPercent = 1 - (self.keyListener.time / keyTime)
+    else
+      self.newKeyItem.fillPercent = 0
+    end
+  else
+    self.newKeyItem.fillPercent = nil
+  end
+end
+
 function KeyMenu:draw(pos)
   local lpos = Point(pos)
   local rpos = lpos + Point(96, 0)
 
   for i, item in ipairs(self.leftItems) do
     if self.active or item.showInactive then
-      item:draw(lpos, Point(1, i) == Point(self.selected))
+      local text
+      if item == self.newKeyItem and self.keyListener then
+        text = "hold a key"
+        if self.keyListener.key then
+          text = self.keyListener.key
+        end
+      end
+      item:draw(lpos, Point(1, i) == Point(self.selected), text)
     end
     lpos = lpos + Point(0, item:height())
   end
@@ -165,8 +218,6 @@ function KeyMenu:draw(pos)
 end
 
 Controls = class('Controls')
-
-local keyTime = 1
 
 function Controls:init(fsm)
   self.fsm = fsm
@@ -333,30 +384,9 @@ function Controls:controlStop(action)
   end
 end
 
-function Controls:keypressed(key)
-  if self.keyListener.key == nil then
-    self.keyListener.key = key
-    self.keyListener.time = keyTime
-  end
-end
-
-function Controls:keyreleased(key)
-  if self.keyListener and self.keyListener.key == key then
-    self.keyListener.key = nil
-    self.keyListener.time = nil
-  end
-end
-
 function Controls:update(dt)
-  if self.keyListener then
-    if self.keyListener.time ~= nil then
-      self.keyListener.time = self.keyListener.time - dt
-      if self.keyListener.time <= 0 then
-        table.insert(self.keyList, self.keyListener.key)
-        self.keyListener = nil
-        Controller:endForward(self)
-      end
-    end
+  if self.keyMenu then
+    self.keyMenu:update(dt)
   end
 end
 
