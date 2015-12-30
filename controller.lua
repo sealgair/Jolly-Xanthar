@@ -47,8 +47,8 @@ local extraMappings = {
       axisSymbols.lefty,
     },
     buttons = {
-      buttonSymbols.b,
       buttonSymbols.a,
+      buttonSymbols.b,
       buttonSymbols.back,
       buttonSymbols.start,
     }
@@ -63,8 +63,8 @@ local extraMappings = {
     },
     buttons = {
       '',
-      buttonSymbols.a,
       buttonSymbols.b,
+      buttonSymbols.a,
       '',
       '',
       '',
@@ -80,7 +80,6 @@ function gamepadButton(joystick, button)
   local jsName = joystick:getName()
   if extraMappings[jsName] then
     local result = extraMappings[jsName].buttons[button]
-    print('mapping', jsName, button, result)
     return result
   elseif joystick:isGamepad() then
     for key, symbol in pairs(buttonSymbols) do
