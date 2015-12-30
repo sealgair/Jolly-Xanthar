@@ -238,6 +238,13 @@ function Controls:init(fsm)
       self.itemCoords[item] = Point(x, y)
     end
   end
+
+  self.helpText = {
+    Done = "Save all changed mappings and exit",
+    ["Set All"] = "Edit keys for each button in turn",
+    Reset = "Reset all keys to factory defaults",
+  }
+
   self.itemRemap = {
     Reset = {
       down = self.itemCoords.b,
@@ -440,5 +447,13 @@ function Controls:draw()
     end)
     pos = pos + Point(0, Fonts.medium:getHeight() + 3)
     self.keyMenu:draw(pos)
+  else
+    local help = self.helpText[self:selectedItem()]
+    local pos = Point(20, 33)
+    if help then
+      graphicsContext({ color = Colors.menuBlue , font=Fonts.medium}, function()
+        love.graphics.print(help, pos.x, pos.y)
+      end)
+    end
   end
 end
