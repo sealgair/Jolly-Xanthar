@@ -327,11 +327,11 @@ function Controller:notifyDirection(player)
 end
 
 function Controller:register(listener, player)
-  table.insert(self.listeners[player], listener)
+  self.listeners[player][listener] = true
 end
 
 function Controller:unregister(listener, player)
-  table.removeValue(self.listeners[player], listener)
+  self.listeners[player][listener] = false
 end
 
 function Controller:forwardAll(to)
@@ -343,7 +343,11 @@ function Controller:endForward(to)
 end
 
 function Controller:getListeners(player)
-  return table.filter(self.listeners[player], function(o, k, i)
-    return o.active
-  end)
+  local listeners = {}
+  for l in keys(self.listeners[player]) do
+    if l.active then
+      table.insert(listeners, l)
+    end
+  end
+  return listeners
 end
