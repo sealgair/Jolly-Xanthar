@@ -231,6 +231,10 @@ function Controls:init(fsm)
     { 'up' },
     { 'left', 'right', 'select', 'start', 'b', 'a' },
     { 'down' },
+    { '1' },
+    { '2' },
+    { '3' },
+    { '4' },
   }
   self.itemCoords = {}
   for y, row in ipairs(self.items) do
@@ -238,6 +242,12 @@ function Controls:init(fsm)
       self.itemCoords[item] = Point(x, y)
     end
   end
+  self.playerItems = {
+    ['1'] = 1,
+    ['2'] = 2,
+    ['3'] = 3,
+    ['4'] = 4,
+  }
 
   self.helpText = {
     Done = "Save all changed mappings and exit",
@@ -371,12 +381,15 @@ function Controls:controlStop(action)
   if self.keyMenu then
     if self.keyMenu.active then
       self.keyMenu:controlStop(action)
+      return
     else
       if action == 'a' or action == 'start' then
         self.keyMenu.active = true
+        return
       end
     end
-  else
+  end
+  if action == 'a' or action == 'start' then
     if selectedItem == 'Done' then
       Controller:saveControls()
       self.fsm:advance('done')
@@ -396,6 +409,13 @@ function Controls:controlStop(action)
         self.itemCoords.b,
         self.itemCoords.a,
       }
+    elseif self.playerItems[selectedItem] then
+      self.selectedPlayer = self.playerItems[selectedItem]
+    end
+  elseif action == 'select' then
+    self.selectedPlayer = wrapping(self.selectedPlayer + 1, 4)
+    if self.keyMenu then
+      self:setKeyMenu()
     end
   end
 end
@@ -455,5 +475,31 @@ function Controls:draw()
         love.graphics.print(help, pos.x, pos.y)
       end)
     end
+  end
+
+  love.graphics.setColor(Colors.menuBlue)
+  local x = 189
+  love.graphics.line(x, 135, x, 230)
+
+  local p = Point(210, 132)
+  love.graphics.setFont(Fonts.large)
+  love.graphics.printf("Player", p.x, p.y, 16, "center")
+  p = p + Point(0, 24)
+
+  for row in values({5, 6, 7, 8}) do
+    local item = self.items[row][1]
+    if item == selectedItem then
+      love.graphics.setColor(Colors.red)
+    else
+      love.graphics.setColor(Colors.white)
+    end
+    love.graphics.printf(item, p.x, p.y, 16, "center")
+    if self.selectedPlayer == tonumber(item) then
+      love.graphics.setColor(Colors.menuBlue)
+      graphicsContext({color = Colors.menuBlue, lineWidth = 2}, function()
+        love.graphics.rectangle("line", p.x, p.y - 2, 16, 16)
+      end)
+    end
+    p = p + Point(0, Fonts.large:getHeight() + 5)
   end
 end
