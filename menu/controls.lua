@@ -265,25 +265,33 @@ function Controls:init(fsm)
     up = {
       left = self.itemCoords.left,
       right = self.itemCoords.right,
+      down = self.itemCoords.down,
     },
     down = {
+      up = self.itemCoords.up,
       left = self.itemCoords.left,
       right = self.itemCoords.right,
     },
     select = {
       up = self.itemCoords['Set All'],
-      down = self.itemCoords['Set All'],
+      down = self.itemCoords["1"],
     },
     start = {
       up = self.itemCoords['Set All'],
-      down = self.itemCoords['Set All'],
+      down = self.itemCoords["1"],
     },
     a = {
       up = self.itemCoords.Reset,
-      down = self.itemCoords.Reset,
+      down = self.itemCoords["1"],
     },
     b = {
       up = self.itemCoords.Reset,
+      down = self.itemCoords["1"],
+    },
+    ["1"] = {
+      up = self.itemCoords.a,
+    },
+    ["4"] = {
       down = self.itemCoords.Reset,
     },
   }
