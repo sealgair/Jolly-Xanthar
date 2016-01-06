@@ -7,6 +7,7 @@ require 'menu.recruit'
 require 'menu.splash'
 require 'menu.keyboard'
 require 'menu.controls'
+require 'menu.galaxy'
 
 GameSize = Size{ w = 256, h = 240 }
 GameScale = { x = 3, y = 3 }
@@ -74,6 +75,7 @@ function love.load(arg)
     [Splash] = {
       continue = Ships,
       new = Keyboard,
+      galaxy = Galaxy,
       controls = Controls,
     },
     [Ships] = {

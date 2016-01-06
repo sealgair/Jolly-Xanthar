@@ -233,6 +233,10 @@ function Rect:back()
   return self.z + self.d
 end
 
+function Rect:area()
+  return self.w * self.h * coalesce(self.d, 1)
+end
+
 function Rect:size()
   return Size(self.w, self.h, self.d)
 end

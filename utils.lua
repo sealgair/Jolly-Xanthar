@@ -277,7 +277,7 @@ function graphicsContext(context, graphics)
   if old.lineWidth then
     love.graphics.setLineWidth(old.lineWidth)
   end
-  if old.canvas then
+  if context.canvas then
     love.graphics.setCanvas(old.canvas)
   end
   love.graphics.pop()
