@@ -3,9 +3,9 @@ require 'utils'
 
 Point = class('Point')
 
-function Point:init(x, y)
+function Point:init(x, y, z)
   if type(x) == "table" and tonumber(x.x) and tonumber(x.y) then
-    self:init(x.x, x.y)
+    self:init(x.x, x.y, x.z)
   else
     if x == nil then x = 0 end
     assert(tonumber(x), "invalid input: " .. x .. " is not a number")
@@ -15,24 +15,36 @@ function Point:init(x, y)
     else
       self.y = x
     end
+    self.z = z
   end
 end
 
 function Point:__tostring()
-  return "("..self.x..", "..self.y..")"
+  local s = "("..self.x..", "..self.y
+  if self.z then
+    s = s..", "..self.z
+  end
+  s = s..")"
+  return s
 end
 
 function Point:__eq(other)
-  return self.x == other.x and self.y == other.y
+  return self.x == other.x and self.y == other.y and self.z == other.z
 end
 
 function Point:__unm()
-  return Point(-self.x, -self.y)
+  local z = self.z
+  if z then z = -z end
+  return Point(-self.x, -self.y, z)
 end
 
 function Point:__add(other)
   if class.isInstance(other, Point) then
-    return Point(self.x + other.x, self.y + other.y)
+    local z
+    if self.z and other.z then
+      z = self.z + other.z
+    end
+    return Point(self.x + other.x, self.y + other.y, z)
   else
     if pcall(function() Point(other) end) then
       return self + Point(other)
@@ -56,20 +68,31 @@ end
 
 function Point:__mul(s)
   assert(tonumber(s), "invalid input: " .. s .. " is not a number")
-  return Point(self.x * s, self.y * s)
+  local z = self.z
+  if z then
+    z = z * s
+  end
+  return Point(self.x * s, self.y * s, z)
 end
 
 function Point:__div(s)
   assert(tonumber(s), "invalid input: " .. s .. " is not a number")
-  return Point(self.x / s, self.y / s)
+  s = 1 / s
+  return self * s
 end
 
 function Point:abs()
-  return Point(math.abs(self.x), math.abs(self.y))
+  local z = self.z
+  if self.z then z = math.abs(z) end
+  return Point(math.abs(self.x), math.abs(self.y), z)
 end
 
 function Point:magnitude()
-  return math.sqrt(self.x * self.x + self.y * self.y)
+  local square = self.x * self.x + self.y * self.y
+  if self.z then
+    square = square + self.z * self.z
+  end
+  return math.sqrt(square)
 end
 
 function Point:normalize()
@@ -77,15 +100,15 @@ function Point:normalize()
 end
 
 function Point:isZero()
-  return self.x == 0 and self.y == 0
+  return self.x == 0 and self.y == 0 and (self.z == nil or self.z == 0)
 end
 
 
 Size = class('Size')
 
-function Size:init(w, h)
+function Size:init(w, h, d)
   if type(w) == "table" and tonumber(w.w) and tonumber(w.h) then
-    self:init(w.w, w.h)
+    self:init(w.w, w.h, w.d)
   else
     assert(tonumber(w), "invalid input 1: " .. w .. " is not a number")
     self.w = tonumber(w)
@@ -95,27 +118,38 @@ function Size:init(w, h)
       assert(tonumber(h), "invalid input 2: " .. h .. " is not a number")
       self.h = tonumber(h)
     end
+    self.d = d
   end
 end
 
 function Size:__tostring()
-  return self.w.."X"..self.h
+  local s = self.w.."X"..self.h
+  if self.d then s = s.."X"..self.d end
+  return s
 end
 
 function Size:__mul(s)
   assert(tonumber(s), "invalid input: " .. s .. " is not a number")
-  return Size(self.w * s, self.h * s)
+  local d = self.d
+  if d then d = d * s end
+  return Size(self.w * s, self.h * s, d)
 end
 
 function Size:__div(s)
   assert(tonumber(s), "invalid input: " .. s .. " is not a number")
-  return Size(self.w / s, self.h / s)
+  s = 1 / s
+  return self * s
 end
 
 Rect = class('Rect')
 
 function Rect:init(...)
-  local keys = {'x', 'y', 'w', 'h'}
+  local keys
+  if #{...} == 6 then
+    keys = {'x', 'y', 'z', 'w', 'h', 'd' }
+  else
+    keys = {'x', 'y', 'w', 'h' }
+  end
   for i, v in ipairs({...}) do
     if tonumber(v) then
       if #keys > 0 then
@@ -126,10 +160,12 @@ function Rect:init(...)
       self:setOrigin(v)
       table.removeValue(keys, "x")
       table.removeValue(keys, "y")
+      table.removeValue(keys, "z")
     elseif class.isInstance(v, Size) then
       self:setSize(v)
       table.removeValue(keys, "w")
       table.removeValue(keys, "h")
+      table.removeValue(keys, "d")
     elseif type(v) == "table" then
       for k in values(keys) do
         if tonumber(v[k]) then
@@ -161,10 +197,15 @@ function Rect:setOrigin(newOrigin)
   end
   self.x = newOrigin.x
   self.y = newOrigin.y
+  self.z = newOrigin.z
 end
 
 function Rect:center()
-  return Point(self.x + self.w/2, self.y + self.h/2)
+  local z
+  if self.z and self.d then
+    z = self.z + self.d/2
+  end
+  return Point(self.x + self.w/2, self.y + self.h/2, z)
 end
 
 function Rect:setCenter(newCenter)
@@ -173,6 +214,11 @@ function Rect:setCenter(newCenter)
   end
   self.x = newCenter.x - self.w/2
   self.y = newCenter.y - self.h/2
+  if newCenter.z and self.d then
+    self.z = newCenter.z - self.d/2
+  else
+    self.z = nil
+  end
 end
 
 function Rect:bottom()
@@ -183,34 +229,55 @@ function Rect:right()
   return self.x + self.w
 end
 
+function Rect:back()
+  return self.z + self.d
+end
+
 function Rect:size()
-  return Size(self.w, self.h)
+  return Size(self.w, self.h, self.d)
 end
 
 function Rect:setSize(new)
   self.w = new.w
   self.h = new.h
+  self.d = new.d
 end
 
 function Rect:contains(thing)
   if class.isInstance(thing, Point) then
-    return self.x < thing.x and thing.x < self:right()
-       and self.y < thing.y and thing.y < self:bottom()
+    local result = self.x < thing.x and thing.x < self:right()
+               and self.y < thing.y and thing.y < self:bottom()
+    if self.z and thing.z then
+      result = result and self.z < thing.z and thing.z < self:back()
+    end
+    return result
   end
   return false
 end
 
 function Rect:intersects(other)
   if class.isInstance(other, Rect) then
-    return self.x < other:right() and self:right() > other.x
-       and self.y < other:bottom() and self:bottom() > other.y
+    local result = self.x < other:right() and self:right() > other.x
+               and self.y < other:bottom() and self:bottom() > other.y
+    if self.z and other.z then
+      result = result and self.z < other:back() and self.back() > other.z
+    end
+    return result
   end
   return false
 end
 
-function Rect:inset(x, y)
+function Rect:inset(x, y, z)
   y = coalesce(y, x)
-  return Rect(self.x + x, self.y + y, self.w - 2*x, self.h - 2*y)
+  local d
+  if self.d then
+    z = coalesce(z, y)
+    z = self.z + z
+    d = self.d - 2*z
+  else
+    z = nil
+  end
+  return Rect(Point(self.x + x, self.y + y, z), Rect(self.w - 2*x, self.h - 2*y, d))
 end
 
 function Rect:draw(style)
@@ -219,12 +286,12 @@ end
 
 function Rect:__add(other)
   assert(class.isInstance(other, Point), "Cannot add "..type(other).." '".."' to Rect")
-  return Rect(self:origin() + other, self.w, self.h)
+  return Rect(self:origin() + other, Size(self.w, self.h, self.d))
 end
 
 function Rect:__sub(other)
   assert(class.isInstance(other, Point), "Cannot subtract "..type(other).." '".."' from Rect")
-  return Rect(self:origin() - other, self.w, self.h)
+  return Rect(self:origin() - other, Size(self.w, self.h, self.d))
 end
 
 function Rect:__mul(s)
