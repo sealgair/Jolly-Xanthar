@@ -20,11 +20,40 @@ function Star:init(pos, seed)
   self.luminosity = math.random()
 end
 
-function Star:draw(sx, sy)
-  local alpha = math.min(self.luminosity * 3, 1) * 255
-  love.graphics.setColor(255, 255, 255, alpha)
+function safeAlpha(a)
+  return math.max(math.min(a, 255), 0)
+end
 
-  love.graphics.point(round(self.pos.x * sx) + .5, round(self.pos.y * sy) + .5)
+function Star:draw(sx, sy)
+  local alpha = self.luminosity * 1.5 * 255
+  love.graphics.setColor(255, 255, 255, safeAlpha(alpha))
+
+  local p = Point(round(self.pos.x * sx) + .5, round(self.pos.y * sy) + .5)
+  love.graphics.point(p.x, p.y)
+
+  local d = 1
+  local da = 255/3
+  alpha = alpha - da
+  while alpha > 0 do
+    love.graphics.setColor(255, 255, 255, safeAlpha(alpha))
+    love.graphics.point(p.x, p.y+d)
+    love.graphics.point(p.x, p.y-d)
+
+    if alpha > da then
+      love.graphics.setColor(255, 255, 255, safeAlpha(alpha - da))
+      love.graphics.point(p.x+d, p.y)
+      love.graphics.point(p.x-d, p.y)
+      if d > 1 then
+        local dd = d-1
+        love.graphics.point(p.x+dd, p.y+dd)
+        love.graphics.point(p.x+dd, p.y-dd)
+        love.graphics.point(p.x-dd, p.y+dd)
+        love.graphics.point(p.x-dd, p.y-dd)
+      end
+    end
+    alpha = alpha - da
+    d = d + 1
+  end
 end
 
 
