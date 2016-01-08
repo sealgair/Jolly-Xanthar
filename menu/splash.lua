@@ -19,7 +19,8 @@ function Splash:init(fsm)
     'controls',
   }
   self.opts = {
-    new = "Name Your Ship"
+    new = "Name Your Ship",
+    galaxy = 123456,  -- TODO: generate static seed
   }
 
   if canContinue() then

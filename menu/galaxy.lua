@@ -20,6 +20,13 @@ function Star:init(pos, seed)
   self.luminosity = math.random()
 end
 
+function Star:draw(sx, sy)
+  local alpha = math.min(self.luminosity * 3, 1) * 255
+  love.graphics.setColor(255, 255, 255, alpha)
+
+  love.graphics.point(round(self.pos.x * sx) + .5, round(self.pos.y * sy) + .5)
+end
+
 
 Sector = class("Sector")
 
@@ -27,13 +34,11 @@ function Sector:init(pos, density, seed)
   self.box = Rect(pos, Size(SectorSize, SectorSize, SectorSize))
   self.seed = coalesce(seed, os.time()) + seedFromPoint(pos)
   local starCount = self.box:area() * density
-  print("sector with base star count", starCount)
   local variance = .25
 
   math.randomseed(self.seed)
   local starFactor = math.random() * .25 + (1 - variance/2)
   starCount = round(starFactor * starCount)
-  print("sector with real star count", starCount)
   self.stars = {}
   for i=1,starCount do
     local star = Star(Point(
@@ -45,24 +50,19 @@ function Sector:init(pos, density, seed)
   end
 
   self.canvas = love.graphics.newCanvas(GameSize.w, GameSize.h)
-  local xscale = GameSize.w / self.box.w
-  local yscale = GameSize.h / self.box.h
-  graphicsContext({canvas=self.canvas, color=Colors.white}, function()
-    print("drawing", #self.stars, "stars")
-    for s, star in ipairs(self.stars) do
-      local pos = star.pos - self.pos
-      pos.x = round(pos.x * xscale)
-      pos.y = round(pos.y * yscale)
-      love.graphics.circle("fill", pos.x, pos.y, star.luminosity, 8)
+  graphicsContext({canvas=self.canvas, color=Colors.white, origin=true}, function()
+    local sx = GameSize.w / self.box.w
+    local sy = GameSize.h / self.box.h
+
+    for star in values(self.stars) do
+      star:draw(sx, sy)
     end
-    print("done drawn")
   end)
 end
 
 Galaxy = class("Galaxy")
 
 function Galaxy:init(fsm, seed)
-  print("galaxy created")
   self.fsm = fsm
   self.seed = coalesce(seed, os.time())
   self.sector = Sector(Point(0,0,0), 0.14, self.seed)

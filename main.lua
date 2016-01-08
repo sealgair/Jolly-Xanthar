@@ -48,11 +48,11 @@ function StateMachine:advance(input, options)
 end
 
 function love.load(arg)
+  love.graphics.setDefaultFilter("nearest", "nearest", 0)
   Save:load()
 
   if arg[#arg] == "-debug" then require("mobdebug").start() end
   love.window.setMode(GameSize.w * GameScale.x, GameSize.h * GameScale.y)
-  love.graphics.setDefaultFilter("nearest", "nearest")
 
   local glyphs = " "..
   "abcdefghijklmnopqrstuvwxyz"..
