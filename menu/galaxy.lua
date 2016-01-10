@@ -1,4 +1,5 @@
 class = require 'lib/30log/30log'
+require 'position'
 require 'utils'
 
 local SectorSize = 20
@@ -95,11 +96,86 @@ function Galaxy:init(fsm, seed)
   self.fsm = fsm
   self.seed = coalesce(seed, os.time())
   self.sector = Sector(Point(0,0,0), 0.14, self.seed)
+  self.camera = Camera(self.sector.box:center(), Orientations.front, Size(GameSize))
+  self:drawCanvas()
 end
 
 function Galaxy:update(dt)
 end
 
+function Galaxy:drawCanvas()
+  self.canvas = love.graphics.newCanvas(GameSize.w, GameSize.h)
+  graphicsContext({canvas=self.canvas, color=Colors.white, origin=true}, function()
+    for star in values(self.sector.stars) do
+      local point = self.camera:project(star.pos)
+      point = point:round() + Point(0.5, 0.5)
+      love.graphics.point(point.x, point.y)
+    end
+  end)
+end
+
 function Galaxy:draw()
-  love.graphics.draw(self.sector.canvas)
+  love.graphics.draw(self.canvas)
+end
+
+
+Orientation = class('Orientation')
+
+function Orientation:init(x, y, z)
+  self.x = x
+  self.y = y
+  self.z = z
+  self.vec = {
+    x = self.x,
+    y = self.y,
+    z = self.z
+  }
+
+  self.cos = map(self.vec, math.cos)
+  self.sin = map(self.vec, math.sin)
+end
+
+function Orientation:__tostring()
+  return tostring(Point(self))
+end
+
+local pi = math.pi
+Orientations = {
+  front = Orientation(0, 0, 0),
+  back  = Orientation(pi, 0, 0),
+  left  = Orientation(-pi/2, 0, 0),
+  right = Orientation(pi/2, 0, 0),
+  up    = Orientation(0, pi/2, 0),
+  down  = Orientation(0, -pi/2, 0),
+}
+
+Camera = class("Camera")
+
+function Camera:init(position, orientation, screenSize)
+  self.position = position
+  self.orientation = orientation
+  self.screenSize = coalesce(screenSize, Size(1,1))
+end
+
+function Camera:__tostring()
+  return "Camera at "..tostring(self.position).." facing "..tostring(self.orientation)
+end
+
+function Camera:project(point)
+  local p = point - self.position
+  local c = self.orientation.cos
+  local s = self.orientation.sin
+  local x, y, z = p.x, p.y, p.z
+  local d = Point {
+    x = c.y * (s.z * y + c.z * x) - s.y * z,
+    y = s.x * (c.y * z + s.y * (s.z * y + c.z * x)) + c.x * (c.z * y - s.z * x),
+    z = c.x * (c.y * z + s.y * (s.z * y + c.z * x)) - s.x * (c.z * y - s.z * x)
+  }
+  local e = Point(0, 0, 1)
+  local b = Point(
+    ((e.z/d.z)*d.x - e.x),
+    ((e.z/d.z)*d.y - e.y)
+  )
+  b = (b + Point(1,1)) * .5 * self.screenSize
+  return b
 end

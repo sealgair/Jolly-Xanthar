@@ -67,18 +67,28 @@ function Point:__sub(other)
 end
 
 function Point:__mul(s)
-  assert(tonumber(s), "invalid input: " .. s .. " is not a number")
-  local z = self.z
-  if z then
-    z = z * s
+  if tonumber(s) then
+    s = Size(s, s, s)
+  elseif not class.isInstance(s, Size) then
+    s = Size(s)
   end
-  return Point(self.x * s, self.y * s, z)
+  local z = self.z
+  if z and s.d then
+    z = z * s.d
+  end
+  return Point(self.x * s.w, self.y * s.h, z)
 end
 
 function Point:__div(s)
   assert(tonumber(s), "invalid input: " .. s .. " is not a number")
   s = 1 / s
   return self * s
+end
+
+function Point:round()
+  local z = self.z
+  if self.z then z = round(z) end
+  return Point(round(self.x), round(self.y), z)
 end
 
 function Point:abs()
