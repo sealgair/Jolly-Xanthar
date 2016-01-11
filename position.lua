@@ -85,10 +85,10 @@ function Point:__div(s)
   return self * s
 end
 
-function Point:round()
+function Point:round(idp)
   local z = self.z
-  if self.z then z = round(z) end
-  return Point(round(self.x), round(self.y), z)
+  if self.z then z = round(z, idp) end
+  return Point(round(self.x, idp), round(self.y, idp), z)
 end
 
 function Point:abs()

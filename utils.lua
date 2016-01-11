@@ -1,9 +1,6 @@
-function round(num)
-  if num >= 0 then
-    return math.floor(num + .5)
-  else
-    return math.ceil(num - .5)
-  end
+function round(num, idp)
+  local mult = 10^(idp or 0)
+  return math.floor(num * mult + 0.5) / mult
 end
 
 function math.sum(...)
