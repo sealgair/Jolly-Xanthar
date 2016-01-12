@@ -22,6 +22,14 @@ function Orientation:__unm()
   return Orientation(-self.x, -self.y, -self.z)
 end
 
+function Orientation:__add(o)
+  return Orientation(self.x + o.x, self.y + o.x, self.z + o.z)
+end
+
+function Orientation:__sub(o)
+  return self + -o
+end
+
 function Orientation:__tostring()
   return tostring(Point(self))
 end

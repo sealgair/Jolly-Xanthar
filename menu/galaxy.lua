@@ -105,13 +105,13 @@ function Galaxy:init(fsm)
       { 'left', Point(0, 3), Point(1, 3), Point(2, 3), Point(3, 3), 'right' },
       { '', 'down', 'down', 'down', 'down', '' },
     },
-    initial = Point(2, 1)
+    initialItem = Point(2, 1)
   })
   self.seed = 1000
   self.sector = Sector(Point(0,0,0), 0.14, self.seed)
   self.camera = Camera(self.sector.box:center(), Orientations.front, Size(GameSize))
   self.galaxyRect = Rect(0, 0, Size(GameSize)):inset(16)
-  self:drawCanvas(self.galaxyRect:size())
+  self:drawCanvas()
 
   self.background = love.graphics.newImage('assets/galaxy.png')
   local sw, sh = self.background:getDimensions()
@@ -123,13 +123,19 @@ function Galaxy:init(fsm)
   }
 end
 
+function Galaxy:chooseItem(item)
+  local rot = Orientations[item]
+  if rot then
+    self.camera.orientation = self.camera.orientation + rot
+    self:drawCanvas()
+  end
+end
+
 function Galaxy:update(dt)
 end
 
-function Galaxy:drawCanvas(size)
-  if not size then
-    size = Size(GameSize)
-  end
+function Galaxy:drawCanvas()
+  local size = self.galaxyRect:size()
   self.canvas = love.graphics.newCanvas(size.w, size.h)
   graphicsContext({canvas=self.canvas, color=Colors.white, origin=true}, function()
     for star in values(self.sector.stars) do
