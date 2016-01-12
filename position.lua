@@ -138,6 +138,40 @@ function Size:__tostring()
   return s
 end
 
+function Size:__unm()
+  local d = self.d
+  if d then d = -d end
+  return Size(-self.w, -self.h, d)
+end
+
+function Size:__add(other)
+  if class.isInstance(other, Size) then
+    local d
+    if self.d and other.d then
+      d = self.d + other.d
+    end
+    return Size(self.w + other.w, self.h + other.h, d)
+  else
+    if pcall(function() Size(other) end) then
+      return self + Size(other)
+    else
+      error("cannot add "..type(other).." '"..other.."' to a Size")
+    end
+  end
+end
+
+function Size:__sub(other)
+  if class.isInstance(other, Size) then
+    return self + -other
+  else
+    if pcall(function() Size(other) end) then
+      return self - Size(other)
+    else
+      error("cannot subtract "..type(other).." '"..other.."' from a Size")
+    end
+  end
+end
+
 function Size:__mul(s)
   assert(tonumber(s), "invalid input: " .. s .. " is not a number")
   local d = self.d
@@ -291,11 +325,11 @@ function Rect:inset(x, y, z)
   else
     z = nil
   end
-  return Rect(Point(self.x + x, self.y + y, z), Rect(self.w - 2*x, self.h - 2*y, d))
+  return Rect(Point(self.x + x, self.y + y, z), Size(self.w - 2*x, self.h - 2*y, d))
 end
 
 function Rect:draw(style)
-  love.graphics.rectangle(style, self.x, self.y, self.w, self.h)
+  love.graphics.rectangle(style, self.x + .5, self.y + .5, self.w, self.h)
 end
 
 function Rect:__add(other)

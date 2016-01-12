@@ -35,6 +35,10 @@ function Menu:setDirection(direction)
     if row then
       self.selected.x = wrapping(self.selected.x + direction.x, #row)
     end
+    if self:selectedItem() == '' then
+      self.direction = Direction()
+      self:setDirection(direction)
+    end
   end
 end
 
