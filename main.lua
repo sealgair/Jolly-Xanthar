@@ -16,6 +16,7 @@ math.randomseed( os.time() )
 
 Colors = {
   red      = { 255, 0, 0 },
+  yellow   = { 255, 255, 0 },
   white    = { 255, 255, 255 },
   menuBlue = { 0, 128, 255 },
   menuGray = { 128, 128, 128 },

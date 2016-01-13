@@ -8,6 +8,7 @@ function Menu:init(opts)
   self.fsm = opts.fsm
   self.itemGrid = coalesce(opts.itemGrid, {})
   self.initial = coalesce(opts.initialItem, Point(1, 1))
+  self.navMaps = coalesce(opts.navMaps, {})
   self.selected = self.initial
 
   local p = coalesce(opts.controlPlayer, 1)
@@ -30,6 +31,16 @@ end
 function Menu:setDirection(direction)
   if self.direction ~= direction then
     self.direction = direction
+
+    local map = self.navMaps[self:selectedItem()]
+    if map then
+      local sel = map[direction:key()]
+      if sel then
+        self.selected = sel
+        return
+      end
+    end
+
     self.selected.y = wrapping(self.selected.y + direction.y, #self.itemGrid)
     local row = self.itemGrid[self.selected.y]
     if row then

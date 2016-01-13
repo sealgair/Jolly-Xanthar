@@ -23,7 +23,7 @@ function Orientation:__unm()
 end
 
 function Orientation:__add(o)
-  return Orientation(self.x + o.x, self.y + o.x, self.z + o.z)
+  return Orientation(self.x + o.x, self.y + o.y, self.z + o.z)
 end
 
 function Orientation:__sub(o)

@@ -105,6 +105,24 @@ function Galaxy:init(fsm)
       { 'left', Point(0, 3), Point(1, 3), Point(2, 3), Point(3, 3), 'right' },
       { '', 'down', 'down', 'down', 'down', '' },
     },
+    navMaps = {
+      left = {
+        up = Point(2, 1),
+        down = Point(2, 6),
+      },
+      right = {
+        up = Point(5, 1),
+        down = Point(5, 6),
+      },
+      up = {
+        left = Point(1, 2),
+        right = Point(6, 2),
+      },
+      down = {
+        left = Point(1, 5),
+        right = Point(6, 5),
+      },
+    },
     initialItem = Point(2, 1)
   })
   self.seed = 1000
@@ -125,13 +143,37 @@ end
 
 function Galaxy:chooseItem(item)
   local rot = Orientations[item]
-  if rot then
+  if not self.canvasOffset and rot then
     self.camera.orientation = self.camera.orientation + rot
+    self.oldCanvas = self.canvas
     self:drawCanvas()
+
+    local gs = self.galaxyRect:size()
+    self.canvasOffset = {
+      up = Point(0, -gs.h),
+      down = Point(0, gs.h),
+      left = Point(-gs.w, 0),
+      right = Point(gs.w, 0),
+    }
+    self.canvasOffset = self.canvasOffset[item]
   end
 end
 
 function Galaxy:update(dt)
+  if self.canvasOffset then
+    local mov = self.galaxyRect:size() * dt
+    if self.canvasOffset.x > 0 then
+      self.canvasOffset.x = math.max(self.canvasOffset.x - mov.w, 0)
+    elseif self.canvasOffset.x < 0 then
+      self.canvasOffset.x = math.min(self.canvasOffset.x + mov.w, 0)
+    elseif self.canvasOffset.y > 0 then
+      self.canvasOffset.y = math.max(self.canvasOffset.y - mov.h, 0)
+    elseif self.canvasOffset.y < 0 then
+      self.canvasOffset.y = math.min(self.canvasOffset.y + mov.h, 0)
+    else
+      self.canvasOffset = nil
+    end
+  end
 end
 
 function Galaxy:drawCanvas()
@@ -148,7 +190,26 @@ end
 
 function Galaxy:draw()
   local r = self.galaxyRect
-  love.graphics.draw(self.canvas, r.x, r.y)
+  if self.canvasOffset then
+    local ro = r + self.canvasOffset
+    love.graphics.draw(self.canvas, ro.x, ro.y)
+    if self.canvasOffset.x > 0 then
+      ro.x = ro.x - ro.w
+    elseif self.canvasOffset.x < 0 then
+      ro.x = ro.x + ro.w
+    elseif self.canvasOffset.y > 0 then
+      ro.y = ro.y - ro.h
+    elseif self.canvasOffset.y < 0 then
+      ro.y = ro.y + ro.h
+    else
+      ro = nil
+    end
+    if ro then
+      love.graphics.draw(self.oldCanvas, ro.x, ro.y)
+    end
+  else
+    love.graphics.draw(self.canvas, r.x, r.y)
+  end
 
   local sectorSize = r:size() / 4
   graphicsContext({color = {255, 255, 255, 64}}, function()
@@ -164,7 +225,7 @@ function Galaxy:draw()
 
   local sel = self:selectedItem()
   if class.isInstance(sel, Point) then
-    graphicsContext({color = {255, 0, 0, 64}}, function()
+    graphicsContext({color = {255, 255, 0, 128}}, function()
       local sector = Rect(Point(), sectorSize)
       sector = sector + r:origin() + sel * sectorSize - Point(1, 1)
       sector:draw("line")
