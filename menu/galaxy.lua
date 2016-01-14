@@ -143,42 +143,45 @@ end
 
 function Galaxy:chooseItem(item)
   local rot = Orientations[item]
-  if not self.canvasOffset and rot then
-    self.camera.orientation = self.camera.orientation + rot
-    self.oldCanvas = self.canvas
-    self:drawCanvas()
+  if not self.newOrientation and rot then
+    self.newOrientation = self.camera.orientation:rotate(rot)
+  end
+end
 
-    local gs = self.galaxyRect:size()
-    self.canvasOffset = {
-      up = Point(0, -gs.h),
-      down = Point(0, gs.h),
-      left = Point(-gs.w, 0),
-      right = Point(gs.w, 0),
-    }
-    self.canvasOffset = self.canvasOffset[item]
+function Galaxy:setDirection(direction)
+  if self.newOrientation == nil then
+    Galaxy.super.setDirection(self, direction)
   end
 end
 
 function Galaxy:update(dt)
-  if self.canvasOffset then
-    local mov = self.galaxyRect:size() * dt
-    if self.canvasOffset.x > 0 then
-      self.canvasOffset.x = math.max(self.canvasOffset.x - mov.w, 0)
-    elseif self.canvasOffset.x < 0 then
-      self.canvasOffset.x = math.min(self.canvasOffset.x + mov.w, 0)
-    elseif self.canvasOffset.y > 0 then
-      self.canvasOffset.y = math.max(self.canvasOffset.y - mov.h, 0)
-    elseif self.canvasOffset.y < 0 then
-      self.canvasOffset.y = math.min(self.canvasOffset.y + mov.h, 0)
-    else
-      self.canvasOffset = nil
+  if self.newOrientation then
+    local dtheta = dt * math.pi / 2
+    local no = self.newOrientation
+    local co = self.camera.orientation
+
+    for coord in values({'x', 'y', 'z'}) do
+      if no[coord] > co[coord] then
+        co[coord] = math.min(co[coord] + dtheta, no[coord])
+      elseif no[coord] < co[coord] then
+        co[coord] = math.max(co[coord] - dtheta, no[coord])
+      end
     end
+    self.camera.orientation = Orientation(co.x, co.y, co.z)
+    if self.camera.orientation == self.newOrientation then
+      self.newOrientation = nil
+    end
+    self:drawCanvas()
   end
 end
 
 function Galaxy:drawCanvas()
   local size = self.galaxyRect:size()
-  self.canvas = love.graphics.newCanvas(size.w, size.h)
+  if self.canvas then
+    self.canvas:clear()
+  else
+    self.canvas = love.graphics.newCanvas(size.w, size.h)
+  end
   graphicsContext({canvas=self.canvas, color=Colors.white, origin=true}, function()
     for star in values(self.sector.stars) do
       local point = self.camera:project(star.pos)
@@ -190,26 +193,7 @@ end
 
 function Galaxy:draw()
   local r = self.galaxyRect
-  if self.canvasOffset then
-    local ro = r + self.canvasOffset
-    love.graphics.draw(self.canvas, ro.x, ro.y)
-    if self.canvasOffset.x > 0 then
-      ro.x = ro.x - ro.w
-    elseif self.canvasOffset.x < 0 then
-      ro.x = ro.x + ro.w
-    elseif self.canvasOffset.y > 0 then
-      ro.y = ro.y - ro.h
-    elseif self.canvasOffset.y < 0 then
-      ro.y = ro.y + ro.h
-    else
-      ro = nil
-    end
-    if ro then
-      love.graphics.draw(self.oldCanvas, ro.x, ro.y)
-    end
-  else
-    love.graphics.draw(self.canvas, r.x, r.y)
-  end
+  love.graphics.draw(self.canvas, r.x, r.y)
 
   local sectorSize = r:size() / 4
   graphicsContext({color = {255, 255, 255, 64}}, function()

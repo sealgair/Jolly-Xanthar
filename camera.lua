@@ -14,6 +14,13 @@ function Orientation:init(x, y, z)
   self.sin = map(self.vec, function(n) return round(math.sin(-n), 6) end)
 end
 
+function Orientation:rotate(other)
+  local x = self.x + other.x
+  local y = self.y + other.y * self.cos.x
+  local z = self.z + other.y * self.sin.x
+  return Orientation(x, y, z)
+end
+
 function Orientation:__eq(other)
   return self.x == other.x and self.y == other.y and self.z == other.z
 end
@@ -40,8 +47,8 @@ Orientations = {
   back  = Orientation(0, 0, pi),
   left  = Orientation(0, -pi/2, 0),
   right = Orientation(0, pi/2, 0),
-  up    = Orientation(-pi/2, 0, 0),
-  down  = Orientation(pi/2, 0, 0),
+  up    = Orientation(pi/2, 0, 0),
+  down  = Orientation(-pi/2, 0, 0),
 }
 
 Camera = class("Camera")
