@@ -279,3 +279,21 @@ function graphicsContext(context, graphics)
   end
   love.graphics.pop()
 end
+
+function easeInQuad(t)
+  return t*t
+end
+
+function easeInOutQuad(t)
+  t = t / 2
+  if t < 1 then
+    return .5 * t * t
+  else
+    t = t - 1
+    return -.5 * (t*(t-2) - 1)
+  end
+end
+
+function easeInOutSine(t)
+  return -.5 * (math.cos(math.pi*t) - 1)
+end

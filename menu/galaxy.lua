@@ -156,7 +156,12 @@ end
 
 function Galaxy:update(dt)
   if self.newOrientation then
-    local dtheta = dt * math.pi / 2
+    if self.newOrientation.age == nil then
+      self.newOrientation.age = 0
+    else
+      self.newOrientation.age = self.newOrientation.age + dt
+    end
+    local dtheta = easeInOutQuad(self.newOrientation.age) * math.pi / 2
     local no = self.newOrientation
     local co = self.camera.orientation
 
