@@ -20,45 +20,19 @@ function Star:init(pos, seed)
   self.pos = pos
   local seed = coalesce(seed, 0) + seedFromPoint(pos)
   math.randomseed(seed)
-  self.luminosity = math.random()
+  local r = math.random()
+  self.magnitude = r^4 * -20 + 10
+end
+
+function Star:apparentMagnitude(viewpoint)
+  local d = self.pos - viewpoint
+  d = math.sqrt(d.x * d.x + d.y * d.y + d.z * d.z)
+  return self.magnitude - 5 * (1 - math.log10(d))
 end
 
 function safeAlpha(a)
   return math.max(math.min(a, 255), 0)
 end
-
-function Star:draw(sx, sy)
-  local alpha = self.luminosity * 1.5 * 255
-  love.graphics.setColor(255, 255, 255, safeAlpha(alpha))
-
-  local p = Point(round(self.pos.x * sx) + .5, round(self.pos.y * sy) + .5)
-  love.graphics.point(p.x, p.y)
-
-  local d = 1
-  local da = 255/3
-  alpha = alpha - da
-  while alpha > 0 do
-    love.graphics.setColor(255, 255, 255, safeAlpha(alpha))
-    love.graphics.point(p.x, p.y+d)
-    love.graphics.point(p.x, p.y-d)
-
-    if alpha > da then
-      love.graphics.setColor(255, 255, 255, safeAlpha(alpha - da))
-      love.graphics.point(p.x+d, p.y)
-      love.graphics.point(p.x-d, p.y)
-      if d > 1 then
-        local dd = d-1
-        love.graphics.point(p.x+dd, p.y+dd)
-        love.graphics.point(p.x+dd, p.y-dd)
-        love.graphics.point(p.x-dd, p.y+dd)
-        love.graphics.point(p.x-dd, p.y-dd)
-      end
-    end
-    alpha = alpha - da
-    d = d + 1
-  end
-end
-
 
 Sector = class("Sector")
 
@@ -80,16 +54,6 @@ function Sector:init(pos, density, seed)
     ), self.seed)
     table.insert(self.stars, star)
   end
-
-  self.canvas = love.graphics.newCanvas(GameSize.w, GameSize.h)
-  graphicsContext({canvas=self.canvas, color=Colors.white, origin=true}, function()
-    local sx = GameSize.w / self.box.w
-    local sy = GameSize.h / self.box.h
-
-    for star in values(self.stars) do
-      star:draw(sx, sy)
-    end
-  end)
 end
 
 Galaxy = Menu:extend("Galaxy")
@@ -192,8 +156,29 @@ function Galaxy:drawCanvas()
       local point = self.camera:project(star.pos)
       point = point:round() + Point(0.5, 0.5)
       love.graphics.point(point.x, point.y)
+      self:drawStar(point, star:apparentMagnitude(self.camera.position))
     end
   end)
+end
+
+function Galaxy:drawStar(pos, mag)
+  local a = 1
+  if mag > 0 then a = 1/mag end
+  love.graphics.setColor({255, 255, 255, 255*a})
+  love.graphics.point(pos.x, pos.y)
+  if mag < 0 then
+    mag = -mag * .75
+    local cm = math.ceil(mag)
+    for l = 1, cm do
+      a = (cm-l) / mag
+      a = a^2.5
+      love.graphics.setColor({255, 255, 255, 255*a})
+      love.graphics.point(pos.x+l, pos.y)
+      love.graphics.point(pos.x-l, pos.y)
+      love.graphics.point(pos.x, pos.y+l)
+      love.graphics.point(pos.x, pos.y-l)
+    end
+  end
 end
 
 function Galaxy:draw()
