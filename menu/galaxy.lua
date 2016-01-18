@@ -62,12 +62,6 @@ function Galaxy:init(fsm)
   Galaxy.super.init(self, {
     fsm = fsm,
     itemGrid = {
-      { '', 'up', 'up', 'up', 'up', '' },
-      { 'left', Point(0, 0), Point(1, 0), Point(2, 0), Point(3, 0), 'right' },
-      { 'left', Point(0, 1), Point(1, 1), Point(2, 1), Point(3, 1), 'right' },
-      { 'left', Point(0, 2), Point(1, 2), Point(2, 2), Point(3, 2), 'right' },
-      { 'left', Point(0, 3), Point(1, 3), Point(2, 3), Point(3, 3), 'right' },
-      { '', 'down', 'down', 'down', 'down', '' },
     },
     navMaps = {
       left = {
@@ -94,6 +88,7 @@ function Galaxy:init(fsm)
   self.camera = Camera(self.sector.box:center(), Orientations.front, Size(GameSize))
   self.galaxyRect = Rect(0, 0, Size(GameSize)):inset(16)
   self:drawCanvas()
+  self.rot = Point(0, 0, 0)
 
   self.background = love.graphics.newImage('assets/galaxy.png')
   local sw, sh = self.background:getDimensions()
@@ -106,40 +101,20 @@ function Galaxy:init(fsm)
 end
 
 function Galaxy:chooseItem(item)
-  local rot = Orientations[item]
-  if not self.newOrientation and rot then
-    self.newOrientation = self.camera.orientation:rotate(rot)
-  end
+  -- #TODO
 end
 
 function Galaxy:setDirection(direction)
-  if self.newOrientation == nil then
-    Galaxy.super.setDirection(self, direction)
-  end
+  self.rot = Point(
+    -direction.y * math.pi/2,
+    direction.x * math.pi/2,
+    0
+  )
 end
 
 function Galaxy:update(dt)
-  if self.newOrientation then
-    if self.newOrientation.age == nil then
-      self.newOrientation.age = 0
-    else
-      self.newOrientation.age = self.newOrientation.age + dt
-    end
-    local dtheta = easeInOutQuad(self.newOrientation.age) * math.pi / 2
-    local no = self.newOrientation
-    local co = self.camera.orientation
-
-    for coord in values({'x', 'y', 'z'}) do
-      if no[coord] > co[coord] then
-        co[coord] = math.min(co[coord] + dtheta, no[coord])
-      elseif no[coord] < co[coord] then
-        co[coord] = math.max(co[coord] - dtheta, no[coord])
-      end
-    end
-    self.camera.orientation = Orientation(co.x, co.y, co.z)
-    if self.camera.orientation == self.newOrientation then
-      self.newOrientation = nil
-    end
+  if self.rot.x ~= 0 or self.rot.y ~= 0 then
+    self.camera.orientation = self.camera.orientation:rotate(self.rot * dt)
     self:drawCanvas()
   end
 end
@@ -185,26 +160,6 @@ function Galaxy:draw()
   local r = self.galaxyRect
   love.graphics.draw(self.canvas, r.x, r.y)
 
-  local sectorSize = r:size() / 4
-  graphicsContext({color = {255, 255, 255, 64}}, function()
-    local w = sectorSize.w
-    for x = r.x + w - 0.5, r:right() - w, w do
-      love.graphics.line(x, r.y, x, r:bottom())
-    end
-    local h = sectorSize.h
-    for y = r.y + h -0.5, r:bottom() - h, h do
-      love.graphics.line(r.x, y, r:right(), y)
-    end
-  end)
-
-  local sel = self:selectedItem()
-  if class.isInstance(sel, Point) then
-    graphicsContext({color = {255, 255, 0, 128}}, function()
-      local sector = Rect(Point(), sectorSize)
-      sector = sector + r:origin() + sel * sectorSize - Point(1, 1)
-      sector:draw("line")
-    end)
-  end
   love.graphics.draw(self.background)
   local quad = self.menuQuads[sel]
   if quad then

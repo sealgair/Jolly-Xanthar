@@ -16,9 +16,11 @@ end
 
 function Orientation:rotate(other)
   local x = self.x + other.x
-  local y = self.y + other.y * self.cos.x
-  local z = self.z + other.y * self.sin.x
-  return Orientation(x, y, z)
+  x = math.min(x, math.pi/2)
+  x = math.max(x, -math.pi/2)
+  local y = self.y + other.y
+  local res = Orientation(x, y, self.z + other.z)
+  return res
 end
 
 function Orientation:__eq(other)
