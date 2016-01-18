@@ -126,12 +126,18 @@ function Galaxy:drawCanvas()
   else
     self.canvas = love.graphics.newCanvas(size.w, size.h)
   end
+  local r = Rect(Point(), size)
   graphicsContext({canvas=self.canvas, color=Colors.white, origin=true}, function()
     for star in values(self.sector.stars) do
-      local point = self.camera:project(star.pos)
-      point = point:round() + Point(0.5, 0.5)
-      love.graphics.point(point.x, point.y)
-      self:drawStar(point, star:apparentMagnitude(self.camera.position))
+      local m = star:apparentMagnitude(self.camera.position)
+      if m < 6 then
+        local point = self.camera:project(star.pos)
+        if r:contains(point) then
+          point = point:round() + Point(0.5, 0.5)
+          love.graphics.point(point.x, point.y)
+          self:drawStar(point, m)
+        end
+      end
     end
   end)
 end
