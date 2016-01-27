@@ -21,13 +21,12 @@ function Star:init(pos, seed)
   local seed = coalesce(seed, 0) + seedFromPoint(pos)
   math.randomseed(seed)
   local r = math.random()
-  self.magnitude = r^4 * -20 + 10
+  self.luminosity = r^3 * 1000
 end
 
-function Star:apparentMagnitude(viewpoint)
-  local d = self.pos - viewpoint
-  d = math.sqrt(d.x * d.x + d.y * d.y + d.z * d.z)
-  return self.magnitude - 5 * (1 - math.log10(d))
+function Star:apparentLuminosity(viewpoint)
+  local d = (self.pos - viewpoint):magnitude()
+  return self.luminosity / (d*d)
 end
 
 function safeAlpha(a)
@@ -129,30 +128,28 @@ function Galaxy:drawCanvas()
   local r = Rect(Point(), size)
   graphicsContext({canvas=self.canvas, color=Colors.white, origin=true}, function()
     for star in values(self.sector.stars) do
-      local m = star:apparentMagnitude(self.camera.position)
-      if m < 6 then
+      local l = star:apparentLuminosity(self.camera.position)
+      if l > 0 then
         local point = self.camera:project(star.pos)
         if r:contains(point) then
           point = point:round() + Point(0.5, 0.5)
-          love.graphics.point(point.x, point.y)
-          self:drawStar(point, m)
+          self:drawStar(point, l)
         end
       end
     end
   end)
 end
 
-function Galaxy:drawStar(pos, mag)
-  local a = 1
-  if mag > 0 then a = 1/mag end
+function Galaxy:drawStar(pos, lum)
+  local mag = 1.7 * math.log10(lum)
+  local a = math.min(mag, 1)
   love.graphics.setColor({255, 255, 255, 255*a})
   love.graphics.point(pos.x, pos.y)
-  if mag < 0 then
-    mag = -mag * .75
+  if mag > 1 then
     local cm = math.ceil(mag)
     for l = 1, cm do
-      a = (cm-l) / mag
-      a = a^2.5
+      a = ((cm - l)/mag)^2.5
+      a = math.min(a, 1)
       love.graphics.setColor({255, 255, 255, 255*a})
       love.graphics.point(pos.x+l, pos.y)
       love.graphics.point(pos.x-l, pos.y)
