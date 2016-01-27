@@ -4,7 +4,7 @@ require 'position'
 require 'camera'
 require 'utils'
 
-local SectorSize = 20
+local SectorSize = 40
 
 function seedFromPoint(p)
   local seedStr = "0"
@@ -21,12 +21,12 @@ function Star:init(pos, seed)
   local seed = coalesce(seed, 0) + seedFromPoint(pos)
   math.randomseed(seed)
   local r = math.random()
-  self.luminosity = r^3 * 1000
+  self.luminosity = r^5 * 1000
 end
 
 function Star:apparentLuminosity(viewpoint)
-  local d = (self.pos - viewpoint):magnitude()
-  return self.luminosity / (d*d)
+  local d = (self.pos - viewpoint):magSquared()
+  return self.luminosity / d
 end
 
 function safeAlpha(a)
@@ -127,11 +127,11 @@ function Galaxy:drawCanvas()
   end
   local r = Rect(Point(), size)
   graphicsContext({canvas=self.canvas, color=Colors.white, origin=true}, function()
-    for star in values(self.sector.stars) do
+    for s, star in ipairs(self.sector.stars) do
       local l = star:apparentLuminosity(self.camera.position)
-      if l > 0 then
+      if l > 0.1 then
         local point = self.camera:project(star.pos)
-        if r:contains(point) then
+        if point and r:contains(point) then
           point = point:round() + Point(0.5, 0.5)
           self:drawStar(point, l)
         end

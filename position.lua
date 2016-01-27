@@ -97,12 +97,16 @@ function Point:abs()
   return Point(math.abs(self.x), math.abs(self.y), z)
 end
 
-function Point:magnitude()
+function Point:magSquared()
   local square = self.x * self.x + self.y * self.y
   if self.z then
     square = square + self.z * self.z
   end
-  return math.sqrt(square)
+  return square
+end
+
+function Point:magnitude()
+  return math.sqrt(self:magSquared())
 end
 
 function Point:normalize()
