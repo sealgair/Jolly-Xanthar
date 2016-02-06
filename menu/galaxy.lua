@@ -4,7 +4,7 @@ require 'position'
 require 'camera'
 require 'utils'
 
-local SectorSize = 40
+local SectorSize = 20
 
 function seedFromPoint(p)
   local seedStr = "0"
@@ -127,16 +127,20 @@ function Galaxy:drawCanvas()
   end
   local r = Rect(Point(), size)
   graphicsContext({canvas=self.canvas, color=Colors.white, origin=true}, function()
+    local v, d = 0, 0
     for s, star in ipairs(self.sector.stars) do
       local l = star:apparentLuminosity(self.camera.position)
-      if l > 0.1 then
+      if l > 1 then
+        v = v + 1
         local point = self.camera:project(star.pos)
         if point and r:contains(point) then
+          d = d + 1
           point = point:round() + Point(0.5, 0.5)
           self:drawStar(point, l)
         end
       end
     end
+    print('visible', v, 'drawn', d)
   end)
 end
 

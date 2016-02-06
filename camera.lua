@@ -10,8 +10,8 @@ function Orientation:init(x, y, z)
     z = self.z
   }
 
-  self.cos = map(self.vec, function(n) return round(math.cos(-n), 6) end)
-  self.sin = map(self.vec, function(n) return round(math.sin(-n), 6) end)
+  self.cos = map(self.vec, function(n) return math.cos(-n) end)
+  self.sin = map(self.vec, function(n) return math.sin(-n) end)
 end
 
 function Orientation:rotate(other)
