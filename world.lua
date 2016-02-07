@@ -45,7 +45,7 @@ function World:init(fsm, ship)
   -- add players
   self.roster = Save:shipRoster(self.ship)
   local center = Point()
-  local activePlayers = {1, 2}
+  local activePlayers = {1}
   for i, coord in ipairs(self.map.playerCoords) do
     local hud = HUD(self, i)
     self.huds[i] = hud
