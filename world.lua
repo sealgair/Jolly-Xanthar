@@ -29,11 +29,12 @@ function World:init(fsm, ship)
 
   -- load the map
   self.bumpWorld = bump.newWorld(16)
-  self.worldCanvas = love.graphics.newCanvas()
   self.map = WorldMap("assets/worlds/ship1.world",
     "assets/worlds/forest.png",
     self.bumpWorld,
     10)
+  local cw, ch = self.map:getDimensions()
+  self.worldCanvas = love.graphics.newCanvas(cw, ch)
 
   -- add monsters
   for i, coord in ipairs(self.map.monsterCoords) do

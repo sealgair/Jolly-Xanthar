@@ -1,6 +1,7 @@
 class = require 'lib/30log/30log'
 json = require 'lib.json4lua.json.json'
 require 'wall'
+require 'utils'
 
 WorldMap = class('WorldMap')
 
@@ -115,18 +116,39 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
   love.graphics.pop()
 end
 
+function pad(tbl, amount, value)
+  for _ = 1, amount do
+    table.insert(tbl, 1, value)
+    table.insert(tbl, value)
+  end
+  return tbl
+end
+
 function WorldMap:fileToTable(filename)
+  local padx = GameSize.w / 2 / 16
+  local pady = GameSize.h / 2 / 16
+  local w = 1
+
   local blocks = {}
   for line in love.filesystem.lines(filename) do
     local blockrow = {}
     for x = 1, string.len(line) do
       table.insert(blockrow, line:sub(x, x))
     end
+    pad(blockrow, padx, "#")
+    w = math.max(w, #blockrow)
     table.insert(blocks, blockrow)
   end
+  local p = {}
+  for _ = 1, w do table.insert(p, "#") end
+  pad(blocks, pady, p)
   return blocks
 end
 
 function WorldMap:draw()
   love.graphics.draw(self.mapCanvas)
+end
+
+function WorldMap:getDimensions()
+  return self.mapCanvas:getDimensions()
 end
