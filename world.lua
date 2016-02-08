@@ -31,7 +31,7 @@ function World:init(fsm, ship)
   self.bumpWorld = bump.newWorld(16)
   self.worldCanvas = love.graphics.newCanvas()
   self.map = WorldMap("assets/worlds/ship1.world",
-    "assets/worlds/ship.png",
+    "assets/worlds/forest.png",
     self.bumpWorld,
     10)
 
