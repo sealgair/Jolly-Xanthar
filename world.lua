@@ -12,7 +12,7 @@ DEBUG_BUMP = false
 
 World = class("World")
 
-function World:init(fsm, ship)
+function World:init(fsm, ship, worldfile, tileset, monsterCount)
   self.fsm = fsm
   self.ship = coalesce(ship, Save:shipNames()[1])
 
@@ -29,10 +29,10 @@ function World:init(fsm, ship)
 
   -- load the map
   self.bumpWorld = bump.newWorld(16)
-  self.map = WorldMap("assets/worlds/ship1.world",
-    "assets/worlds/forest.png",
-    self.bumpWorld,
-    10)
+  worldfile = coalesce(worldfile, "assets/worlds/ship1.world")
+  tileset = coalesce(tileset, "assets/worlds/forest.png")
+  monsterCount = coalesce(monsterCount, 10)
+  self.map = WorldMap(worldfile, tileset, self.bumpWorld, monsterCount)
   local cw, ch = self.map:getDimensions()
   self.worldCanvas = love.graphics.newCanvas(cw, ch)
 

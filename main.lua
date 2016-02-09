@@ -1,6 +1,7 @@
 require 'controller'
 require 'utils'
 require 'world'
+require 'ship'
 require 'save'
 require 'menu.ships'
 require 'menu.recruit'
@@ -77,7 +78,10 @@ function love.load(arg)
       controls = Controls,
     },
     [Ships] = {
-      done = World
+      done = Ship
+    },
+    [Ship] = {
+      land = World
     },
     [Keyboard] = {
       done = Recruit
@@ -86,9 +90,12 @@ function love.load(arg)
       done = Splash,
     },
     [Recruit] = {
-      done = World
+      done = Ship
     },
     [World] = {
+      quit = Ship
+    },
+    [Ship] = {
       quit = Splash
     },
   }

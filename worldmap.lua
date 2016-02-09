@@ -67,7 +67,8 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
       else
         key = 'f'
         if block:find("%d") then
-          self.playerCoords[tonumber(block)] = { x = dx, y = dy }
+          local coord = Point{ x = dx, y = dy }
+          self.playerCoords[tonumber(block)] = coord
         else
           table.insert(potentialMonsters, { x = dx, y = dy })
         end
