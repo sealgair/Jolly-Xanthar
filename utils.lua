@@ -234,12 +234,24 @@ function HSVtoRGB(h, s, v)
   end return {(r + m) * 255, (g + m) * 255, (b + m) * 255}
 end
 
+function randomChoice(sequence)
+  return sequence[math.random(#sequence)]
+end
+
 function randomLine(filename)
     local lines = {}
     for l in love.filesystem.lines(filename) do
       table.insert(lines, l)
     end
-    return lines[math.random(#lines)]
+    return randomChoice(lines)
+end
+
+function randomize(sequence)
+  local result = {}
+  for val in values(sequence) do
+    table.insert(result, math.random(#result + 1), val)
+  end
+  return result
 end
 
 function graphicsContext(context, graphics)

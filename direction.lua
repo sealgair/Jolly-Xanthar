@@ -79,6 +79,10 @@ function Direction:__tostring()
   end
 end
 
+function Direction:__unm()
+  return Direction(-self.x, -self.y)
+end
+
 function Direction:__eq(rhs)
   return self.x == rhs.x and self.y == rhs.y
 end
