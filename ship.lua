@@ -48,6 +48,8 @@ function Ship:init(fsm, ship)
     "assets/worlds/observation.world",
   })
 
+  self.background = love.graphics.newImage("assets/stars.png")
+
   local dir = Direction.down
   local topRooms = {}
   local bottomRooms = {}

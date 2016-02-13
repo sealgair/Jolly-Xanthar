@@ -334,6 +334,7 @@ function World:draw()
   love.graphics.origin()
   self.worldCanvas:clear()
   love.graphics.setCanvas(self.worldCanvas)
+  self.worldCanvas:clear()
   self.map:draw()
 
   table.sort(self.gobs, function(a, b)
@@ -362,13 +363,21 @@ function World:draw()
   local sw, sh = self.worldCanvas:getDimensions()
   for screen in values(screens) do
     if scren ~= self.mainScreen then
-      love.graphics.setColor(0, 0, 0)
-      local background = Rect(screen.windowOffset.x - 1, screen.windowOffset.y - 1, screen.w + 2, screen.h + 2 + hud.barHeight)
-      if background.y < self.mainScreen.h / 2 then
-        background.y = background.y - hud.barHeight
+      local bgRect = Rect(screen.windowOffset.x - 1, screen.windowOffset.y - 1, screen.w + 2, screen.h + 2 + hud.barHeight)
+      if bgRect.y < self.mainScreen.h / 2 then
+        bgRect.y = bgRect.y - hud.barHeight
       end
-      love.graphics.rectangle("fill", background.x, background.y, background.w, background.h)
-      love.graphics.setColor(255, 255, 255)
+      if self.background then
+        local bw, bh = self.background:getDimensions()
+        local bgQuad = love.graphics.newQuad(bgRect.x, bgRect.y,
+          bgRect.w, bgRect.h,
+          bw, bh)
+        love.graphics.draw(self.background, bgQuad, bgRect.x, bgRect.y)
+      else
+        graphicsContext({color={0,0,0}}, function()
+          love.graphics.rectangle("fill", bgRect.x, bgRect.y, bgRect.w, bgRect.h)
+        end)
+      end
     end
     local quad = love.graphics.newQuad(screen.x, screen.y,
       screen.w, screen.h,
