@@ -46,8 +46,6 @@ function Ship:init(fsm, ship)
   local roomFiles = randomize({
     "assets/worlds/barracks.world",
     "assets/worlds/observation.world",
-    "assets/worlds/observation.world",
-    "assets/worlds/observation.world",
   })
 
   local dir = Direction.down

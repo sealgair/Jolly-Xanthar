@@ -21,12 +21,18 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
   local quads = {}
   local mw = 0
   local blocks = self:fileToTable(mapfile)
-  local function testEmpty(y, x)
+
+  local function blockAt(x, y)
     local block
     local row = blocks[y]
     if row then
       block = row[x]
     end
+    return block
+  end
+
+  local function testEmpty(y, x)
+    local block = blockAt(x, y)
     if block == nil then
       block = "#" -- null is wall
     end
@@ -45,6 +51,7 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
 
   local bw, bh = 16, 16
   for y, row in ipairs(blocks) do
+    -- todo: boy, this could use some cleanup
     local topQuadRow = {}
     local btmQuadRow = {}
     for x, block in ipairs(row) do
@@ -64,8 +71,33 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
           table.insert(qr, quadMap[key])
         end
 
+      elseif block == "W" then
+        for q, off in ipairs(quadrants) do
+          key = 'h' .. q
+          if blockAt(x + off.x, y) ~= block or blockAt(x, y + off.y) ~= block then
+            key = 'f'
+            if not testEmpty(y, x + off.x) and not testEmpty(y + off.y, x) then key = key .. q .. 'c' end
+          else
+            if blockAt(x - off.x, y) ~= block then key = key .. 'v' end
+            if blockAt(x, y - off.y) ~= block then key = key .. 'h' end
+            if key == 'h' .. q then
+              if blockAt(x - off.x, y - off.y) ~= block then
+                key = key .. 'c'
+              elseif blockAt(x + off.x, y + off.y) ~= block then
+                key = 'f'
+              elseif blockAt(x - off.x, y + off.y) ~= block then
+                key = key .. 'v'
+              elseif blockAt(x + off.x, y - off.y) ~= block then
+                key = key .. 'h'
+              end
+            end
+          end
+          local qr
+          if q < 3 then qr = topQuadRow else qr = btmQuadRow end
+          table.insert(qr, quadMap[key])
+        end
+
       else
-        key = 'f'
         if block:find("%d") then
           local coord = Point{ x = dx, y = dy }
           self.playerCoords[tonumber(block)] = coord
