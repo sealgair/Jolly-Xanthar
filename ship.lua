@@ -46,6 +46,7 @@ function Ship:init(fsm, ship)
   local roomFiles = randomize({
     "assets/worlds/barracks.world",
     "assets/worlds/observation.world",
+    "assets/worlds/teleporter.world",
   })
 
   self.background = love.graphics.newImage("assets/stars.png")
@@ -86,6 +87,8 @@ function Ship:init(fsm, ship)
   table.extend(data, rowOf(hallRow, 4))
   table.extend(data, bottom)
 
+  gridFill(data)
+
   self:writeShip(data)
   Ship.super.init(self, fsm, ship, self.shipFile, "assets/worlds/ship.png", 0)
 end
@@ -119,5 +122,17 @@ function gridStitch(grid, other)
       table.insert(d, t)
     end
     grid[r] = d
+  end
+end
+
+function gridFill(grid, value)
+  local w = 0
+  for row in values(grid) do
+    w = math.max(w, #row)
+  end
+  for row in values(grid) do
+    if #row < w then
+      table.extend(row, rowOf(val, w - #row))
+    end
   end
 end
