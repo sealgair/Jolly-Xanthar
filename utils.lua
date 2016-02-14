@@ -257,6 +257,10 @@ end
 function graphicsContext(context, graphics)
   love.graphics.push()
   local old = {}
+  if context.shader then
+    old.shader = love.graphics.getShader()
+    love.graphics.setShader(context.shader)
+  end
   if context.canvas then
     old.canvas = love.graphics.getCanvas()
     love.graphics.setCanvas(context.canvas)
@@ -291,6 +295,9 @@ function graphicsContext(context, graphics)
   end
   if old.canvas then
     love.graphics.setCanvas(old.canvas)
+  end
+  if old.shader then
+    love.graphics.setShader(old.shader)
   end
   love.graphics.pop()
 end

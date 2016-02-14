@@ -134,10 +134,11 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
   end
 
   -- draw quads to canvas
-  love.graphics.push()
-    love.graphics.origin()
-    self.mapCanvas = love.graphics.newCanvas(mw * qw, mh * qh)
-    love.graphics.setCanvas(self.mapCanvas)
+  local hueShifter = love.graphics.newShader("shaders/hueShift.glsl")
+  hueShifter:send("shift", math.random())
+
+  self.mapCanvas = love.graphics.newCanvas(mw * qw, mh * qh)
+  graphicsContext({origin=true, shader=hueShifter, canvas=self.mapCanvas}, function()
     for y, quadRow in ipairs(quads) do
       y = (y - 1) * qh
       for x, quad in ipairs(quadRow) do
@@ -145,8 +146,7 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
         love.graphics.draw(templateImg, quad, x, y)
       end
     end
-    love.graphics.setCanvas()
-  love.graphics.pop()
+  end)
 end
 
 function pad(tbl, amount, value)
