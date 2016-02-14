@@ -87,7 +87,7 @@ function Ship:init(fsm, ship)
   table.extend(data, rowOf(hallRow, 4))
   table.extend(data, bottom)
 
-  gridFill(data)
+  gridFill(data, "#")
 
   self:writeShip(data)
   Ship.super.init(self, fsm, ship, self.shipFile, "assets/worlds/ship.png", 0)
@@ -132,7 +132,7 @@ function gridFill(grid, value)
   end
   for row in values(grid) do
     if #row < w then
-      table.extend(row, rowOf(val, w - #row))
+      table.extend(row, rowOf(value, w - #row))
     end
   end
 end
