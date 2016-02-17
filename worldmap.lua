@@ -19,6 +19,9 @@ function Teleporter:collidesWith(b)
 end
 
 function Teleporter:collide(cols)
+  for col in values(cols) do
+    col.other:teleport()
+  end
 end
 
 
@@ -58,7 +61,7 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
     return block ~= "#"
   end
 
-  self.extraTiles = {}
+  self.pointsOfInterest = {}
   self.playerCoords = {}
   local potentialMonsters = {}
 
@@ -124,7 +127,7 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
         elseif block == "T" then
           local teleporter = Teleporter(Point(dx, dy))
           bumpWorld:add(teleporter, dx, dy, bw, bh)
-          table.insert(self.extraTiles, teleporter)
+          table.insert(self.pointsOfInterest, teleporter)
         else
           table.insert(potentialMonsters, { x = dx, y = dy })
         end
@@ -170,7 +173,7 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
         love.graphics.draw(templateImg, quad, x, y)
       end
     end
-    for obj in values(self.extraTiles) do
+    for obj in values(self.pointsOfInterest) do
       obj:draw()
     end
   end)

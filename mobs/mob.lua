@@ -96,6 +96,10 @@ function Mob:controlStop(action)
   end
 end
 
+function Mob:teleport()
+  self.world:teleport(self)
+end
+
 function Mob:animState()
   if self:dead() then
     return "dead"

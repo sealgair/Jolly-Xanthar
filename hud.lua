@@ -127,7 +127,7 @@ function HUD:drawMenuCanvas()
 end
 
 function HUD:playerAction(action)
-  if action.name == "Quit" then
+  if action.name == "Disembark" then
     self.world:removePlayer(self.index)
   elseif action.name == "Switch" then
     self.itemGrid = map(self.world:remainingRoster(), function(n) return {n} end)
@@ -163,7 +163,7 @@ function HUD:controlStop(action)
         self.itemGrid = {
           {{name = "Cancel"}},
           {{name = paused}},
-          {{name = "Quit"}},
+          {{name = "Disembark"}},
           {{name = "Switch"}},
           --{{name = "Controls"}}, TODO
         }

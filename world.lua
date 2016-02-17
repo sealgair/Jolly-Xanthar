@@ -298,6 +298,10 @@ function World:update(dt)
   end
 end
 
+function World:teleport(gob)
+    self.fsm:advance('land')
+end
+
 function World:drawRescue(player)
   local font = Fonts.small
   graphicsContext({

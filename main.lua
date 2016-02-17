@@ -29,6 +29,8 @@ local StateMachine = {
 }
 
 function StateMachine:advance(input, options)
+  print("fsm advance", self.currentState, input)
+
   local nextState
   if self.currentState then
     local transition = self.transitions[self.currentState.class]
@@ -78,25 +80,23 @@ function love.load(arg)
       controls = Controls,
     },
     [Ships] = {
-      done = Ship
+      done = Ship,
     },
     [Ship] = {
-      land = World
+      land = World,
+      quit = Splash,
     },
     [Keyboard] = {
-      done = Recruit
+      done = Recruit,
     },
     [Controls] = {
       done = Splash,
     },
     [Recruit] = {
-      done = Ship
+      done = Ship,
     },
     [World] = {
-      quit = Ship
-    },
-    [Ship] = {
-      quit = Splash
+      quit = Ship,
     },
   }
   StateMachine:advance("menu")
