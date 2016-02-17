@@ -1,4 +1,5 @@
-class = require 'lib/30log/30log'
+class = require 'lib.30log.30log'
+md5 = require 'lib.md5.md5'
 json = require 'lib.json4lua.json.json'
 require 'wall'
 require 'utils'
@@ -27,10 +28,12 @@ end
 
 WorldMap = class('WorldMap')
 
-function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
+function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount, seed)
   local templateImg = love.graphics.newImage(imagefile)
   local qw, qh = 8, 8
   local sw, sh = templateImg:getWidth(), templateImg:getHeight()
+
+  self.seed = seed
 
   -- create our quads
   local tileJson, _ = love.filesystem.read("assets/worlds/tiles.json")
@@ -162,6 +165,9 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
 
   -- draw quads to canvas
   local hueShifter = love.graphics.newShader("shaders/hueShift.glsl")
+  if self.seed then
+    randomSeed(self.seed)
+  end
   hueShifter:send("shift", math.random())
 
   self.mapCanvas = love.graphics.newCanvas(mw * qw, mh * qh)

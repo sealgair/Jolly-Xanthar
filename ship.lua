@@ -43,6 +43,8 @@ Ship = World:extend('Ship')
 
 function Ship:init(fsm, ship)
   self.shipFile = "myship.world"
+
+  randomSeed(ship)
   local roomFiles = randomize({
     "assets/worlds/barracks.world",
     "assets/worlds/observation.world",

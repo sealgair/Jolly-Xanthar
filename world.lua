@@ -1,4 +1,4 @@
-class = require 'lib/30log/30log'
+class = require 'lib.30log.30log'
 require 'controller'
 require 'worldmap'
 require 'mobs.human'
@@ -32,7 +32,7 @@ function World:init(fsm, ship, worldfile, tileset, monsterCount)
   worldfile = coalesce(worldfile, "assets/worlds/ship1.world")
   tileset = coalesce(tileset, "assets/worlds/forest.png")
   monsterCount = coalesce(monsterCount, 10)
-  self.map = WorldMap(worldfile, tileset, self.bumpWorld, monsterCount)
+  self.map = WorldMap(worldfile, tileset, self.bumpWorld, monsterCount, self.seed)
   local cw, ch = self.map:getDimensions()
   self.worldCanvas = love.graphics.newCanvas(cw, ch)
 

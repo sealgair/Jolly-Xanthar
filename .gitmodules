@@ -10,3 +10,6 @@
 [submodule "lib/json4lua"]
 	path = lib/json4lua
 	url = https://github.com/craigmj/json4lua
+[submodule "lib/md5"]
+	path = lib/md5
+	url = https://github.com/kikito/md5.lua.git
