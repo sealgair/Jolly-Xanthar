@@ -3,6 +3,25 @@ json = require 'lib.json4lua.json.json'
 require 'wall'
 require 'utils'
 
+Teleporter = class('Teleporter')
+
+function Teleporter:init(origin)
+  self.origin = origin
+  self.img = love.graphics.newImage("assets/worlds/teleporter.png")
+end
+
+function Teleporter:draw()
+  love.graphics.draw(self.img, self.origin.x, self.origin.y)
+end
+
+function Teleporter:collidesWith(b)
+  return "cross", 100
+end
+
+function Teleporter:collide(cols)
+end
+
+
 WorldMap = class('WorldMap')
 
 function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
@@ -39,6 +58,7 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
     return block ~= "#"
   end
 
+  self.extraTiles = {}
   self.playerCoords = {}
   local potentialMonsters = {}
 
@@ -101,6 +121,10 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
         if block:find("%d") then
           local coord = Point{ x = dx, y = dy }
           self.playerCoords[tonumber(block)] = coord
+        elseif block == "T" then
+          local teleporter = Teleporter(Point(dx, dy))
+          bumpWorld:add(teleporter, dx, dy, bw, bh)
+          table.insert(self.extraTiles, teleporter)
         else
           table.insert(potentialMonsters, { x = dx, y = dy })
         end
@@ -145,6 +169,9 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
         x = (x - 1) * qw
         love.graphics.draw(templateImg, quad, x, y)
       end
+    end
+    for obj in values(self.extraTiles) do
+      obj:draw()
     end
   end)
 end
