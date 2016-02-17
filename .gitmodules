@@ -13,3 +13,6 @@
 [submodule "lib/md5"]
 	path = lib/md5
 	url = https://github.com/kikito/md5.lua.git
+[submodule "lib/rotLove"]
+	path = lib/rotLove
+	url = https://github.com/paulofmandown/rotLove.git
