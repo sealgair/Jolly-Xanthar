@@ -387,12 +387,13 @@ function World:draw()
           bw, bh)
         love.graphics.draw(self.background, bgQuad, bgRect.x, bgRect.y)
       else
-        graphicsContext({color={0,0,0}}, function()
+        graphicsContext({color={0,0,0,0}}, function()
           love.graphics.rectangle("fill", bgRect.x, bgRect.y, bgRect.w, bgRect.h)
         end)
       end
     end
-    local quad = love.graphics.newQuad(screen.x, screen.y,
+    local quad = love.graphics.newQuad(
+      screen.x, screen.y,
       screen.w, screen.h,
       sw, sh)
     love.graphics.draw(self.worldCanvas, quad, screen.windowOffset.x, screen.windowOffset.y)

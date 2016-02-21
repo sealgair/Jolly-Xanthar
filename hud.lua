@@ -57,35 +57,31 @@ end
 
 
 function HUD:drawBase()
-  love.graphics.push()
-
-  love.graphics.setColor(self.shadowColor)
   local x = self.rect.x
   local y = self.rect.y
   local w = self.rect.w
   local h = self.barHeight
-  if self.index > 2 then
-    y = self.rect.y + self.rect.h - h
-  end
-  love.graphics.rectangle("fill", x, y, w, h)
+  graphicsContext({}, function()
+    love.graphics.setColor(self.shadowColor)
+    if self.index > 2 then
+      y = self.rect.y + self.rect.h - h
+    end
+    love.graphics.rectangle("fill", x, y, w, h)
 
-  love.graphics.setColor(self.color)
-  x = x + 1
-  y = y + 1
-  w = w - 2
-  h = h - 2
-  love.graphics.rectangle("fill", x, y, w, h)
+    love.graphics.setColor(self.color)
+    x = x + 1
+    y = y + 1
+    w = w - 2
+    h = h - 2
+    love.graphics.rectangle("fill", x, y, w, h)
 
-  love.graphics.setColor(0, 0, 0)
-  x = x + 1
-  y = y + 1
-  w = w - 2
-  h = h - 2
-  love.graphics.rectangle("fill", x, y, w, h)
-
-  love.graphics.setColor(255, 255, 255)
-  love.graphics.pop()
-
+    love.graphics.setColor(0, 0, 0)
+    x = x + 1
+    y = y + 1
+    w = w - 2
+    h = h - 2
+    love.graphics.rectangle("fill", x, y, w, h)
+  end)
   self.healthRect = Rect{ x = x, y = y, w = w, h = h, }
 end
 
