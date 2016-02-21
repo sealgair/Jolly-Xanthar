@@ -87,10 +87,13 @@ end
 
 function Wall:quad(q)
   local key = ''
-  if self.borders[q:vertical():key()] ~= self.block then
+
+  local h = self.borders[q:horizontal():key()]
+  local v = self.borders[q:vertical():key()]
+  if v ~= self.block then
     key = key .. q:vertical():shortkey() .. 'v'
   end
-  if self.borders[q:horizontal():key()] ~= self.block then
+  if h ~= self.block then
     key = key .. q:horizontal():shortkey() .. 'h'
   end
   if key == '' and self.borders[q:key()] ~= self.block then
@@ -133,7 +136,30 @@ end
 function Floor:collide(cols)
 end
 
-Hole = Floor:extend('Hole')
+Hole = Floor:extend('Hole', {
+  tileCoords = {
+    [""] = Point(1, 5),
+
+    uv = Point(1, 4),
+    dv = Point(1, 6),
+    lh = Point(0, 5),
+    rh = Point(2, 5),
+
+    uvlh = Point(0, 4),
+    uvrh = Point(2, 4),
+    dvlh = Point(0, 6),
+    dvrh = Point(2, 6),
+
+    drc  = Point(3, 4),
+    dlc  = Point(4, 4),
+    urc  = Point(3, 5),
+    ulc  = Point(4, 5),
+  }
+})
+
+function Hole:quad(q)
+  return Wall.quad(self, q)
+end
 
 function Tile.typeForBlock(block)
   if block == "#" then
