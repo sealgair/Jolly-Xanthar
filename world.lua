@@ -214,11 +214,13 @@ function World:update(dt)
       if gob.hitLineStop then
         local limitedInfo = {}
         for info in values(itemInfo) do
-          table.insert(limitedInfo, info)
-          if gob:hitLineStop(info.item) then
-            gob.hitLine.x2 = info.x1
-            gob.hitLine.y2 = info.y1
-            break
+          if Gob.collideFilter(gob, info.item) then
+            table.insert(limitedInfo, info)
+            if gob:hitLineStop(info.item) then
+              gob.hitLine.x2 = info.x1
+              gob.hitLine.y2 = info.y1
+              break
+            end
           end
         end
         itemInfo = limitedInfo

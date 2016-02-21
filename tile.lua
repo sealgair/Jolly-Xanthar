@@ -176,7 +176,9 @@ end
 
 function Teleporter:collide(cols)
   for col in values(cols) do
-    col.other:teleport()
+    if col.other.teleport then
+      col.other:teleport()
+    end
   end
 end
 

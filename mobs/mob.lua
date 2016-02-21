@@ -188,6 +188,10 @@ end
 
 function Mob:hurt(damage, collision)
   self.agressor = collision.other.owner
+  if self.agressor == self then
+    local poop
+    poop.pee()
+  end
   self.health = self.health - damage
   if not self:dead() then
     self:shove(Point(collision.other.direction), 75 * damage)

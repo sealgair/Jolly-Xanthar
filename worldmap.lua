@@ -34,8 +34,9 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount, seed)
         self.playerCoords[tile.player] = Point(dx, dy)
       elseif tile.isFloor then
         table.insert(potentialMonsters, Point(dx, dy))
+      else
+        bumpWorld:add(tile, dx, dy, qw, qh)
       end
-      bumpWorld:add(tile, dx, dy, qw, qh)
     end
     table.insert(tiles, trow)
   end
