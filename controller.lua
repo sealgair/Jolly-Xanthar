@@ -148,6 +148,12 @@ function Controller:resetControls()
   self.playerControls = defaultControls
 end
 
+function Controller:resetActions()
+  for player, actions in pairs(self.actions) do
+    self.actions[player] = {}
+  end
+end
+
 function Controller:actionsForKey(key)
   local actions = {}
   for player, controls in ipairs(self.playerControls) do

@@ -176,7 +176,6 @@ end
 
 function Teleporter:collide(cols)
   for col in values(cols) do
-    print(col.other)
     col.other:teleport()
   end
 end

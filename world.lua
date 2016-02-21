@@ -64,10 +64,19 @@ function World:activate()
   for player in values(self.players) do
     player.active = true
   end
+  for hud in values(self.huds) do
+    hud.active = true
+  end
 end
 
 function World:deactivate()
   Save:saveShip(self.ship, self.roster)
+  for player in values(self.players) do
+    player.active = false
+  end
+  for hud in values(self.huds) do
+    hud.active = false
+  end
 end
 
 function World:remainingRoster()
@@ -114,7 +123,7 @@ function World:removePlayer(index, keepBody)
     if #h.itemGrid > 0 then left = true end
   end
   if not left then
-    self.fsm:advance('quit')
+    self.fsm:advance('quit', self.ship)
   end
 end
 
