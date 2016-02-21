@@ -303,13 +303,14 @@ function graphicsContext(context, graphics)
 end
 
 function randomSeed(seed)
+  print('randomSeed', seed)
   if seed == nil then return end
 
   if type(seed) ~= "number" then
     if type(seed) ~= "string" then
       seed = tostring(seed)
     end
-    seed = tonumber(md5.sumhexa(seed), 16)
+    seed = tonumber(md5.sumhexa(seed):sub(1, 12), 16)
   end
   math.randomseed(seed)
 end
