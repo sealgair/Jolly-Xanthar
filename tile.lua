@@ -50,6 +50,13 @@ function Tile:quad(quadrant)
   return nil  -- Implement in subclasses
 end
 
+function Tile:collidesWith(b)
+  return nil, 1
+end
+
+function Tile:collide(cols)
+end
+
 function Tile:__tostring()
   return self.class.name .. " " .. self.block
 end
@@ -80,9 +87,6 @@ Wall = Tile:extend('Wall', {
 
 function Wall:collidesWith(b)
   return "slide", 1
-end
-
-function Wall:collide(cols)
 end
 
 function Wall:quad(q)
@@ -129,13 +133,6 @@ function Floor:quad(q)
   return self.quadMap[key]
 end
 
-function Floor:collidesWith(b)
-  return nil, 1
-end
-
-function Floor:collide(cols)
-end
-
 Hole = Floor:extend('Hole', {
   tileCoords = {
     [""] = Point(1, 5),
@@ -161,11 +158,36 @@ function Hole:quad(q)
   return Wall.quad(self, q)
 end
 
+Teleporter = Floor:extend('Teleporter')
+
+function Teleporter:init(x, y, tileset, img)
+  Teleporter.super.init(self, x, y, tileset, img)
+  self.itemImage = love.graphics.newImage("assets/worlds/teleporter.png")
+end
+
+function Teleporter:draw(x, y)
+  Teleporter.super.draw(self, x, y)
+  love.graphics.draw(self.itemImage, x, y)
+end
+
+function Teleporter:collidesWith(b)
+  return "cross", 100
+end
+
+function Teleporter:collide(cols)
+  for col in values(cols) do
+    print(col.other)
+    col.other:teleport()
+  end
+end
+
 function Tile.typeForBlock(block)
   if block == "#" then
     return Wall
   elseif block == "W" then
     return Hole
+  elseif block == "T" then
+    return Teleporter
   else
     return Floor
   end

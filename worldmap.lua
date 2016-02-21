@@ -4,27 +4,6 @@ json = require 'lib.json4lua.json.json'
 require 'tile'
 require 'utils'
 
-Teleporter = class('Teleporter')
-
-function Teleporter:init(origin)
-  self.origin = origin
-  self.img = love.graphics.newImage("assets/worlds/teleporter.png")
-end
-
-function Teleporter:draw()
-  love.graphics.draw(self.img, self.origin.x, self.origin.y)
-end
-
-function Teleporter:collidesWith(b)
-  return "cross", 100
-end
-
-function Teleporter:collide(cols)
-  for col in values(cols) do
-    col.other:teleport()
-  end
-end
-
 
 WorldMap = class('WorldMap')
 
@@ -53,11 +32,10 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount, seed)
       local dx, dy = (x - 1) * qw, (y - 1) * qh
       if tile.player then
         self.playerCoords[tile.player] = Point(dx, dy)
+      elseif tile.isFloor then
+        table.insert(potentialMonsters, Point(dx, dy))
       end
-      if tile.isFloor then
-      else
-        bumpWorld:add(tile, dx, dy, qw, qh)
-      end
+      bumpWorld:add(tile, dx, dy, qw, qh)
     end
     table.insert(tiles, trow)
   end
