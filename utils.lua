@@ -303,7 +303,6 @@ function graphicsContext(context, graphics)
 end
 
 function randomSeed(seed)
-  print('randomSeed', seed)
   if seed == nil then return end
 
   if type(seed) ~= "number" then

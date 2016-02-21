@@ -75,11 +75,11 @@ function love.load(arg)
       menu = Splash,
     },
     [Splash] = {
-      continue = Ships,
+      continue = ShipMenu,
       new = Keyboard,
       controls = Controls,
     },
-    [Ships] = {
+    [ShipMenu] = {
       done = Ship,
     },
     [Ship] = {
