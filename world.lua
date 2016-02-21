@@ -366,7 +366,7 @@ function World:draw()
 
   local sw, sh = self.worldCanvas:getDimensions()
   for screen in values(screens) do
-    if scren ~= self.mainScreen then
+    if screen ~= self.mainScreen then
       local bgRect = Rect(screen.windowOffset.x - 1, screen.windowOffset.y - 1, screen.w + 2, screen.h + 2 + hud.barHeight)
       if bgRect.y < self.mainScreen.h / 2 then
         bgRect.y = bgRect.y - hud.barHeight

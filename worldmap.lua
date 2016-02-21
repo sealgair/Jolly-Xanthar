@@ -1,7 +1,7 @@
 class = require 'lib.30log.30log'
 md5 = require 'lib.md5.md5'
 json = require 'lib.json4lua.json.json'
-require 'wall'
+require 'tile'
 require 'utils'
 
 Teleporter = class('Teleporter')
@@ -30,127 +30,37 @@ WorldMap = class('WorldMap')
 
 function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount, seed)
   local templateImg = love.graphics.newImage(imagefile)
-  local qw, qh = 8, 8
-  local sw, sh = templateImg:getWidth(), templateImg:getHeight()
 
   self.seed = seed
 
-  -- create our quads
-  local tileJson, _ = love.filesystem.read("assets/worlds/tiles.json")
-  local tileData = json.decode(tileJson)
-  local quadMap = map(tileData, function(coord)
-    return love.graphics.newQuad((coord[1] - 1) * qw, (coord[2] - 1) * qh, qw, qh, sw, sh)
-  end)
-
-  -- translate mapfile to quads
-  local quads = {}
-  local mw = 0
+  -- create our tiles
+  local qw, qh = 16, 16
   local blocks = self:fileToTable(mapfile)
+  local mw = 0
+  local mh = #blocks
 
-  local function blockAt(x, y)
-    local block
-    local row = blocks[y]
-    if row then
-      block = row[x]
-    end
-    return block
-  end
-
-  local function testEmpty(y, x)
-    local block = blockAt(x, y)
-    if block == nil then
-      block = "#" -- null is wall
-    end
-    return block ~= "#"
-  end
-
-  self.pointsOfInterest = {}
   self.playerCoords = {}
   local potentialMonsters = {}
 
-  local quadrants = {
-    Point(-1, -1),
-    Point(1, -1),
-    Point(-1, 1),
-    Point(1, 1),
-  }
-
-  local bw, bh = 16, 16
+  local tiles = {}
   for y, row in ipairs(blocks) do
-    -- todo: boy, this could use some cleanup
-    local topQuadRow = {}
-    local btmQuadRow = {}
+    mw = math.max(mw, #row)
+    local trow = {}
     for x, block in ipairs(row) do
-      local dx = (x - 1) * bw
-      local dy = (y - 1) * bh
-      local key
-      if block == "#" then
-        bumpWorld:add(Wall(), dx, dy, bw, bh)
-
-        for q, off in ipairs(quadrants) do
-          key = 'w' .. q
-          if testEmpty(y, x + off.x) then key = key .. 'v' end
-          if testEmpty(y + off.y, x) then key = key .. 'h' end
-          if key == 'w' .. q and testEmpty(y + off.y, x + off.x) then key = key .. 'c' end
-          local qr
-          if q < 3 then qr = topQuadRow else qr = btmQuadRow end
-          table.insert(qr, quadMap[key])
-        end
-
-      elseif block == "W" then
-        for q, off in ipairs(quadrants) do
-          key = 'h' .. q
-          if blockAt(x + off.x, y) ~= block or blockAt(x, y + off.y) ~= block then
-            key = 'f'
-            if not testEmpty(y, x + off.x) and not testEmpty(y + off.y, x) then key = key .. q .. 'c' end
-          else
-            if blockAt(x - off.x, y) ~= block then key = key .. 'v' end
-            if blockAt(x, y - off.y) ~= block then key = key .. 'h' end
-            if key == 'h' .. q then
-              if blockAt(x - off.x, y - off.y) ~= block then
-                key = key .. 'c'
-              elseif blockAt(x + off.x, y + off.y) ~= block then
-                key = 'f'
-              elseif blockAt(x - off.x, y + off.y) ~= block then
-                key = key .. 'v'
-              elseif blockAt(x + off.x, y - off.y) ~= block then
-                key = key .. 'h'
-              end
-            end
-          end
-          local qr
-          if q < 3 then qr = topQuadRow else qr = btmQuadRow end
-          table.insert(qr, quadMap[key])
-        end
-
+      local TileType = Tile.typeForBlock(block)
+      local tile = TileType(x, y, blocks, templateImg)
+      table.insert(trow, tile)
+      local dx, dy = (x - 1) * qw, (y - 1) * qh
+      if tile.player then
+        self.playerCoords[tile.player] = Point(dx, dy)
+      end
+      if tile.isFloor then
       else
-        if block:find("%d") then
-          local coord = Point{ x = dx, y = dy }
-          self.playerCoords[tonumber(block)] = coord
-        elseif block == "T" then
-          local teleporter = Teleporter(Point(dx, dy))
-          bumpWorld:add(teleporter, dx, dy, bw, bh)
-          table.insert(self.pointsOfInterest, teleporter)
-        else
-          table.insert(potentialMonsters, { x = dx, y = dy })
-        end
-
-        for q, off in ipairs(quadrants) do
-          key = 'f'
-          if not testEmpty(y, x + off.x) and not testEmpty(y + off.y, x) then key = key .. q .. 'c' end
-          local qr
-          if q < 3 then qr = topQuadRow else qr = btmQuadRow end
-          table.insert(qr, quadMap[key])
-        end
+        bumpWorld:add(tile, dx, dy, qw, qh)
       end
     end
-
-    for quadRow in values({topQuadRow, btmQuadRow}) do
-      mw = math.max(#quadRow, mw)
-      table.insert(quads, quadRow)
-    end
+    table.insert(tiles, trow)
   end
-  local mh = #quads
 
   self.monsterCoords = {}
   local seen = {}
@@ -172,15 +82,12 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount, seed)
 
   self.mapCanvas = love.graphics.newCanvas(mw * qw, mh * qh)
   graphicsContext({origin=true, shader=hueShifter, canvas=self.mapCanvas}, function()
-    for y, quadRow in ipairs(quads) do
+    for y, tileRow in ipairs(tiles) do
       y = (y - 1) * qh
-      for x, quad in ipairs(quadRow) do
+      for x, tile in ipairs(tileRow) do
         x = (x - 1) * qw
-        love.graphics.draw(templateImg, quad, x, y)
+        tile:draw(x, y)
       end
-    end
-    for obj in values(self.pointsOfInterest) do
-      obj:draw()
     end
   end)
 end
