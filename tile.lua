@@ -99,13 +99,31 @@ function Wall:quad(q)
   return self.quadMap[key]
 end
 
-Floor = Tile:extend('Floor')
+Floor = Tile:extend('Floor', {
+  tileCoords = {
+    [""] = Point(3, 6),
+    ul   = Point(1, 1),
+    ur   = Point(2, 1),
+    dl   = Point(1, 2),
+    dr   = Point(2, 2),
+  }
+})
 
 function Floor:init(x, y, tileset, img)
   Floor.super.init(self, x, y, tileset, img)
   if self.block:find("%d") then
     self.player = tonumber(self.block)
   end
+end
+
+function Floor:quad(q)
+  local key = ""
+  local h = self.borders[q:horizontal():key()]
+  local v = self.borders[q:vertical():key()]
+  if h == "#" and v == "#" then
+    key = q:shortkey()
+  end
+  return self.quadMap[key]
 end
 
 function Floor:collidesWith(b)
