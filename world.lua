@@ -46,7 +46,17 @@ function World:init(fsm, ship, worldfile, tileset, monsterCount)
   -- add players
   self.roster = Save:shipRoster(self.ship)
   local center = Point()
-  local activePlayers = {1}
+  local activePlayers = {}
+  local active = false
+  for playerdata in values(self.roster) do
+    if playerdata.activePlayer then
+      activePlayers[playerdata.activePlayer] = playerdata
+      active = true
+    end
+  end
+  if not active then
+    activePlayers[1] = true
+  end
   for i, coord in ipairs(self.map.playerCoords) do
     local hud = HUD(self, i)
     self.huds[i] = hud
@@ -97,6 +107,7 @@ function World:addPlayer(rosterData, index, coords)
   if coords == nil then
     coords = self.mainScreen:center()
   end
+  rosterData.activePlayer = index
   local player = Human(coords, rosterData)
   player.active = self.active
   Controller:register(player, index)
@@ -310,7 +321,8 @@ function World:update(dt)
 end
 
 function World:teleport(gob)
-    self.fsm:advance('land')
+  Save:saveShip(self.ship, self.roster)
+  self.fsm:advance('land', self.ship)
 end
 
 function World:drawRescue(player)

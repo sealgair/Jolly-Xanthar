@@ -25,6 +25,7 @@ function ShipMenu:loadSaved()
 end
 
 function ShipMenu:chooseItem(item)
+  Save:clearActivePlayers(item.name)
   self.fsm:advance("done", item.name)
 end
 

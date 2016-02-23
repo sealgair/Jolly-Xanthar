@@ -14,6 +14,14 @@ function Save:load()
   end
 end
 
+function Save:clearActivePlayers(shipName)
+  local roster = self.data[shipName].roster
+  for player in values(roster) do
+    player.activePlayer = nil
+  end
+  self:saveShip(shipName, roster)
+end
+
 function Save:saveShip(shipName, roster)
   self.data[shipName] = {
     name = shipName,
