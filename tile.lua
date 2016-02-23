@@ -12,6 +12,7 @@ function Tile:init(x, y, tileset, img)
   self.w = 16
 
   self.isFloor = self.block ~= "#"
+  self.collides = true
 
   self.borders = {}
   for dir in values(Direction.allDirections) do
@@ -121,6 +122,7 @@ function Floor:init(x, y, tileset, img)
   if self.block:find("%d") then
     self.player = tonumber(self.block)
   end
+  self.collides = false
 end
 
 function Floor:quad(q)
@@ -163,6 +165,7 @@ Teleporter = Floor:extend('Teleporter')
 function Teleporter:init(x, y, tileset, img)
   Teleporter.super.init(self, x, y, tileset, img)
   self.itemImage = love.graphics.newImage("assets/worlds/teleporter.png")
+  self.collides = true
 end
 
 function Teleporter:draw(x, y)

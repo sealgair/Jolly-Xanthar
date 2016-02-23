@@ -18,7 +18,6 @@ end
 
 function Indicator:draw(x, y, dir)
   y = y - self.h/2
---  x = x + self.w/2
 
   if dir:find("up") then
     y = y + self.h
