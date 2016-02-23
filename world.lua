@@ -393,7 +393,7 @@ function World:draw()
       end)
     end
     local quad = love.graphics.newQuad(
-      screen.x, screen.y,
+      round(screen.x), round(screen.y),
       screen.w, screen.h,
       sw, sh)
     love.graphics.draw(self.worldCanvas, quad, screen.windowOffset.x, screen.windowOffset.y)
