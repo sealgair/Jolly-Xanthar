@@ -96,7 +96,7 @@ function love.load(arg)
       done = Ship,
     },
     [World] = {
-      land = World, --descend
+      descend = World,
       quit = Ship,
     },
   }

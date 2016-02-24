@@ -319,7 +319,8 @@ function World:update(dt)
   end
 end
 
-function World:teleport(gob)
+function World:descend(gob, verb)
+  verb = coalesce(verb, "descend")
   local isPlayer = false
   for player in values(self.players) do
     if player == gob then
@@ -329,7 +330,7 @@ function World:teleport(gob)
   end
   if not isPlayer then return end
   Save:saveShip(self.ship, self.roster)
-  self.fsm:advance('land', self.ship)
+  self.fsm:advance(verb, self.ship)
 end
 
 function World:drawRescue(player)

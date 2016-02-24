@@ -96,8 +96,8 @@ function Mob:controlStop(action)
   end
 end
 
-function Mob:teleport()
-  self.world:teleport(self)
+function Mob:descend(verb)
+  self.world:descend(self, verb)
 end
 
 function Mob:animState()

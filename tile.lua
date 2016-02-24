@@ -179,8 +179,27 @@ end
 
 function Teleporter:collide(cols)
   for col in values(cols) do
-    if col.other.teleport then
-      col.other:teleport()
+    if col.other.descend then
+      col.other:descend('land')
+    end
+  end
+end
+
+Door = Hole:extend('Door')
+
+function Door:init(x, y, tileset, img)
+  Door.super.init(self, x, y, tileset, img)
+  self.collides = true
+end
+
+function Door:collidesWith(b)
+  return "cross", 100
+end
+
+function Door:collide(cols)
+  for col in values(cols) do
+    if col.other.descend then
+      col.other:descend()
     end
   end
 end
@@ -192,6 +211,8 @@ function Tile.typeForBlock(block)
     return Hole
   elseif block == "T" then
     return Teleporter
+  elseif block == "D" then
+    return Door
   else
     return Floor
   end

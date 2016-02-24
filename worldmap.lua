@@ -27,7 +27,7 @@ function generateMap(w, h)
     local row = setDefault(blocks, y, {})
     row[x] = value
   end)
-  blocks[doorCoord.y][doorCoord.x] = 'T'
+  blocks[doorCoord.y][doorCoord.x] = 'D'
   return blocks
 end
 

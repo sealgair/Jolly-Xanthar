@@ -23,6 +23,7 @@ function Room:init(filename, direction)
     for x, tile in ipairs(row) do
       if tile == "D" then
         table.insert(doorTiles, Point(x, y))
+        row[x] = " "
       end
     end
   end
