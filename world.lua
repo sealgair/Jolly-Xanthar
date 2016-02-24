@@ -29,7 +29,6 @@ function World:init(fsm, ship, worldfile, tileset, monsterCount)
 
   -- load the map
   self.bumpWorld = bump.newWorld(16)
-  worldfile = coalesce(worldfile, "assets/worlds/ship1.world")
   tileset = coalesce(tileset, "assets/worlds/forest.png")
   monsterCount = coalesce(monsterCount, 10)
   self.map = WorldMap(worldfile, tileset, self.bumpWorld, monsterCount, self.seed)
@@ -321,6 +320,14 @@ function World:update(dt)
 end
 
 function World:teleport(gob)
+  local isPlayer = false
+  for player in values(self.players) do
+    if player == gob then
+      isPlayer = true
+      break
+    end
+  end
+  if not isPlayer then return end
   Save:saveShip(self.ship, self.roster)
   self.fsm:advance('land', self.ship)
 end

@@ -1,11 +1,35 @@
 class = require 'lib.30log.30log'
 md5 = require 'lib.md5.md5'
 json = require 'lib.json4lua.json.json'
+rot = require 'lib.rotlove.rotlove.rotlove'
 require 'tile'
 require 'utils'
 
 
 WorldMap = class('WorldMap')
+
+function generateMap(w, h)
+  local blocks = {}
+  local players = {'1', '2', '3', '4'}
+  local generator = rot.Map.Brogue:new(w, h)
+  local doorCoord
+  generator:create(function(x, y, value)
+    if value == 1 then
+      value = "#"
+    else
+      if #players > 0 then
+        value = table.remove(players, 1)
+      else
+        value = " "
+        doorCoord = Point(x, y)
+      end
+    end
+    local row = setDefault(blocks, y, {})
+    row[x] = value
+  end)
+  blocks[doorCoord.y][doorCoord.x] = 'T'
+  return blocks
+end
 
 function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount, seed)
   local templateImg = love.graphics.newImage(imagefile)
@@ -14,7 +38,15 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount, seed)
 
   -- create our tiles
   local qw, qh = 16, 16
-  local blocks = self:fileToTable(mapfile)
+  local blocks
+  if mapfile then
+    blocks = self:fileToTable(mapfile)
+  else
+    blocks = generateMap(50, 50)
+  end
+  local padx = GameSize.w / 2 / 16
+  local pady = GameSize.h / 2 / 16
+  padMap(blocks, padx, pady)
   local mw = 0
   local mh = #blocks
 
@@ -45,6 +77,7 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount, seed)
   self.monsterCoords = {}
   local seen = {}
   local i = math.random(#potentialMonsters)
+  monsterCount = math.min(#potentialMonsters, monsterCount)
   for _ = 1, monsterCount do
     while seen[i] ~= nil do
       i = math.random(#potentialMonsters)
@@ -80,24 +113,27 @@ function pad(tbl, amount, value)
   return tbl
 end
 
-function WorldMap:fileToTable(filename)
-  local padx = GameSize.w / 2 / 16
-  local pady = GameSize.h / 2 / 16
-  local w = 1
+function padMap(map, w, h, value)
+  local maxw = 0
+  value = coalesce(value, "#")
+  for row in values(map) do
+    pad(row, w, value)
+    maxw = math.max(maxw, #row)
+  end
+  local padRow = {}
+  for _ = 1, maxw do table.insert(padRow, "#") end
+  pad(map, h, padRow)
+end
 
+function WorldMap:fileToTable(filename)
   local blocks = {}
   for line in love.filesystem.lines(filename) do
     local blockrow = {}
     for x = 1, string.len(line) do
       table.insert(blockrow, line:sub(x, x))
     end
-    pad(blockrow, padx, "#")
-    w = math.max(w, #blockrow)
     table.insert(blocks, blockrow)
   end
-  local p = {}
-  for _ = 1, w do table.insert(p, "#") end
-  pad(blocks, pady, p)
   return blocks
 end
 

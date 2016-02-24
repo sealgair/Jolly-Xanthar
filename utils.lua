@@ -34,6 +34,7 @@ function setDefault(t, key, value)
   if t[key] == nil then
     t[key] = value
   end
+  return t[key]
 end
 
 function string:startsWith(substring)
