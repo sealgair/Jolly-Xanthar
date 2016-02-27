@@ -11,24 +11,35 @@ WorldMap = class('WorldMap')
 function WorldMap:generateMap(w, h)
   randomSeed(self.seed)
   local blocks = {}
-  local players = {'1', '2', '3', '4'}
   local generator = rot.Map.Brogue:new(w, h, {}, self)
-  local doorCoord
+
+  local floors = {}
   generator:create(function(x, y, value)
     if value == 1 then
       value = "#"
     else
-      if #players > 0 then
-        value = table.remove(players, 1)
-      else
-        value = " "
-        doorCoord = Point(x, y)
-      end
+      value = " "
+      table.insert(floors, Point(x, y))
     end
     local row = setDefault(blocks, y, {})
     row[x] = value
   end)
-  blocks[doorCoord.y][doorCoord.x] = 'D'
+
+  local door = table.remove(floors, math.random(#floors))
+  blocks[door.y][door.x] = 'D'
+
+  local player = table.remove(floors, math.random(#floors))
+  for p = 1, 4 do
+    blocks[player.y][player.x] = tostring(p)
+    for d in values(Direction.allDirections) do
+      local next = player + d
+      if blocks[next.y][next.x] == " " then
+        player = next
+        break
+      end
+    end
+  end
+
   return blocks
 end
 
