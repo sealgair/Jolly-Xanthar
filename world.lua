@@ -12,9 +12,16 @@ DEBUG_BUMP = false
 
 World = class("World")
 
-function World:init(fsm, ship, worldfile, tileset, monsterCount)
+function World:init(fsm, fsmOpts, worldfile, tileset)
   self.fsm = fsm
-  self.ship = coalesce(ship, Save:shipNames()[1])
+  self.ship = coalesce(fsmOpts.ship, Save:shipNames()[1])
+  self.planet = fsmOpts.planet
+  self.depth = coalesce(fsmOpts.depth, 0)
+  if self.planet then
+    self.seed = self.planet .. self.depth
+  else
+    self.seed = self.ship
+  end
 
   self.mainScreen = Rect(Point(), GameSize)
   self.mainScreen.windowOffset = Point()
@@ -30,7 +37,7 @@ function World:init(fsm, ship, worldfile, tileset, monsterCount)
   -- load the map
   self.bumpWorld = bump.newWorld(16)
   tileset = coalesce(tileset, "assets/worlds/forest.png")
-  monsterCount = coalesce(monsterCount, 10)
+  local monsterCount = math.random(8, 12) * self.depth
   self.map = WorldMap(worldfile, tileset, self.bumpWorld, monsterCount, self.seed)
   local cw, ch = self.map:getDimensions()
   self.worldCanvas = love.graphics.newCanvas(cw, ch)
@@ -330,7 +337,7 @@ function World:descend(gob, verb)
   end
   if not isPlayer then return end
   Save:saveShip(self.ship, self.roster)
-  self.fsm:advance(verb, self.ship)
+  self.fsm:advance(verb, {ship = self.ship, planet = self.planet, depth = self.depth + 1})
 end
 
 function World:drawRescue(player)

@@ -93,7 +93,7 @@ function Ship:init(fsm, ship)
   gridFill(data, "#")
 
   self:writeShip(data)
-  Ship.super.init(self, fsm, ship, self.shipFile, "assets/worlds/ship.png", 0)
+  Ship.super.init(self, fsm, {ship=ship, planet="blah"}, self.shipFile, "assets/worlds/ship.png")
 end
 
 function Ship:writeShip(data)

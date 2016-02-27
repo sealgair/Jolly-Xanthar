@@ -8,10 +8,11 @@ require 'utils'
 
 WorldMap = class('WorldMap')
 
-function generateMap(w, h)
+function WorldMap:generateMap(w, h)
+  randomSeed(self.seed)
   local blocks = {}
   local players = {'1', '2', '3', '4'}
-  local generator = rot.Map.Brogue:new(w, h)
+  local generator = rot.Map.Brogue:new(w, h, {}, self)
   local doorCoord
   generator:create(function(x, y, value)
     if value == 1 then
@@ -31,6 +32,16 @@ function generateMap(w, h)
   return blocks
 end
 
+function WorldMap:random(min, max)
+  if max then
+    return math.random(min, max)
+  elseif min then
+    return math.random(min)
+  else
+    return math.random()
+  end
+end
+
 function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount, seed)
   local templateImg = love.graphics.newImage(imagefile)
 
@@ -42,7 +53,7 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount, seed)
   if mapfile then
     blocks = self:fileToTable(mapfile)
   else
-    blocks = generateMap(50, 50)
+    blocks = self:generateMap(50, 50)
   end
   local padx = GameSize.w / 2 / 16
   local pady = GameSize.h / 2 / 16
