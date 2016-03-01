@@ -64,8 +64,10 @@ function World:init(fsm, fsmOpts, worldfile, tileset)
     activePlayers[1] = true
   end
   for i, coord in ipairs(self.map.playerCoords) do
-    local hud = HUD(self, i)
-    self.huds[i] = hud
+    if i <= 4 then
+      local hud = HUD(self, i)
+      self.huds[i] = hud
+    end
 
     if activePlayers[i] then
       local player = self:addPlayer(self.roster[i], i, coord)
