@@ -93,7 +93,47 @@ function Ship:init(fsm, ship)
   gridFill(data, "#")
 
   self:writeShip(data)
+  self.allPlayers = {}
+
   Ship.super.init(self, fsm, {ship=ship, planet="blah"}, self.shipFile, "assets/worlds/ship.png")
+
+  for i, coord in ipairs(self.map.playerCoords) do
+    local player = self.players[i]
+    if player == nil then
+      player = Human(coord, self.roster[i])
+      self:spawn(player)
+    end
+    self.allPlayers[i] = player
+  end
+end
+
+function Ship:addPlayer(rosterData, index, coords)
+  local player
+  for p in values(self.allPlayers) do
+    if p.name == rosterData.name then
+      player = p
+      break
+    end
+  end
+  if player == nil then
+    player = Ship.super.addPlayer(self, rosterData, index, coords)
+    self.allPlayers[index] = player
+  else
+    Controller:register(player, index)
+    self.huds[index].player = player
+    player.active = self.active
+    self.indicators[index] = Indicator(index)
+    self.players[index] = player
+  end
+  return player
+end
+
+function Ship:removePlayer(index, keepBody)
+  local player = self.players[index]
+  Controller:unregister(player, index)
+  self.players[index] = nil
+  self.huds[index].player = nil
+  self.indicators[index] = nil
 end
 
 function Ship:writeShip(data)

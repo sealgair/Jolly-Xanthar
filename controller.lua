@@ -339,7 +339,7 @@ function Controller:register(listener, player)
 end
 
 function Controller:unregister(listener, player)
-  self.listeners[player][listener] = false
+  self.listeners[player][listener] = nil
 end
 
 function Controller:forwardAll(to)
