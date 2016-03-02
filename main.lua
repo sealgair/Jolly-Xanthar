@@ -42,6 +42,7 @@ function StateMachine:advance(input, options)
   else
     nextState = self.transitions.initial[input]
   end
+  print("fsm adfance to", nextState)
   self.currentState = nextState(self, options)
   self.currentState.active = true
   if self.currentState.activate then
@@ -78,6 +79,7 @@ function love.load(arg)
       continue = ShipMenu,
       new = Keyboard,
       controls = Controls,
+      quit = function() love.event.quit(); return {} end,
     },
     [ShipMenu] = {
       done = Ship,

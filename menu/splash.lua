@@ -2,6 +2,7 @@ class = require 'lib/30log/30log'
 require "controller"
 require "direction"
 require "save"
+require "utils"
 
 Splash = class("Splash")
 
@@ -12,26 +13,15 @@ end
 function Splash:init(fsm)
   self.fsm = fsm
   self.background = love.graphics.newImage('assets/Splash.png')
-  self.menuImg = love.graphics.newImage('assets/Menu.png')
   self.items = {
     'continue',
     'new',
-    'controls'
+    'controls',
+    'quit',
   }
   self.opts = {
     new = "Name Your Ship"
   }
-  self.splashQuads = {}
-
-  local sw, sh = self.menuImg:getWidth(), self.menuImg:getHeight()
-  local w, h = 64, 16
-  for i, item in ipairs(self.items) do
-    local y = (i - 1) * h
-    self.splashQuads[i] = {
-      inactive = love.graphics.newQuad(0, y, w, h, sw, sh),
-      active   = love.graphics.newQuad(w, y, w, h, sw, sh),
-    }
-  end
 
   if canContinue() then
     self.activeItem = 1
@@ -66,19 +56,20 @@ end
 
 function Splash:draw()
   love.graphics.draw(self.background, 0, 0)
-  for i, quads in ipairs(self.splashQuads) do
-    if i == 1 and not canContinue() then
-      love.graphics.setColor(127, 127, 127)
-    end
 
-    local state = 'inactive'
-    if self.activeItem == i then
-      state = 'active'
+  graphicsContext({color=Colors.white, font=Fonts.large}, function()
+    for i, item in ipairs(self.items) do
+      if item == "continue" and not canContinue() then
+        love.graphics.setColor(Colors.menuGray)
+      end
+      if self.activeItem == i then
+        love.graphics.setColor(Colors.red)
+      else
+        love.graphics.setColor(Colors.white)
+      end
+      i = i - 1
+      local y = 48 + (i * 16)
+      love.graphics.printf(item:upper(), 160, y, 80, "center")
     end
-    i = i - 1
-    local y = 48 + (i * 16)
-
-    love.graphics.draw(self.menuImg, quads[state], 160, y)
-    love.graphics.setColor(255, 255, 255)
-  end
+  end)
 end
