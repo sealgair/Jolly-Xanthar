@@ -49,8 +49,8 @@ function ShipMenu:draw()
   local h = 48
   local w = GameSize.w-2
 
-  self.canvas:clear()
   love.graphics.setCanvas(self.canvas)
+  love.graphics.clear()
   love.graphics.push()
   love.graphics.origin()
 

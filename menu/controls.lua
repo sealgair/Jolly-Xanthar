@@ -489,10 +489,10 @@ function Controls:draw()
   local x = 189
   love.graphics.line(x, 135, x, 230)
 
-  local p = Point(210, 132)
+  local p = Point(190, 132)
   love.graphics.setFont(Fonts.large)
-  love.graphics.printf("Player", p.x, p.y, 16, "center")
-  p = p + Point(0, 24)
+  love.graphics.printf("Player", p.x, p.y, 60, "center")
+  p = p + Point(10, 24)
 
   for row in values({5, 6, 7, 8}) do
     local item = self.items[row][1]

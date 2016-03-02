@@ -376,9 +376,8 @@ end
 function World:draw()
   love.graphics.push()
   love.graphics.origin()
-  self.worldCanvas:clear()
   love.graphics.setCanvas(self.worldCanvas)
-  self.worldCanvas:clear()
+  love.graphics.clear()
   self.map:draw()
 
   table.sort(self.gobs, function(a, b)

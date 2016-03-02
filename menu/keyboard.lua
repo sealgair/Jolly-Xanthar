@@ -105,7 +105,7 @@ function Keyboard:draw()
       if #key == 1 then
         x = k * 18 - 8
       else
-        x = k * 60 - 30
+        x = k * 60 - 50
       end
 
       local color = { 255, 255, 255 }
@@ -115,7 +115,9 @@ function Keyboard:draw()
       graphicsContext({
         color = color
       }, function()
-        love.graphics.printf(key, x, y, 18, "center")
+        local w = 18
+        if #key > 1 then w = 60 end
+        love.graphics.printf(key, x, y, w, "center")
       end)
     end
   end

@@ -65,7 +65,7 @@ function love.load(arg)
   for fontFile in values(love.filesystem.getDirectoryItems("assets/fonts")) do
     if fontFile:find(".png$") then
       local fontName = fontFile:gsub(".png", "")
-      Fonts[fontName] = love.graphics.newImageFont("assets/fonts/" .. fontFile, glyphs)
+      Fonts[fontName] = love.graphics.newImageFont("assets/fonts/" .. fontFile, glyphs, 1)
     end
   end
 
