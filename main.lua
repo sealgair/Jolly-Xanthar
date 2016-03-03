@@ -10,7 +10,8 @@ require 'menu.keyboard'
 require 'menu.controls'
 
 GameSize = Size{ w = 256, h = 240 }
-GameScale = { x = 3, y = 3 }
+GameScale = Point(3, 3)
+GameOffset = Point(0, 0)
 Fonts = {}
 math.randomseed( os.time() )
 
@@ -54,8 +55,19 @@ function love.load(arg)
   Save:load()
 
   if arg[#arg] == "-debug" then require("mobdebug").start() end
-  love.window.setMode(GameSize.w * GameScale.x, GameSize.h * GameScale.y)
+  local w, h = love.graphics.getDimensions()
+  print('dims', w, h)
+  local sw = math.floor(w / GameSize.h)
+  local sh = math.floor(h / GameSize.h)
+  local s = math.min(sw, sh)
+  GameScale.x = s
+  GameScale.y = s
+
+  GameOffset.x = (w - s * GameSize.w) / 2
+  GameOffset.y = (h - s * GameSize.h) / 2
+  print('offset', GameOffset)
   love.graphics.setDefaultFilter("nearest", "nearest")
+  love.mouse.setVisible(false)
 
   local glyphs = " "..
   "abcdefghijklmnopqrstuvwxyz"..
@@ -114,6 +126,7 @@ function love.update(dt)
 end
 
 function love.draw()
+  love.graphics.translate(GameOffset.x, GameOffset.y)
   love.graphics.scale(GameScale.x, GameScale.y)
   local state = StateMachine.currentState
   if state and state.draw then
