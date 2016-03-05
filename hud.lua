@@ -49,6 +49,9 @@ function HUD:init(world, playerIndex)
   self.newMenuOffset = self.menuOffset
 end
 
+function HUD:inShip()
+  return class.isInstance(self.world, Ship)
+end
 
 function HUD:drawBase()
   local x = self.rect.x
@@ -156,13 +159,15 @@ function HUD:controlStop(action)
           { { name = quit, action = quit:lower() } },
           --{{name = "Controls"}}, TODO
         }
-        if not class.isInstance(self.world, Ship) then
+        if not self:inShip() then
           local paused = "Pause"
           if self.world.paused then paused = "Resume" end
           table.insert(self.itemGrid, 2, { { name = paused, action = "pause" } })
           table.insert(self.itemGrid, 3, { { name = "Back to Ship", action = "disembark" } })
           table.insert(self.itemGrid, 3, { { name = "Switch", action = "switch" } })
         end
+      elseif self:inShip() then
+        self.world:addPlayer(self.world:remainingRoster()[1], self.index)
       else
         self.itemGrid = map(self.world:remainingRoster(), function(n) return {n} end)
       end
