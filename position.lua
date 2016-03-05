@@ -213,8 +213,22 @@ function Rect:inset(x, y)
   return Rect(self.x + x, self.y + y, self.w - 2*x, self.h - 2*y)
 end
 
+function Rect:expand(x, y)
+  y = coalesce(y, x)
+  return self:inset(-x, -y)
+end
+
 function Rect:draw(style)
-  love.graphics.rectangle(style, self.x, self.y, self.w, self.h)
+  local r = self:round() + Point(0.5, 0.5)
+  love.graphics.rectangle(style, r:parts())
+end
+
+function Rect:parts()
+  return self.x, self.y, self.w, self.h
+end
+
+function Rect:round()
+  return Rect(round(self.x), round(self.y), round(self.w), round(self.h))
 end
 
 function Rect:__add(other)

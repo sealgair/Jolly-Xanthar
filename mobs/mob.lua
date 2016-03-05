@@ -80,9 +80,13 @@ function Mob:controlStart(action)
   if self:stunned() then return end
   self.actions[action] = true
 
-  local weapon = self.weapons[action]
-  if weapon ~= nil then
-    weapon:start()
+  if self.controlOverride then
+    self.controlOverride:controlStart(self, action)
+  else
+    local weapon = self.weapons[action]
+    if weapon ~= nil then
+      weapon:start()
+    end
   end
 end
 
@@ -90,9 +94,13 @@ function Mob:controlStop(action)
   if self:stunned() then return end
   self.actions[action] = nil
 
-  local weapon = self.weapons[action]
-  if weapon ~= nil then
-    weapon:stop()
+  if self.controlOverride then
+    self.controlOverride:controlStop(self, action)
+  else
+    local weapon = self.weapons[action]
+    if weapon ~= nil then
+      weapon:stop()
+    end
   end
 end
 

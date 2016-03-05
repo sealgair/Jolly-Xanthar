@@ -8,7 +8,7 @@ function love.conf(t)
   t.window.width = 256
   t.window.height = 240
   t.window.fullscreen = true
-  t.window.fullscreentype = "exclusive"
+--  t.window.fullscreentype = "exclusive"
 
   t.modules.physics = false
 end

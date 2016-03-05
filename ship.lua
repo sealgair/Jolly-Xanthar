@@ -1,4 +1,5 @@
 require 'world'
+require 'interactables'
 
 Room = class(World)
 
@@ -97,6 +98,7 @@ function Ship:init(fsm, ship)
 
   Ship.super.init(self, fsm, {ship=ship, planet="blah"}, self.shipFile, "assets/worlds/ship.png")
 
+  self.playerSwitchers = {}
   for i, coord in ipairs(self.map.playerCoords) do
     local player = self.players[i]
     if player == nil then
@@ -104,6 +106,22 @@ function Ship:init(fsm, ship)
       self:spawn(player)
     end
     self.allPlayers[i] = player
+    self.playerSwitchers[i] = PlayerSwitcher(player)
+    player.controlOverride = self
+  end
+end
+
+function Ship:controlStart(player, action)
+end
+
+function Ship:controlStop(player, action)
+  if action == 'a' then
+    local switchTo = self.playerSwitchOptions[player.playerIndex]
+    if switchTo then
+      local pid = player.playerIndex
+      self:removePlayer(pid)
+      self:addPlayer(switchTo:serialize(), pid)
+    end
   end
 end
 
@@ -124,6 +142,7 @@ function Ship:addPlayer(rosterData, index, coords)
     player.active = self.active
     self.indicators[index] = Indicator(index)
     self.players[index] = player
+    player.playerIndex = index
   end
   return player
 end
@@ -134,6 +153,7 @@ function Ship:removePlayer(index, keepBody)
   self.players[index] = nil
   self.huds[index].player = nil
   self.indicators[index] = nil
+  player.playerIndex = nil
 end
 
 function Ship:writeShip(data)
@@ -145,6 +165,52 @@ function Ship:writeShip(data)
     text = text .. "\n"
   end
   love.filesystem.write(self.shipFile, text)
+end
+
+function Ship:update(dt)
+  Ship.super.update(self, dt)
+  self.playerSwitchOptions = {}
+
+  for switcher in values(self.playerSwitchers) do
+    switcher:update(dt)
+    if switcher.player.playerIndex == nil then
+      local l,t,w,h = switcher.hitbox:parts()
+      local items, len = self.bumpWorld:queryRect(l,t,w,h, function(item)
+        return item.playerIndex ~= nil
+      end)
+      for item in values(items) do
+        self.playerSwitchOptions[item.playerIndex] = switcher.player
+      end
+    end
+  end
+end
+
+function Ship:drawGob(gob)
+  local switchTo = self.playerSwitchOptions[gob.playerIndex]
+
+  if switchTo then
+    local line1 = "Press A: switch with"
+    local line2 = switchTo.name
+    local font = Fonts.small
+    local rect = Rect(
+      gob.position.x,
+      gob.position.y,
+      math.max(font:getWidth(line1), font:getWidth(line2)),
+      font:getHeight() * 2
+    ):expand(2)
+    rect:setCenter(gob:center())
+    rect.y = gob.position.y + gob.h
+
+    graphicsContext({font=font, color=Colors.menuBack, lineWidth=1}, function()
+      rect:draw("fill")
+      love.graphics.setColor(Colors.white)
+      rect:draw("line")
+      rect = rect + Point(0, 2)
+      love.graphics.printf(line1 .. "\n" .. line2, rect.x, rect.y, rect.w, "center")
+    end)
+  end
+
+  Ship.super.drawGob(self, gob)
 end
 
 function rowOf(val, len)

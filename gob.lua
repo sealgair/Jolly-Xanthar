@@ -21,7 +21,7 @@ Gob = class('Gob')
 DefaultAnimateInterval = 0.15 --seconds
 
 function Gob:init(opts)
-  -- required opts: x, y, confFile
+  -- required opts: x, y, confFile or conf
   -- optional opts: speed, dir, animDelay
   self.position = Point(opts)
   if opts.conf then

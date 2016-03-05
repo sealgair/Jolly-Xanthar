@@ -124,11 +124,13 @@ function World:addPlayer(rosterData, index, coords)
   self.huds[index].player = player
   self.indicators[index] = Indicator(index)
 
+  player.playerIndex = index
   return player
 end
 
 function World:removePlayer(index, keepBody)
   local player = self.players[index]
+  player.playerIndex = nil
   if keepBody ~= true then
     self:despawn(player)
   end
@@ -373,6 +375,17 @@ function World:drawRescue(player)
   end)
 end
 
+function World:drawGob(dude)
+  dude:draw()
+  if DEBUG_BUMP then
+    local x, y, w, h = self.bumpWorld:getRect(dude)
+    love.graphics.rectangle("line", x, y, w, h)
+  end
+  if dude.stunned and dude:stunned() and not dude:dead() then
+    self:drawRescue(dude)
+  end
+end
+
 function World:draw()
   love.graphics.push()
   love.graphics.origin()
@@ -385,16 +398,8 @@ function World:draw()
   end)
 
   for i, dude in ipairs(self.gobs) do
-    dude:draw()
-    if DEBUG_BUMP then
-      local x, y, w, h = self.bumpWorld:getRect(dude)
-      love.graphics.rectangle("line", x, y, w, h)
-    end
-    if dude.stunned and dude:stunned() and not dude:dead() then
-      self:drawRescue(dude)
-    end
+    self:drawGob(dude)
   end
-
 
   love.graphics.pop()
   love.graphics.setCanvas()

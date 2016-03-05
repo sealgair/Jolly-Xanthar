@@ -21,6 +21,7 @@ Colors = {
   menuBlue = { 0, 128, 255 },
   menuGray = { 128, 128, 128 },
   menuRed  = { 128, 0, 0 },
+  menuBack = { 0, 0, 0, 128}
 }
 
 
@@ -30,7 +31,6 @@ local StateMachine = {
 }
 
 function StateMachine:advance(input, options)
-  print("fsm advance", self.currentState, input)
 
   local nextState
   if self.currentState then
@@ -43,7 +43,6 @@ function StateMachine:advance(input, options)
   else
     nextState = self.transitions.initial[input]
   end
-  print("fsm adfance to", nextState)
   self.currentState = nextState(self, options)
   self.currentState.active = true
   if self.currentState.activate then
@@ -56,7 +55,6 @@ function love.load(arg)
 
   if arg[#arg] == "-debug" then require("mobdebug").start() end
   local w, h = love.graphics.getDimensions()
-  print('dims', w, h)
   local sw = math.floor(w / GameSize.h)
   local sh = math.floor(h / GameSize.h)
   local s = math.min(sw, sh)
@@ -65,7 +63,6 @@ function love.load(arg)
 
   GameOffset.x = (w - s * GameSize.w) / 2
   GameOffset.y = (h - s * GameSize.h) / 2
-  print('offset', GameOffset)
   love.graphics.setDefaultFilter("nearest", "nearest")
   love.mouse.setVisible(false)
 
@@ -79,6 +76,7 @@ function love.load(arg)
     if fontFile:find(".png$") then
       local fontName = fontFile:gsub(".png", "")
       Fonts[fontName] = love.graphics.newImageFont("assets/fonts/" .. fontFile, glyphs, 1)
+      Fonts[fontName]:setLineHeight(1.2)
     end
   end
 

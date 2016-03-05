@@ -89,8 +89,7 @@ function HUD:drawMenuCanvas()
   love.graphics.push()
   love.graphics.setCanvas(self.menuCanvas)
   love.graphics.origin()
-  love.graphics.setBackgroundColor(0, 0, 0, 127)
-  love.graphics.clear()
+  love.graphics.clear(Colors.menuBack)
 
   local y = 1
   local w = self.rect.w
