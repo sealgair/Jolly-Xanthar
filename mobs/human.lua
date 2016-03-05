@@ -69,6 +69,7 @@ function Human:init(coord, opts)
   else
     self.name = opts.name
   end
+  self.isFriendly = true
 end
 
 function Human:serialize()

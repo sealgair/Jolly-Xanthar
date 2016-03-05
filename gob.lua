@@ -217,7 +217,7 @@ function Gob:collide(cols)
   self.collisions = cols
   for col in values(cols) do
     local other = col.other
-    if self.momentum ~= nil and other.momentum ~= nil then
+    if col.type ~= "cross" and self.momentum ~= nil and other.momentum ~= nil then
       local momentum = (self.momentum / (self.momentum + other.momentum)) * .5
       local vec = Point(self.direction)
       if self.direction == Direction(0, 0) then

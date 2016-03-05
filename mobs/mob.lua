@@ -189,6 +189,8 @@ function Mob:collidesWith(other)
     return "cross", 50
   elseif other.owner == self then
     return nil, 100
+  elseif self.isFriendly and other.isFriendly then
+    return "cross", 100
   else
     return Mob.super.collidesWith(self, other)
   end
