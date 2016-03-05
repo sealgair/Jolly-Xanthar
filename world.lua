@@ -52,29 +52,21 @@ function World:init(fsm, fsmOpts, worldfile, tileset)
   -- add players
   self.roster = Save:shipRoster(self.ship)
   local center = Point()
-  local activePlayers = {}
-  local active = false
-  for playerdata in values(self.roster) do
-    if playerdata.activePlayer then
-      activePlayers[playerdata.activePlayer] = playerdata
-      active = true
-    end
-  end
-  if not active then
-    activePlayers[1] = true
-  end
+  local c = 0
+  local activeRoster = coalesce(fsmOpts.activeRoster, {self.roster[1]})
   for i, coord in ipairs(self.map.playerCoords) do
     if i <= 4 then
       local hud = HUD(self, i)
       self.huds[i] = hud
     end
 
-    if activePlayers[i] then
-      local player = self:addPlayer(self.roster[i], i, coord)
+    if activeRoster[i] then
+      local player = self:addPlayer(activeRoster[i], i, coord)
       center = center + player:center()
+      c = c + 1
     end
   end
-  center = center / #activePlayers
+  center = center / c
   self.mainScreen:setCenter(center)
 end
 
@@ -331,17 +323,16 @@ function World:update(dt)
 end
 
 function World:descend(gob, verb)
+  if gob.playerIndex == nil then return end
+
   verb = coalesce(verb, "descend")
-  local isPlayer = false
-  for player in values(self.players) do
-    if player == gob then
-      isPlayer = true
-      break
-    end
-  end
-  if not isPlayer then return end
-  Save:saveShip(self.ship, self.roster)
-  self.fsm:advance(verb, {ship = self.ship, planet = self.planet, depth = self.depth + 1})
+  local activeRoster = map(self.players, function(v) return v:serialize() end)
+  self.fsm:advance(verb, {
+    ship = self.ship,
+    planet = self.planet,
+    activeRoster = activeRoster,
+    depth = self.depth + 1,
+  })
 end
 
 function World:drawRescue(player)
