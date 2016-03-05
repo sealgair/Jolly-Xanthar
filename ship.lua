@@ -54,6 +54,7 @@ function Ship:init(fsm, ship)
   })
 
   self.background = love.graphics.newImage("assets/stars.png")
+  self.switchToImg = love.graphics.newImage("assets/switchTo.png")
 
   local dir = Direction.down
   local topRooms = {}
@@ -189,24 +190,11 @@ function Ship:drawGob(gob)
   local switchTo = self.playerSwitchOptions[gob.playerIndex]
 
   if switchTo then
-    local line1 = "Press A: switch with"
-    local line2 = switchTo.name
-    local font = Fonts.small
-    local rect = Rect(
-      gob.position.x,
-      gob.position.y,
-      math.max(font:getWidth(line1), font:getWidth(line2)),
-      font:getHeight() * 2
-    ):expand(2)
-    rect:setCenter(gob:center())
-    rect.y = gob.position.y + gob.h
-
-    graphicsContext({font=font, color=Colors.menuBack, lineWidth=1}, function()
-      rect:draw("fill")
-      love.graphics.setColor(Colors.white)
-      rect:draw("line")
-      rect = rect + Point(0, 2)
-      love.graphics.printf(line1 .. "\n" .. line2, rect.x, rect.y, rect.w, "center")
+    graphicsContext({color=PlayerColors[gob.playerIndex]}, function()
+      local imgRect = Rect(0, 0, self.switchToImg:getDimensions())
+      imgRect:setCenter(switchTo:center())
+      imgRect.y = switchTo.position.y - imgRect.h - 2
+      love.graphics.draw(self.switchToImg, imgRect.x, imgRect.y)
     end)
   end
 

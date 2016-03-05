@@ -23,7 +23,12 @@ Colors = {
   menuRed  = { 128, 0, 0 },
   menuBack = { 0, 0, 0, 128}
 }
-
+PlayerColors = {
+  { 255, 0, 0 },
+  { 80, 80, 255 },
+  { 0, 255, 0 },
+  { 255, 255, 0 },
+}
 
 local StateMachine = {
   states = {},

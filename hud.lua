@@ -2,13 +2,6 @@ require 'menu.abstractMenu'
 
 HUD = Menu:extend('HUD')
 
-local PlayerColors = {
-  { 255, 0, 0 },
-  { 0, 0, 255 },
-  { 0, 255, 0 },
-  { 255, 255, 0 },
-}
-
 local hudBorder = 4
 
 function HUD:init(world, playerIndex)
