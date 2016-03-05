@@ -97,7 +97,8 @@ function Ship:init(fsm, fsmOpts)
   self:writeShip(data)
   self.allPlayers = {}
 
-  Ship.super.init(self, fsm, {ship=ship, planet="blah"}, self.shipFile, "assets/worlds/ship.png")
+  local fsmOpts = {ship=self.ship, planet="blah", activeRoster = fsmOpts.activeRoster}
+  Ship.super.init(self, fsm, fsmOpts, self.shipFile, "assets/worlds/ship.png")
 
   self.playerSwitchers = {}
   for i, coord in ipairs(self.map.playerCoords) do

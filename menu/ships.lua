@@ -25,7 +25,7 @@ function ShipMenu:loadSaved()
 end
 
 function ShipMenu:chooseItem(item)
-  self.fsm:advance("done", item.name)
+  self.fsm:advance("done", {ship = item.name})
 end
 
 function ShipMenu:update(dt)

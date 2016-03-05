@@ -104,8 +104,8 @@ function Mob:controlStop(action)
   end
 end
 
-function Mob:descend(verb)
-  self.world:descend(self, verb)
+function Mob:travel(verb)
+  self.world:travel(self, verb)
 end
 
 function Mob:animState()

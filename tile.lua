@@ -179,8 +179,8 @@ end
 
 function Teleporter:collide(cols)
   for col in values(cols) do
-    if col.other.descend then
-      col.other:descend('land')
+    if col.other.travel then
+      col.other:travel('land')
     end
   end
 end
@@ -198,8 +198,8 @@ end
 
 function Door:collide(cols)
   for col in values(cols) do
-    if col.other.descend then
-      col.other:descend()
+    if col.other.travel then
+      col.other:travel()
     end
   end
 end

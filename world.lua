@@ -54,6 +54,7 @@ function World:init(fsm, fsmOpts, worldfile, tileset)
   local center = Point()
   local c = 0
   local activeRoster = coalesce(fsmOpts.activeRoster, {self.roster[1]})
+  print("new world with", #activeRoster, "players")
   for i, coord in ipairs(self.map.playerCoords) do
     if i <= 4 then
       local hud = HUD(self, i)
@@ -322,11 +323,13 @@ function World:update(dt)
   end
 end
 
-function World:descend(gob, verb)
+function World:travel(gob, verb)
   if gob.playerIndex == nil then return end
 
   verb = coalesce(verb, "descend")
+  print('traveling with', join(self.players, ", "), verb)
   local activeRoster = map(self.players, function(v) return v:serialize() end)
+  print("active roster of ", #activeRoster)
   self.fsm:advance(verb, {
     ship = self.ship,
     planet = self.planet,
@@ -336,7 +339,7 @@ function World:descend(gob, verb)
 end
 
 function World:disembark()
-  self:descend(self.players[1], 'disembark')
+  self:travel(self.players[1], 'disembark')
 end
 
 function World:quit()

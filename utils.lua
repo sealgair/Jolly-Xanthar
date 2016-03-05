@@ -181,7 +181,7 @@ end
 function join(strings, separator)
   local res = ""
   for s in values(strings) do
-    res = res .. s .. separator
+    res = res .. tostring(s) .. separator
   end
   return res:sub(1, res:len() - separator:len())
 end
