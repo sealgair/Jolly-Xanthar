@@ -335,6 +335,14 @@ function World:descend(gob, verb)
   })
 end
 
+function World:disembark()
+  self:descend(self.players[1], 'disembark')
+end
+
+function World:quit()
+  self.fsm:advance('quit')
+end
+
 function World:drawRescue(player)
   local font = Fonts.small
   graphicsContext({

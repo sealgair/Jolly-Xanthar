@@ -43,10 +43,10 @@ end
 
 Ship = World:extend('Ship')
 
-function Ship:init(fsm, ship)
+function Ship:init(fsm, fsmOpts)
   self.shipFile = "myship.world"
-
-  randomSeed(ship)
+  self.ship = coalesce(fsmOpts.ship, Save:shipNames()[1])
+  randomSeed(self.ship)
   local roomFiles = randomize({
     "assets/worlds/barracks.world",
     "assets/worlds/observation.world",

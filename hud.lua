@@ -15,6 +15,7 @@ function HUD:init(world, playerIndex)
   self.maxMenuHeight = 64
   self.menuHeight = self.maxMenuHeight
   self.active = true
+  self.embarked = true
 
   self.rect = Rect(hudBorder, hudBorder, 64, self.barHeight)
   if self.index == 2 or self.index == 4 then
@@ -115,17 +116,19 @@ function HUD:drawMenuCanvas()
 end
 
 function HUD:playerAction(action)
-  if action.name == "Disembark" then
+  if action.action == "quit" then
+    self.world:quit()
+  elseif action.action == "drop out" then
     self.world:removePlayer(self.index)
-  elseif action.name == "Switch" then
+  elseif action.action == "disembark" then
+    self.world:disembark()
+  elseif action.action == "switch" then
     self.itemGrid = map(self.world:remainingRoster(), function(n) return {n} end)
     self.selected.y = 1
     self.world:removePlayer(self.index)
     self:drawMenuCanvas()
-  elseif action.name == "Pause" then
-    self.world.paused = true
-  elseif action.name == "Resume" then
-    self.world.paused = false
+  elseif action.action == "pause" then
+    self.world.paused = not self.world.paused
   end
 end
 
@@ -146,15 +149,20 @@ function HUD:controlStop(action)
     else
       self.selected.y = 1
       if self.player then
-        local paused = "Pause"
-        if self.world.paused then paused = "Resume" end
+        local quit = "Quit"
+        if #self.world.players > 1 then quit = "Drop Out" end
         self.itemGrid = {
-          {{name = "Cancel"}},
-          {{name = paused}},
-          {{name = "Disembark"}},
-          {{name = "Switch"}},
+          { { name = "Cancel", action = "cancel" } },
+          { { name = quit, action = quit:lower() } },
           --{{name = "Controls"}}, TODO
         }
+        if not class.isInstance(self.world, Ship) then
+          local paused = "Pause"
+          if self.world.paused then paused = "Resume" end
+          table.insert(self.itemGrid, 2, { { name = paused, action = "pause" } })
+          table.insert(self.itemGrid, 3, { { name = "Back to Ship", action = "disembark" } })
+          table.insert(self.itemGrid, 3, { { name = "Switch", action = "switch" } })
+        end
       else
         self.itemGrid = map(self.world:remainingRoster(), function(n) return {n} end)
       end

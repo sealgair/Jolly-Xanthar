@@ -102,6 +102,7 @@ function love.load(arg)
     [Ship] = {
       land = World,
       quit = Splash,
+      disembark = Splash,
     },
     [Keyboard] = {
       done = Recruit,
@@ -114,7 +115,8 @@ function love.load(arg)
     },
     [World] = {
       descend = World,
-      quit = Ship,
+      disembark = Ship,
+      quit = Splash,
     },
   }
   StateMachine:advance("menu")
