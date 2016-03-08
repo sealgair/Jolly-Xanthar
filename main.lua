@@ -19,6 +19,7 @@ Colors = {
   red      = { 255, 0, 0 },
   white    = { 255, 255, 255 },
   menuBlue = { 0, 128, 255 },
+  halfGray = { 128, 128, 128 },
   menuGray = { 128, 128, 128 },
   menuRed  = { 128, 0, 0 },
   menuBack = { 0, 0, 0, 128}

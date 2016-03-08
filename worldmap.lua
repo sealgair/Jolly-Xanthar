@@ -74,6 +74,7 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount, seed)
 
   self.playerCoords = {}
   local potentialMonsters = {}
+  self.transporters = {}
 
   local tiles = {}
   for y, row in ipairs(blocks) do
@@ -91,6 +92,9 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount, seed)
       end
       if tile.collides then
         bumpWorld:add(tile, dx, dy, qw, qh)
+      end
+      if class.isInstance(tile, Teleporter) then
+        table.insert(self.transporters, tile)
       end
     end
     table.insert(tiles, trow)

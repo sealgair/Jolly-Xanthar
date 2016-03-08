@@ -55,6 +55,9 @@ function Ship:init(fsm, fsmOpts)
 
   self.background = love.graphics.newImage("assets/stars.png")
   self.switchToImg = love.graphics.newImage("assets/switchTo.png")
+  self.transportImg = love.graphics.newImage("assets/transport.png")
+  self.onTransporter = {}
+  self.inTransporter = {}
 
   local dir = Direction.down
   local topRooms = {}
@@ -124,6 +127,20 @@ function Ship:controlStop(player, action)
       self:removePlayer(pid)
       self:addPlayer(switchTo:serialize(), pid)
     end
+
+    if self.onTransporter[player.playerIndex] then
+      local transporter = self.onTransporter[player.playerIndex]
+      self.inTransporter[player.playerIndex] = transporter
+      player:setDirection(Direction.down)
+      player:setDirection(Direction())
+      player:setCenter(transporter.hitbox:center() - Point(0, 4))
+      player.frozen = true
+    end
+  elseif action == 'b' then
+    if self.inTransporter[player.playerIndex] then
+      self.inTransporter[player.playerIndex] = nil
+      player.frozen = false
+    end
   end
 end
 
@@ -185,6 +202,31 @@ function Ship:update(dt)
       end
     end
   end
+
+  self.onTransporter = {}
+  for transporter in values(self.map.transporters) do
+    local l,t,w,h = transporter.hitbox:parts()
+    local items, len = self.bumpWorld:queryRect(l,t,w,h, function(item)
+      return item.playerIndex ~= nil
+    end)
+    for item in values(items) do
+      self.onTransporter[item.playerIndex] = transporter
+    end
+  end
+
+  local allIn = true
+  for player in values(self.players) do
+    allIn = allIn and self.inTransporter[player.playerIndex]
+  end
+  if allIn then
+    Ship.super.travel(self, self.players[1], "land")
+  end
+end
+
+function Ship:travel(gob, verb)
+  if verb ~= "land" then
+    Ship.super.travel(self, gob, verb)
+  end
 end
 
 function Ship:drawGob(gob)
@@ -199,7 +241,21 @@ function Ship:drawGob(gob)
     end)
   end
 
-  Ship.super.drawGob(self, gob)
+  graphicsContext({color=Colors.white}, function()
+    local onTransporter = self.onTransporter[gob.playerIndex]
+    local inTransporter = self.inTransporter[gob.playerIndex]
+    if inTransporter then
+      love.graphics.setColor(Colors.halfGray)
+    end
+    Ship.super.drawGob(self, gob)
+
+    if onTransporter and not inTransporter then
+      love.graphics.setColor(PlayerColors[gob.playerIndex])
+      local imgRect = Rect(0, 0, self.transportImg:getDimensions())
+      imgRect:setCenter(onTransporter.hitbox:center())
+      love.graphics.draw(self.transportImg, imgRect.x, imgRect.y)
+    end
+  end)
 end
 
 function rowOf(val, len)

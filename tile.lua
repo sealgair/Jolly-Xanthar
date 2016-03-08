@@ -10,6 +10,7 @@ function Tile:init(x, y, tileset, img)
 
   self.h = 16
   self.w = 16
+  self.hitbox = Rect((x - 1) * self.w, (y - 1) * self.h, self.w, self.h)
 
   self.isFloor = self.block ~= "#"
   self.collides = true

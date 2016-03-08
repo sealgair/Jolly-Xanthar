@@ -144,7 +144,7 @@ function Gob:setBoundingBox(box)
 end
 
 function Gob:animState()
-  if self.speed > 0 and self.direction ~= Direction(0, 0) then
+  if not self.frozen and self.speed > 0 and self.direction ~= Direction(0, 0) then
     return "walk"
   else
     return "idle"
@@ -182,6 +182,9 @@ function Gob:update(dt)
     self.turnDelay = self.animInterval / self.animLength
   end
   local distance = dt * self.speed
+  if self.frozen then
+    distance = 0
+  end
 
   if self.direction:isDiagonal() then
     -- diagonal, use pythagoras
