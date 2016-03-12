@@ -31,6 +31,7 @@ function setDefault(t, key, value)
   if t[key] == nil then
     t[key] = value
   end
+  return t[key]
 end
 
 function string:startsWith(substring)
@@ -177,7 +178,7 @@ end
 function join(strings, separator)
   local res = ""
   for s in values(strings) do
-    res = res .. s .. separator
+    res = res .. tostring(s) .. separator
   end
   return res:sub(1, res:len() - separator:len())
 end
@@ -231,17 +232,31 @@ function HSVtoRGB(h, s, v)
   end return {(r + m) * 255, (g + m) * 255, (b + m) * 255}
 end
 
+function randomChoice(sequence)
+  return sequence[math.random(#sequence)]
+end
+
 function randomLine(filename)
     local lines = {}
     for l in love.filesystem.lines(filename) do
       table.insert(lines, l)
     end
-    return lines[math.random(#lines)]
+    return randomChoice(lines)
+end
+
+function randomize(sequence)
+  local result = {}
+  for val in values(sequence) do
+    table.insert(result, math.random(#result + 1), val)
+  end
+  return result
 end
 
 function graphicsContext(context, graphics)
   love.graphics.push()
   local old = {}
+  old.shader = love.graphics.getShader()
+  love.graphics.setShader(context.shader)
   if context.canvas then
     old.canvas = love.graphics.getCanvas()
     love.graphics.setCanvas(context.canvas)
@@ -277,6 +292,9 @@ function graphicsContext(context, graphics)
   if context.canvas then
     love.graphics.setCanvas(old.canvas)
   end
+  if old.shader then
+    love.graphics.setShader(old.shader)
+  end
   love.graphics.pop()
 end
 
@@ -296,4 +314,16 @@ end
 
 function easeInOutSine(t)
   return -.5 * (math.cos(math.pi*t) - 1)
+end
+
+function randomSeed(seed)
+  if seed == nil then return end
+
+  if type(seed) ~= "number" then
+    if type(seed) ~= "string" then
+      seed = tostring(seed)
+    end
+    seed = tonumber(md5.sumhexa(seed):sub(1, 12), 16)
+  end
+  math.randomseed(seed)
 end

@@ -11,11 +11,15 @@ function Menu:init(opts)
   self.navMaps = coalesce(opts.navMaps, {})
   self.selected = self.initial
 
-  local p = coalesce(opts.controlPlayer, 1)
+  self.controlPlayer = coalesce(opts.controlPlayer, 1)
   if not opts.skipRegister then
-    Controller:register(self, p)
+    Controller:register(self, self.controlPlayer)
   end
   self.selected = Point(self.initial)
+end
+
+function Menu:deactivate()
+  Controller:unregister(self, self.controlPlayer)
 end
 
 function Menu:update(dt)

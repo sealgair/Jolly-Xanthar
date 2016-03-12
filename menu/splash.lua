@@ -2,6 +2,7 @@ class = require 'lib/30log/30log'
 require "controller"
 require "direction"
 require "save"
+require "utils"
 
 Splash = class("Splash")
 
@@ -17,6 +18,7 @@ function Splash:init(fsm)
     'new',
     'galaxy',
     'controls',
+    'quit',
   }
   self.opts = {
     new = "Name Your Ship",
@@ -56,16 +58,20 @@ end
 
 function Splash:draw()
   love.graphics.draw(self.background, 0, 0)
-  local pos = Point(160, 48)
-  local w = 64
-  for i, item in ipairs(self.items) do
-    local color = Colors.white
-    if self.activeItem == i then
-      color = Colors.red
+
+  graphicsContext({color=Colors.white, font=Fonts.large}, function()
+    for i, item in ipairs(self.items) do
+      if item == "continue" and not canContinue() then
+        love.graphics.setColor(Colors.menuGray)
+      end
+      if self.activeItem == i then
+        love.graphics.setColor(Colors.red)
+      else
+        love.graphics.setColor(Colors.white)
+      end
+      i = i - 1
+      local y = 48 + (i * 16)
+      love.graphics.printf(item:upper(), 160, y, 80, "center")
     end
-    graphicsContext({color=color, font=Fonts.large}, function()
-      love.graphics.printf(item:upper(), pos.x, pos.y, w, "center")
-    end)
-    pos = pos + Point(0, 16)
-  end
+  end)
 end

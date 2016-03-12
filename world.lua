@@ -1,4 +1,4 @@
-class = require 'lib/30log/30log'
+class = require 'lib.30log.30log'
 require 'controller'
 require 'worldmap'
 require 'mobs.human'
@@ -12,9 +12,16 @@ DEBUG_BUMP = false
 
 World = class("World")
 
-function World:init(fsm, ship)
+function World:init(fsm, fsmOpts, worldfile, tileset)
   self.fsm = fsm
-  self.ship = coalesce(ship, Save:shipNames()[1])
+  self.ship = coalesce(fsmOpts.ship, Save:shipNames()[1])
+  self.planet = fsmOpts.planet
+  self.depth = coalesce(fsmOpts.depth, 0)
+  if self.planet then
+    self.seed = self.planet .. self.depth
+  else
+    self.seed = self.ship
+  end
 
   self.mainScreen = Rect(Point(), GameSize)
   self.mainScreen.windowOffset = Point()
@@ -29,11 +36,11 @@ function World:init(fsm, ship)
 
   -- load the map
   self.bumpWorld = bump.newWorld(16)
-  self.worldCanvas = love.graphics.newCanvas()
-  self.map = WorldMap("assets/worlds/ship1.world",
-    "assets/worlds/ship.png",
-    self.bumpWorld,
-    10)
+  tileset = coalesce(tileset, "assets/worlds/forest.png")
+  local monsterCount = math.random(8, 12) * self.depth
+  self.map = WorldMap(worldfile, tileset, self.bumpWorld, monsterCount, self.seed)
+  local cw, ch = self.map:getDimensions()
+  self.worldCanvas = love.graphics.newCanvas(cw, ch)
 
   -- add monsters
   for i, coord in ipairs(self.map.monsterCoords) do
@@ -45,17 +52,21 @@ function World:init(fsm, ship)
   -- add players
   self.roster = Save:shipRoster(self.ship)
   local center = Point()
-  local activePlayers = {1, 2}
+  local c = 0
+  local activeRoster = coalesce(fsmOpts.activeRoster, {self.roster[1]})
   for i, coord in ipairs(self.map.playerCoords) do
-    local hud = HUD(self, i)
-    self.huds[i] = hud
+    if i <= 4 then
+      local hud = HUD(self, i)
+      self.huds[i] = hud
+    end
 
-    if activePlayers[i] then
-      local player = self:addPlayer(self.roster[i], i, coord)
+    if activeRoster[i] then
+      local player = self:addPlayer(activeRoster[i], i, coord)
       center = center + player:center()
+      c = c + 1
     end
   end
-  center = center / #activePlayers
+  center = center / c
   self.mainScreen:setCenter(center)
 end
 
@@ -63,10 +74,19 @@ function World:activate()
   for player in values(self.players) do
     player.active = true
   end
+  for hud in values(self.huds) do
+    hud.active = true
+  end
 end
 
 function World:deactivate()
   Save:saveShip(self.ship, self.roster)
+  for player in values(self.players) do
+    player.active = false
+  end
+  for hud in values(self.huds) do
+    hud.active = false
+  end
 end
 
 function World:remainingRoster()
@@ -87,6 +107,7 @@ function World:addPlayer(rosterData, index, coords)
   if coords == nil then
     coords = self.mainScreen:center()
   end
+  rosterData.activePlayer = index
   local player = Human(coords, rosterData)
   player.active = self.active
   Controller:register(player, index)
@@ -95,11 +116,13 @@ function World:addPlayer(rosterData, index, coords)
   self.huds[index].player = player
   self.indicators[index] = Indicator(index)
 
+  player.playerIndex = index
   return player
 end
 
 function World:removePlayer(index, keepBody)
   local player = self.players[index]
+  player.playerIndex = nil
   if keepBody ~= true then
     self:despawn(player)
   end
@@ -113,7 +136,7 @@ function World:removePlayer(index, keepBody)
     if #h.itemGrid > 0 then left = true end
   end
   if not left then
-    self.fsm:advance('quit')
+    self.fsm:advance('quit', self.ship)
   end
 end
 
@@ -204,11 +227,13 @@ function World:update(dt)
       if gob.hitLineStop then
         local limitedInfo = {}
         for info in values(itemInfo) do
-          table.insert(limitedInfo, info)
-          if gob:hitLineStop(info.item) then
-            gob.hitLine.x2 = info.x1
-            gob.hitLine.y2 = info.y1
-            break
+          if Gob.collideFilter(gob, info.item) then
+            table.insert(limitedInfo, info)
+            if gob:hitLineStop(info.item) then
+              gob.hitLine.x2 = info.x1
+              gob.hitLine.y2 = info.y1
+              break
+            end
           end
         end
         itemInfo = limitedInfo
@@ -297,6 +322,27 @@ function World:update(dt)
   end
 end
 
+function World:travel(gob, verb)
+  if gob.playerIndex == nil then return end
+
+  verb = coalesce(verb, "descend")
+  local activeRoster = map(self.players, function(v) return v:serialize() end)
+  self.fsm:advance(verb, {
+    ship = self.ship,
+    planet = self.planet,
+    activeRoster = activeRoster,
+    depth = self.depth + 1,
+  })
+end
+
+function World:disembark()
+  self:travel(self.players[1], 'disembark')
+end
+
+function World:quit()
+  self.fsm:advance('quit')
+end
+
 function World:drawRescue(player)
   local font = Fonts.small
   graphicsContext({
@@ -328,11 +374,22 @@ function World:drawRescue(player)
   end)
 end
 
+function World:drawGob(dude)
+  dude:draw()
+  if DEBUG_BUMP then
+    local x, y, w, h = self.bumpWorld:getRect(dude)
+    love.graphics.rectangle("line", x, y, w, h)
+  end
+  if dude.stunned and dude:stunned() and not dude:dead() then
+    self:drawRescue(dude)
+  end
+end
+
 function World:draw()
   love.graphics.push()
   love.graphics.origin()
-  self.worldCanvas:clear()
   love.graphics.setCanvas(self.worldCanvas)
+  love.graphics.clear()
   self.map:draw()
 
   table.sort(self.gobs, function(a, b)
@@ -340,16 +397,8 @@ function World:draw()
   end)
 
   for i, dude in ipairs(self.gobs) do
-    dude:draw()
-    if DEBUG_BUMP then
-      local x, y, w, h = self.bumpWorld:getRect(dude)
-      love.graphics.rectangle("line", x, y, w, h)
-    end
-    if dude.stunned and dude:stunned() and not dude:dead() then
-      self:drawRescue(dude)
-    end
+    self:drawGob(dude)
   end
-
 
   love.graphics.pop()
   love.graphics.setCanvas()
@@ -360,16 +409,23 @@ function World:draw()
 
   local sw, sh = self.worldCanvas:getDimensions()
   for screen in values(screens) do
-    if scren ~= self.mainScreen then
-      love.graphics.setColor(0, 0, 0)
-      local background = Rect(screen.windowOffset.x - 1, screen.windowOffset.y - 1, screen.w + 2, screen.h + 2 + hud.barHeight)
-      if background.y < self.mainScreen.h / 2 then
-        background.y = background.y - hud.barHeight
-      end
-      love.graphics.rectangle("fill", background.x, background.y, background.w, background.h)
-      love.graphics.setColor(255, 255, 255)
+    local bgRect = Rect(screen.windowOffset.x - 1, screen.windowOffset.y - 1, screen.w + 2, screen.h + 2 + hud.barHeight)
+    if bgRect.y < self.mainScreen.h / 2 then
+      bgRect.y = bgRect.y - hud.barHeight
     end
-    local quad = love.graphics.newQuad(screen.x, screen.y,
+    if self.background then
+      local bw, bh = self.background:getDimensions()
+      local bgQuad = love.graphics.newQuad(bgRect.x, bgRect.y,
+        bgRect.w, bgRect.h,
+        bw, bh)
+      love.graphics.draw(self.background, bgQuad, bgRect.x, bgRect.y)
+    else
+      graphicsContext({color={0,0,0}}, function()
+        love.graphics.rectangle("fill", bgRect.x, bgRect.y, bgRect.w, bgRect.h)
+      end)
+    end
+    local quad = love.graphics.newQuad(
+      round(screen.x), round(screen.y),
       screen.w, screen.h,
       sw, sh)
     love.graphics.draw(self.worldCanvas, quad, screen.windowOffset.x, screen.windowOffset.y)

@@ -80,9 +80,13 @@ function Mob:controlStart(action)
   if self:stunned() then return end
   self.actions[action] = true
 
-  local weapon = self.weapons[action]
-  if weapon ~= nil then
-    weapon:start()
+  if self.controlOverride then
+    self.controlOverride:controlStart(self, action)
+  else
+    local weapon = self.weapons[action]
+    if weapon ~= nil then
+      weapon:start()
+    end
   end
 end
 
@@ -90,10 +94,18 @@ function Mob:controlStop(action)
   if self:stunned() then return end
   self.actions[action] = nil
 
-  local weapon = self.weapons[action]
-  if weapon ~= nil then
-    weapon:stop()
+  if self.controlOverride then
+    self.controlOverride:controlStop(self, action)
+  else
+    local weapon = self.weapons[action]
+    if weapon ~= nil then
+      weapon:stop()
+    end
   end
+end
+
+function Mob:travel(verb)
+  self.world:travel(self, verb)
 end
 
 function Mob:animState()
@@ -177,6 +189,8 @@ function Mob:collidesWith(other)
     return "cross", 50
   elseif other.owner == self then
     return nil, 100
+  elseif self.isFriendly and other.isFriendly then
+    return "cross", 100
   else
     return Mob.super.collidesWith(self, other)
   end
@@ -184,6 +198,10 @@ end
 
 function Mob:hurt(damage, collision)
   self.agressor = collision.other.owner
+  if self.agressor == self then
+    local poop
+    poop.pee()
+  end
   self.health = self.health - damage
   if not self:dead() then
     self:shove(Point(collision.other.direction), 75 * damage)

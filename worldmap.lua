@@ -1,81 +1,109 @@
-class = require 'lib/30log/30log'
-require 'wall'
+class = require 'lib.30log.30log'
+md5 = require 'lib.md5.md5'
+json = require 'lib.json4lua.json.json'
+rot = require 'lib.rotlove.rotlove.rotlove'
+require 'tile'
+require 'utils'
 
-WorldMap = class('WorldMap', {
-  quadNames = {
-    { 'f1', 'ul', 'u', 'ur', 'udlr' },
-    { 'f2', 'l', 'c', 'r', 'lr' },
-    { 'f3', 'dl', 'd', 'dr', 'ud' },
-    { 'f4', 'dlr', 'udr', 'udl', 'ulr' },
-  }
-})
 
-function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
+WorldMap = class('WorldMap')
+
+function WorldMap:generateMap(w, h)
+  randomSeed(self.seed)
+  local blocks = {}
+  local generator = rot.Map.Brogue:new(w, h, {}, self)
+
+  local floors = {}
+  generator:create(function(x, y, value)
+    if value == 1 then
+      value = "#"
+    else
+      value = " "
+      table.insert(floors, Point(x, y))
+    end
+    local row = setDefault(blocks, y, {})
+    row[x] = value
+  end)
+
+  local door = table.remove(floors, math.random(#floors))
+  blocks[door.y][door.x] = 'D'
+
+  local player = table.remove(floors, math.random(#floors))
+  for p = 1, 4 do
+    blocks[player.y][player.x] = tostring(p)
+    for d in values(Direction.allDirections) do
+      local next = player + d
+      if blocks[next.y][next.x] == " " then
+        player = next
+        break
+      end
+    end
+  end
+
+  return blocks
+end
+
+function WorldMap:random(min, max)
+  if max then
+    return math.random(min, max)
+  elseif min then
+    return math.random(min)
+  else
+    return math.random()
+  end
+end
+
+function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount, seed)
   local templateImg = love.graphics.newImage(imagefile)
+
+  self.seed = seed
+
+  -- create our tiles
   local qw, qh = 16, 16
-  local sw, sh = templateImg:getWidth(), templateImg:getHeight()
-
-  -- create our quads
-  local quadMap = {}
-  for y, row in ipairs(self.quadNames) do
-    y = (y - 1) * qh
-    for x, name in ipairs(row) do
-      x = (x - 1) * qw
-      quadMap[name] = love.graphics.newQuad(x, y, qw, qh, sw, sh)
-    end
+  local blocks
+  if mapfile then
+    blocks = self:fileToTable(mapfile)
+  else
+    blocks = self:generateMap(50, 50)
   end
-
-  -- translate mapfile to quads
-  local quads = {}
+  local padx = GameSize.w / 2 / 16
+  local pady = GameSize.h / 2 / 16
+  padMap(blocks, padx, pady)
   local mw = 0
-  local blocks = self:fileToTable(mapfile)
-  local function testEmpty(y, x)
-    local block
-    local row = blocks[y]
-    if row then
-      block = row[x]
-    end
-    if block == nil then
-      block = "#" -- null is wall
-    end
-    return block ~= "#"
-  end
+  local mh = #blocks
 
   self.playerCoords = {}
   local potentialMonsters = {}
+  self.transporters = {}
 
+  local tiles = {}
   for y, row in ipairs(blocks) do
-    local quadRow = {}
+    mw = math.max(mw, #row)
+    local trow = {}
     for x, block in ipairs(row) do
-      local dx = (x - 1) * qw
-      local dy = (y - 1) * qh
-      local key
-      if block == "#" then
-        key = ''
-        if testEmpty(y - 1, x) then key = key .. 'u' end
-        if testEmpty(y + 1, x) then key = key .. 'd' end
-        if testEmpty(y, x - 1) then key = key .. 'l' end
-        if testEmpty(y, x + 1) then key = key .. 'r' end
-        if key == '' then key = 'c' end
-        bumpWorld:add(Wall(), dx, dy, qw, qh)
-      else
-        if block:find("%d") then
-          self.playerCoords[tonumber(block)] = { x = dx, y = dy }
-        else
-          table.insert(potentialMonsters, { x = dx, y = dy })
-        end
-        key = 'f' .. tostring(math.random(1, 4))
+      local TileType = Tile.typeForBlock(block)
+      local tile = TileType(x, y, blocks, templateImg)
+      table.insert(trow, tile)
+      local dx, dy = (x - 1) * qw, (y - 1) * qh
+      if tile.player then
+        self.playerCoords[tile.player] = Point(dx, dy)
+      elseif tile.isFloor then
+        table.insert(potentialMonsters, Point(dx, dy))
       end
-      table.insert(quadRow, quadMap[key])
+      if tile.collides then
+        bumpWorld:add(tile, dx, dy, qw, qh)
+      end
+      if class.isInstance(tile, Teleporter) then
+        table.insert(self.transporters, tile)
+      end
     end
-    mw = math.max(#quadRow, mw)
-    table.insert(quads, quadRow)
+    table.insert(tiles, trow)
   end
-  local mh = #quads
 
   self.monsterCoords = {}
   local seen = {}
   local i = math.random(#potentialMonsters)
+  monsterCount = math.min(#potentialMonsters, monsterCount)
   for _ = 1, monsterCount do
     while seen[i] ~= nil do
       i = math.random(#potentialMonsters)
@@ -84,20 +112,43 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount)
     table.insert(self.monsterCoords, potentialMonsters[i])
   end
 
-  -- draw quaods to canvas
-  love.graphics.push()
-    love.graphics.origin()
-    self.mapCanvas = love.graphics.newCanvas(mw * qw, mh * qh)
-    love.graphics.setCanvas(self.mapCanvas)
-    for y, quadRow in ipairs(quads) do
+  -- draw quads to canvas
+  local hueShifter = love.graphics.newShader("shaders/hueShift.glsl")
+  if self.seed then
+    randomSeed(self.seed)
+  end
+  hueShifter:send("shift", math.random())
+
+  self.mapCanvas = love.graphics.newCanvas(mw * qw, mh * qh)
+  graphicsContext({origin=true, shader=hueShifter, canvas=self.mapCanvas}, function()
+    for y, tileRow in ipairs(tiles) do
       y = (y - 1) * qh
-      for x, quad in ipairs(quadRow) do
+      for x, tile in ipairs(tileRow) do
         x = (x - 1) * qw
-        love.graphics.draw(templateImg, quad, x, y)
+        tile:draw(x, y)
       end
     end
-    love.graphics.setCanvas()
-  love.graphics.pop()
+  end)
+end
+
+function pad(tbl, amount, value)
+  for _ = 1, amount do
+    table.insert(tbl, 1, value)
+    table.insert(tbl, value)
+  end
+  return tbl
+end
+
+function padMap(map, w, h, value)
+  local maxw = 0
+  value = coalesce(value, "#")
+  for row in values(map) do
+    pad(row, w, value)
+    maxw = math.max(maxw, #row)
+  end
+  local padRow = {}
+  for _ = 1, maxw do table.insert(padRow, "#") end
+  pad(map, h, padRow)
 end
 
 function WorldMap:fileToTable(filename)
@@ -114,4 +165,8 @@ end
 
 function WorldMap:draw()
   love.graphics.draw(self.mapCanvas)
+end
+
+function WorldMap:getDimensions()
+  return self.mapCanvas:getDimensions()
 end

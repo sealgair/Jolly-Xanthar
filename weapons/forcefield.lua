@@ -102,10 +102,10 @@ end
 function Bubble:draw()
   if scale ~= 1 then
     local oldCavnas = love.graphics.getCanvas()
-    self.scaleCanvas:clear()
 
     love.graphics.push()
       love.graphics.setCanvas(self.scaleCanvas)
+      love.graphics.clear()
 
       local translate = Point(self.position) * -self.scale
       love.graphics.translate(translate.x, translate.y)

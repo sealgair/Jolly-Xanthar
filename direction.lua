@@ -44,6 +44,14 @@ function Direction:isDiagonal()
   return self.x ~= 0 and self.y ~= 0
 end
 
+function Direction:horizontal()
+  return Direction(self.x, 0)
+end
+
+function Direction:vertical()
+  return Direction(0, self.y)
+end
+
 function Direction:add(rhs)
   return Direction(self.x + rhs.x, self.y + rhs.y)
 end
@@ -54,6 +62,21 @@ end
 
 function Direction:reverse()
   return Direction(self.x * -1, self.y * -1)
+end
+
+function Direction:shortkey()
+  local result = ""
+  if self.y > 0 then
+    result = "d"
+  elseif self.y < 0 then
+    result = "u"
+  end
+  if self.x > 0 then
+    result = result .. "r"
+  elseif self.x < 0 then
+    result = result .. "l"
+  end
+  return result
 end
 
 function Direction:key()
@@ -77,6 +100,10 @@ function Direction:__tostring()
   else
     return self:key()
   end
+end
+
+function Direction:__unm()
+  return Direction(-self.x, -self.y)
 end
 
 function Direction:__eq(rhs)

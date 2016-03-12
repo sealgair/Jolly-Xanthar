@@ -3,17 +3,17 @@ require 'utils'
 require 'position'
 require 'mobs.human'
 
-Ships = Menu:extend('Ships')
+ShipMenu = Menu:extend('ShipMenu')
 
-function Ships:init(fsm)
-  Ships.super.init(self, {fsm=fsm})
+function ShipMenu:init(fsm)
+  ShipMenu.super.init(self, {fsm=fsm})
   self:loadSaved()
   self.canvas = love.graphics.newCanvas()
   self.offset = 0
   self.newOffset = self.offset
 end
 
-function Ships:loadSaved()
+function ShipMenu:loadSaved()
   self.itemGrid = {} map(Save:ships(), function(s) return {s} end)
   for ship in values(Save:ships()) do
     ship = shallowCopy(ship)
@@ -24,11 +24,11 @@ function Ships:loadSaved()
   end
 end
 
-function Ships:chooseItem(item)
-  self.fsm:advance("done", item.name)
+function ShipMenu:chooseItem(item)
+  self.fsm:advance("done", {ship = item.name})
 end
 
-function Ships:update(dt)
+function ShipMenu:update(dt)
   local move = 150 * dt
   if self.offset > self.newOffset then
     self.offset = math.max(
@@ -43,13 +43,13 @@ function Ships:update(dt)
   end
 end
 
-function Ships:draw()
+function ShipMenu:draw()
   local y = 0
   local h = 48
   local w = GameSize.w-2
 
-  self.canvas:clear()
   love.graphics.setCanvas(self.canvas)
+  love.graphics.clear()
   love.graphics.push()
   love.graphics.origin()
 

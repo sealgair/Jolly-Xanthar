@@ -6,6 +6,8 @@ Controller = {
   listeners = {},
   actions = {},
   axisTracker = {},
+  delayedDirections = {},
+  prevDirection = {},
 }
 
 local gamepadPrefix = "gp"
@@ -148,6 +150,12 @@ function Controller:resetControls()
   self.playerControls = defaultControls
 end
 
+function Controller:resetActions()
+  for player, actions in pairs(self.actions) do
+    self.actions[player] = {}
+  end
+end
+
 function Controller:actionsForKey(key)
   local actions = {}
   for player, controls in ipairs(self.playerControls) do
@@ -167,13 +175,13 @@ function Controller:actionsForButton(joystick, button)
 end
 
 function Controller:update(dt)
-  if self.delayedDirection then
-    self.delayedDirection.timer = self.delayedDirection.timer - dt
-    if self.delayedDirection.timer <= 0 then
-      for listener in values(self:getListeners(self.delayedDirection.player)) do
-        listener:setDirection(self.delayedDirection.dir)
+  for player, delayedDirection in pairs(self.delayedDirections) do
+    delayedDirection.timer = delayedDirection.timer - dt
+    if delayedDirection.timer <= 0 then
+      for listener in values(self:getListeners(player)) do
+        listener:setDirection(delayedDirection.dir)
       end
-      self.delayedDirection = nil
+      delayedDirection = nil
     end
   end
 end
@@ -309,20 +317,20 @@ end
 
 function Controller:notifyDirection(player)
   local direction = self:directionFromActions(self.actions[player])
-  if direction ~= self.prevDirection then
-    if self.prevDirection and self.prevDirection:isDiagonal() and not direction:isDiagonal() then
-      self.delayedDirection = {
-        player = player,
+  local prevDirection = self.prevDirection[player]
+  if direction ~= prevDirection then
+    if prevDirection and prevDirection:isDiagonal() and not direction:isDiagonal() then
+      self.delayedDirections[player] = {
         dir = direction,
         timer = 0.05
       }
     else
-      self.delayedDirection = nil
+      self.delayedDirections[player] = nil
       for listener in values(self:getListeners(player)) do
         listener:setDirection(direction)
       end
     end
-    self.prevDirection = direction
+    self.prevDirection[player] = direction
   end
 end
 
@@ -331,7 +339,7 @@ function Controller:register(listener, player)
 end
 
 function Controller:unregister(listener, player)
-  self.listeners[player][listener] = false
+  self.listeners[player][listener] = nil
 end
 
 function Controller:forwardAll(to)

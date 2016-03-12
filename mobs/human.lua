@@ -14,7 +14,7 @@ Human = Mob:extend('Human')
 
 function Human:init(coord, opts)
   if opts == nil then opts = {} end
-  local palette = love.graphics.newImage('assets/palette.bmp'):getData()
+  local palette = love.graphics.newImage('assets/palette.png'):getData()
   local choices = palette:getHeight()
 
   local toColors = opts.colors
@@ -69,6 +69,7 @@ function Human:init(coord, opts)
   else
     self.name = opts.name
   end
+  self.isFriendly = true
 end
 
 function Human:serialize()

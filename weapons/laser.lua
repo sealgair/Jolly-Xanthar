@@ -1,5 +1,5 @@
 require 'weapons.abstractWeapon'
-require 'wall'
+require 'tile'
 
 LaserRifle = Weapon:extend('Laser')
 

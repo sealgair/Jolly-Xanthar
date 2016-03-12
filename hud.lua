@@ -2,13 +2,6 @@ require 'menu.abstractMenu'
 
 HUD = Menu:extend('HUD')
 
-local PlayerColors = {
-  { 255, 0, 0 },
-  { 0, 0, 255 },
-  { 0, 255, 0 },
-  { 255, 255, 0 },
-}
-
 local hudBorder = 4
 
 function HUD:init(world, playerIndex)
@@ -22,6 +15,7 @@ function HUD:init(world, playerIndex)
   self.maxMenuHeight = 64
   self.menuHeight = self.maxMenuHeight
   self.active = true
+  self.embarked = true
 
   self.rect = Rect(hudBorder, hudBorder, 64, self.barHeight)
   if self.index == 2 or self.index == 4 then
@@ -55,37 +49,36 @@ function HUD:init(world, playerIndex)
   self.newMenuOffset = self.menuOffset
 end
 
+function HUD:inShip()
+  return class.isInstance(self.world, Ship)
+end
 
 function HUD:drawBase()
-  love.graphics.push()
-
-  love.graphics.setColor(self.shadowColor)
   local x = self.rect.x
   local y = self.rect.y
   local w = self.rect.w
   local h = self.barHeight
-  if self.index > 2 then
-    y = self.rect.y + self.rect.h - h
-  end
-  love.graphics.rectangle("fill", x, y, w, h)
+  graphicsContext({}, function()
+    love.graphics.setColor(self.shadowColor)
+    if self.index > 2 then
+      y = self.rect.y + self.rect.h - h
+    end
+    love.graphics.rectangle("fill", x, y, w, h)
 
-  love.graphics.setColor(self.color)
-  x = x + 1
-  y = y + 1
-  w = w - 2
-  h = h - 2
-  love.graphics.rectangle("fill", x, y, w, h)
+    love.graphics.setColor(self.color)
+    x = x + 1
+    y = y + 1
+    w = w - 2
+    h = h - 2
+    love.graphics.rectangle("fill", x, y, w, h)
 
-  love.graphics.setColor(0, 0, 0)
-  x = x + 1
-  y = y + 1
-  w = w - 2
-  h = h - 2
-  love.graphics.rectangle("fill", x, y, w, h)
-
-  love.graphics.setColor(255, 255, 255)
-  love.graphics.pop()
-
+    love.graphics.setColor(0, 0, 0)
+    x = x + 1
+    y = y + 1
+    w = w - 2
+    h = h - 2
+    love.graphics.rectangle("fill", x, y, w, h)
+  end)
   self.healthRect = Rect{ x = x, y = y, w = w, h = h, }
 end
 
@@ -93,8 +86,7 @@ function HUD:drawMenuCanvas()
   love.graphics.push()
   love.graphics.setCanvas(self.menuCanvas)
   love.graphics.origin()
-  love.graphics.setBackgroundColor(0, 0, 0, 127)
-  love.graphics.clear()
+  love.graphics.clear(Colors.menuBack)
 
   local y = 1
   local w = self.rect.w
@@ -127,17 +119,19 @@ function HUD:drawMenuCanvas()
 end
 
 function HUD:playerAction(action)
-  if action.name == "Quit" then
+  if action.action == "quit" then
+    self.world:quit()
+  elseif action.action == "drop out" then
     self.world:removePlayer(self.index)
-  elseif action.name == "Switch" then
+  elseif action.action == "disembark" then
+    self.world:disembark()
+  elseif action.action == "switch" then
     self.itemGrid = map(self.world:remainingRoster(), function(n) return {n} end)
     self.selected.y = 1
     self.world:removePlayer(self.index)
     self:drawMenuCanvas()
-  elseif action.name == "Pause" then
-    self.world.paused = true
-  elseif action.name == "Resume" then
-    self.world.paused = false
+  elseif action.action == "pause" then
+    self.world.paused = not self.world.paused
   end
 end
 
@@ -158,15 +152,22 @@ function HUD:controlStop(action)
     else
       self.selected.y = 1
       if self.player then
-        local paused = "Pause"
-        if self.world.paused then paused = "Resume" end
+        local quit = "Quit"
+        if #self.world.players > 1 then quit = "Drop Out" end
         self.itemGrid = {
-          {{name = "Cancel"}},
-          {{name = paused}},
-          {{name = "Quit"}},
-          {{name = "Switch"}},
+          { { name = "Cancel", action = "cancel" } },
+          { { name = quit, action = quit:lower() } },
           --{{name = "Controls"}}, TODO
         }
+        if not self:inShip() then
+          local paused = "Pause"
+          if self.world.paused then paused = "Resume" end
+          table.insert(self.itemGrid, 2, { { name = paused, action = "pause" } })
+          table.insert(self.itemGrid, 3, { { name = "Back to Ship", action = "disembark" } })
+          table.insert(self.itemGrid, 3, { { name = "Switch", action = "switch" } })
+        end
+      elseif self:inShip() then
+        self.world:addPlayer(self.world:remainingRoster()[1], self.index)
       else
         self.itemGrid = map(self.world:remainingRoster(), function(n) return {n} end)
       end

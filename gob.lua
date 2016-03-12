@@ -21,7 +21,7 @@ Gob = class('Gob')
 DefaultAnimateInterval = 0.15 --seconds
 
 function Gob:init(opts)
-  -- required opts: x, y, confFile
+  -- required opts: x, y, confFile or conf
   -- optional opts: speed, dir, animDelay
   self.position = Point(opts)
   if opts.conf then
@@ -144,7 +144,7 @@ function Gob:setBoundingBox(box)
 end
 
 function Gob:animState()
-  if self.speed > 0 and self.direction ~= Direction(0, 0) then
+  if not self.frozen and self.speed > 0 and self.direction ~= Direction(0, 0) then
     return "walk"
   else
     return "idle"
@@ -182,6 +182,9 @@ function Gob:update(dt)
     self.turnDelay = self.animInterval / self.animLength
   end
   local distance = dt * self.speed
+  if self.frozen then
+    distance = 0
+  end
 
   if self.direction:isDiagonal() then
     -- diagonal, use pythagoras
@@ -217,7 +220,7 @@ function Gob:collide(cols)
   self.collisions = cols
   for col in values(cols) do
     local other = col.other
-    if self.momentum ~= nil and other.momentum ~= nil then
+    if col.type ~= "cross" and self.momentum ~= nil and other.momentum ~= nil then
       local momentum = (self.momentum / (self.momentum + other.momentum)) * .5
       local vec = Point(self.direction)
       if self.direction == Direction(0, 0) then

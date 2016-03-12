@@ -120,13 +120,12 @@ end
 
 function Galaxy:drawCanvas()
   local size = self.galaxyRect:size()
-  if self.canvas then
-    self.canvas:clear()
-  else
+  if not self.canvas then
     self.canvas = love.graphics.newCanvas(size.w, size.h)
   end
   local r = Rect(Point(), size)
   graphicsContext({canvas=self.canvas, color=Colors.white, origin=true}, function()
+    love.graphics.clear()
     local v, d = 0, 0
     for s, star in ipairs(self.sector.stars) do
       local l = star:apparentLuminosity(self.camera.position)
@@ -140,7 +139,6 @@ function Galaxy:drawCanvas()
         end
       end
     end
-    print('visible', v, 'drawn', d)
   end)
 end
 
@@ -148,17 +146,19 @@ function Galaxy:drawStar(pos, lum)
   local mag = 1.7 * math.log10(lum)
   local a = math.min(mag, 1)
   love.graphics.setColor({255, 255, 255, 255*a})
-  love.graphics.point(pos.x, pos.y)
+  love.graphics.points(pos.x, pos.y)
   if mag > 1 then
     local cm = math.ceil(mag)
     for l = 1, cm do
       a = ((cm - l)/mag)^2.5
       a = math.min(a, 1)
       love.graphics.setColor({255, 255, 255, 255*a})
-      love.graphics.point(pos.x+l, pos.y)
-      love.graphics.point(pos.x-l, pos.y)
-      love.graphics.point(pos.x, pos.y+l)
-      love.graphics.point(pos.x, pos.y-l)
+      love.graphics.points(
+        pos.x+l, pos.y,
+        pos.x-l, pos.y,
+        pos.x, pos.y+l,
+        pos.x, pos.y-l
+      )
     end
   end
 end
