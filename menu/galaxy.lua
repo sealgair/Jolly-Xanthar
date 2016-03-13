@@ -4,7 +4,7 @@ require 'position'
 require 'camera'
 require 'utils'
 
-local SectorSize = 60
+local SectorSize = 50
 local FilterLimit = 1000
 
 function seedFromPoint(p)
@@ -53,6 +53,12 @@ end
 function Star:apparentLuminosity(viewpoint)
   return self:cached("luminosity:" .. tostring(viewpoint), function()
     return self.luminosity / self:squaredDistance(viewpoint)
+  end)
+end
+
+function Star:apparentMagnitude(viewpoint)
+  return self:cached("magnitude:" .. tostring(viewpoint), function()
+    return 1.7 * math.log10(self:apparentLuminosity(viewpoint))
   end)
 end
 
@@ -201,14 +207,13 @@ function Galaxy:drawCanvas()
       if point and r:contains(point) then
         d = d + 1
         point = point:round() + Point(0.5, 0.5)
-        self:drawStar(point, star:apparentLuminosity(self.camera.position))
+        self:drawStar(point, star:apparentMagnitude(self.camera.position))
       end
     end
   end)
 end
 
-function Galaxy:drawStar(pos, lum)
-  local mag = 1.7 * math.log10(lum)
+function Galaxy:drawStar(pos, mag)
   local a = math.min(mag, 1)
   love.graphics.setColor({255, 255, 255, 255*a})
   love.graphics.points(pos.x, pos.y)
