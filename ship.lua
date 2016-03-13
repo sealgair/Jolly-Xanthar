@@ -51,6 +51,7 @@ function Ship:init(fsm, fsmOpts)
     "assets/worlds/barracks.world",
     "assets/worlds/observation.world",
     "assets/worlds/teleporter.world",
+    "assets/worlds/navigation.world",
   })
 
   self.background = love.graphics.newImage("assets/stars.png")
@@ -136,6 +137,10 @@ function Ship:controlStop(player, action)
       player:setCenter(transporter.hitbox:center() - Point(0, 4))
       player.frozen = true
     end
+
+    if #self.inNavCom > 0 then
+      Ship.super.travel(self, self.inNavCom[1], "navigate")
+    end
   elseif action == 'b' then
     if self.inTransporter[player.playerIndex] then
       self.inTransporter[player.playerIndex] = nil
@@ -214,6 +219,15 @@ function Ship:update(dt)
     end
   end
 
+  self.inNavCom = {}
+  local l,t,w,h = self.map.navCom:parts()
+  local items, len = self.bumpWorld:queryRect(l,t,w,h, function(item)
+    return item.playerIndex ~= nil
+  end)
+  for item in values(items) do
+    table.insert(self.inNavCom, item)
+  end
+
   local allIn = true
   for player in values(self.players) do
     allIn = allIn and self.inTransporter[player.playerIndex]
@@ -237,6 +251,14 @@ function Ship:drawGob(gob)
       local imgRect = Rect(0, 0, self.switchToImg:getDimensions())
       imgRect:setCenter(switchTo:center())
       imgRect.y = switchTo.position.y - imgRect.h - 2
+      love.graphics.draw(self.switchToImg, imgRect.x, imgRect.y)
+    end)
+  end
+
+  if #self.inNavCom > 0 then
+    graphicsContext({color=PlayerColors[self.inNavCom[1].playerIndex]}, function()
+      local imgRect = Rect(0, 0, self.switchToImg:getDimensions())
+      imgRect:setCenter(self.map.navCom:center())
       love.graphics.draw(self.switchToImg, imgRect.x, imgRect.y)
     end)
   end

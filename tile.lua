@@ -205,6 +205,39 @@ function Door:collide(cols)
   end
 end
 
+
+NavCom = Floor:extend('NavCom')
+
+function NavCom:init(x, y, tileset, img)
+  NavCom.super.init(self, x, y, tileset, img)
+  self.itemImage = love.graphics.newImage("assets/worlds/navcom.png")
+  local sw, sh = self.itemImage:getDimensions()
+  local w, h = sw/2, sh/2
+  self.quads = {
+    upleft    = love.graphics.newQuad(0, 0, w, h, sw, sh),
+    upright   = love.graphics.newQuad(w, 0, w, h, sw, sh),
+    downleft  = love.graphics.newQuad(0, h, w, h, sw, sh),
+    downright = love.graphics.newQuad(w, h, w, h, sw, sh),
+  }
+end
+
+function NavCom:draw(x, y)
+  NavCom.super.draw(self, x, y)
+  local key
+  if self.borders.up == "N" then
+    key = "down"
+  else
+    key = "up"
+  end
+  if self.borders.left == "N" then
+    key = key .. "right"
+  else
+    key = key .. "left"
+  end
+  love.graphics.draw(self.itemImage, self.quads[key], x, y)
+end
+
+
 function Tile.typeForBlock(block)
   if block == "#" then
     return Wall
@@ -214,6 +247,8 @@ function Tile.typeForBlock(block)
     return Teleporter
   elseif block == "D" then
     return Door
+  elseif block == "N" then
+    return NavCom
   else
     return Floor
   end

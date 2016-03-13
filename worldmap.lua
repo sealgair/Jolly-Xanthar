@@ -95,6 +95,12 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount, seed)
       end
       if class.isInstance(tile, Teleporter) then
         table.insert(self.transporters, tile)
+      elseif class.isInstance(tile, NavCom) then
+        if not self.navCom then
+          self.navCom = tile.hitbox
+        else
+          self.navCom = self.navCom:union(tile.hitbox)
+        end
       end
     end
     table.insert(tiles, trow)

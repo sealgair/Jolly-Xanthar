@@ -273,8 +273,16 @@ function Rect:bottom()
   return self.y + self.h
 end
 
+function Rect:setBottom(btm)
+  self.h = btm - self.y
+end
+
 function Rect:right()
   return self.x + self.w
+end
+
+function Rect:setRight(rgt)
+  self.w = rgt - self.x
 end
 
 function Rect:back()
@@ -317,6 +325,17 @@ function Rect:intersects(other)
     return result
   end
   return false
+end
+
+function Rect:union(other)
+  local r = Rect(
+    math.min(self.x, other.x),
+    math.min(self.y, other.y),
+    0, 0
+  )
+  r:setBottom(math.max(self:bottom(), other:bottom()))
+  r:setRight(math.max(self:right(), other:right()))
+  return r
 end
 
 function Rect:inset(x, y, z)

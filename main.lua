@@ -107,6 +107,7 @@ function love.load(arg)
     [Ship] = {
       land = World,
       quit = Splash,
+      navigate = Galaxy,
     },
     [Keyboard] = {
       done = Recruit,
