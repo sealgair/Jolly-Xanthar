@@ -45,13 +45,15 @@ function Star:distance(viewpoint)
 end
 
 function Star:squaredDistance(viewpoint)
-  return self:cached("distance" .. tostring(viewpoint), function()
+  return self:cached("distanceSq:" .. tostring(viewpoint), function()
     return (self.pos - viewpoint):magSquared()
   end)
 end
 
 function Star:apparentLuminosity(viewpoint)
-  return self.luminosity / self:squaredDistance(viewpoint)
+  return self:cached("luminosity:" .. tostring(viewpoint), function()
+    return self.luminosity / self:squaredDistance(viewpoint)
+  end)
 end
 
 function safeAlpha(a)
@@ -118,7 +120,7 @@ function Galaxy:init(fsm, opts)
   self.sector = Sector(Point(0,0,0), 0.14, self.seed)
   self.camera = Camera(self.sector.box:center(), Orientations.front, Size(GameSize))
   self.galaxyRect = Rect(0, 0, Size(GameSize)):inset(16)
-  self.rot = Point(0, 0, 0)
+  self.rotationDir = Point(0, 0, 0)
   self:filterStars()
 
   self.background = love.graphics.newImage('assets/galaxy.png')
@@ -167,7 +169,7 @@ end
 
 function Galaxy:setDirection(direction)
   if self.orienting then
-    self.rot = Point(
+    self.rotationDir = Point(
       -direction.y * math.pi/2,
       direction.x * math.pi/2,
       0
@@ -178,8 +180,8 @@ function Galaxy:setDirection(direction)
 end
 
 function Galaxy:update(dt)
-  if self.rot.x ~= 0 or self.rot.y ~= 0 then
-    self.camera.orientation = self.camera.orientation:rotate(self.rot * dt)
+  if self.rotationDir.x ~= 0 or self.rotationDir.y ~= 0 then
+    self.camera.orientation = self.camera.orientation:rotate(self.rotationDir * dt)
     self:drawCanvas()
   end
 end
