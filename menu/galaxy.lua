@@ -4,7 +4,8 @@ require 'position'
 require 'camera'
 require 'utils'
 
-local SectorSize = 20
+local SectorSize = 60
+local FilterLimit = 1000
 
 function seedFromPoint(p)
   local seedStr = "0"
@@ -22,11 +23,35 @@ function Star:init(pos, seed)
   math.randomseed(seed)
   local r = math.random()
   self.luminosity = r^5 * 1000
+  self.mass = math.random()
+  self.metalicity = math.random()
+
+  self.cache = {}
+end
+
+function Star:cached(key, fn)
+  local v = self.cache[key]
+  if v == nil then
+    v = fn()
+    self.cache[key] = v
+  end
+  return v
+end
+
+function Star:distance(viewpoint)
+  return self:cached("distance:" .. tostring(viewpoint), function()
+    return math.sqrt(self:squaredDistance(viewpoint))
+  end)
+end
+
+function Star:squaredDistance(viewpoint)
+  return self:cached("distance" .. tostring(viewpoint), function()
+    return (self.pos - viewpoint):magSquared()
+  end)
 end
 
 function Star:apparentLuminosity(viewpoint)
-  local d = (self.pos - viewpoint):magSquared()
-  return self.luminosity / d
+  return self.luminosity / self:squaredDistance(viewpoint)
 end
 
 function safeAlpha(a)
@@ -73,18 +98,28 @@ function Galaxy:init(fsm, opts)
   self.itemDescriptions = {
     back = "Exit NavCom",
     near = "Nearest Stars",
-    size = "Biggest Stars",
-    bright = "Brightest Stars",
     metal = "Most Metallic Stars",
+    size = "Biggest Stars",
+    bright = "Hottest Stars",
     galaxy = "Galactic Features",
   }
+
+  self.starFilters = {
+    near = function(star) return star:squaredDistance(self.camera.position) end,
+    size = function(star) return star.mass end,
+    bright = function(star) return star.luminosity end,
+    metal = function(star) return star.metalicity end,
+    galaxy = function(star) return 1/star:squaredDistance(self.camera.position) end,
+  }
+  self.currentFilterKey = "near"
+
   self.fsmOpts = opts
   self.seed = 1000
   self.sector = Sector(Point(0,0,0), 0.14, self.seed)
   self.camera = Camera(self.sector.box:center(), Orientations.front, Size(GameSize))
   self.galaxyRect = Rect(0, 0, Size(GameSize)):inset(16)
-  self:drawCanvas()
   self.rot = Point(0, 0, 0)
+  self:filterStars()
 
   self.background = love.graphics.newImage('assets/galaxy.png')
   local sw, sh = self.background:getDimensions()
@@ -98,11 +133,29 @@ function Galaxy:init(fsm, opts)
   end
 end
 
+function Galaxy:filterStars()
+  self.filteredStars = {}
+  local stars = table.ifilter(self.sector.stars, function(star)
+    return star:apparentLuminosity(self.camera.position) > 1
+  end)
+  local f = self.starFilters[self.currentFilterKey]
+  table.sort(stars, function(a, b)
+    return f(a) < f(b)
+  end)
+  for i = 1, FilterLimit do
+    self.filteredStars[i] = stars[i]
+  end
+  self:drawCanvas()
+end
+
 function Galaxy:chooseItem(item)
   if item == 'back' then
     self.fsm:advance('back', self.fsmOpts)
   elseif item == 'telescope' then
     self.orienting = true
+  elseif self.starFilters[item] then
+    self.currentFilterKey = item
+    self:filterStars()
   end
 end
 
@@ -140,16 +193,13 @@ function Galaxy:drawCanvas()
   graphicsContext({canvas=self.canvas, color=Colors.white, origin=true}, function()
     love.graphics.clear()
     local v, d = 0, 0
-    for s, star in ipairs(self.sector.stars) do
-      local l = star:apparentLuminosity(self.camera.position)
-      if l > 1 then
-        v = v + 1
-        local point = self.camera:project(star.pos)
-        if point and r:contains(point) then
-          d = d + 1
-          point = point:round() + Point(0.5, 0.5)
-          self:drawStar(point, l)
-        end
+    for s, star in ipairs(self.filteredStars) do
+      v = v + 1
+      local point = self.camera:project(star.pos)
+      if point and r:contains(point) then
+        d = d + 1
+        point = point:round() + Point(0.5, 0.5)
+        self:drawStar(point, star:apparentLuminosity(self.camera.position))
       end
     end
   end)
@@ -181,6 +231,14 @@ function Galaxy:draw()
   love.graphics.draw(self.canvas, r.x, r.y)
 
   love.graphics.draw(self.background)
+  local quad = self.menuQuads[self.currentFilterKey]
+  if quad then
+    graphicsContext({color = Colors.yellow}, function()
+      local x, y, w, h = quad:getViewport( )
+      love.graphics.draw(self.background, quad, x, y)
+    end)
+  end
+
   local sel = self:selectedItem()
   local quad = self.menuQuads[sel]
   if quad then

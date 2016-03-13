@@ -97,13 +97,21 @@ function keyCount(table)
   return n
 end
 
-function table.filter(t, filterIter)
+function table.filter(t, filter)
   local out = {}
 
   for k, v in pairs(t) do
-    if filterIter(v, k, t) then out[k] = v end
+    if filter(v, k, t) then out[k] = v end
   end
 
+  return out
+end
+
+function table.ifilter(t, filter)
+  local out = {}
+  for i, v in ipairs(t) do
+    if filter(v, i, t) then table.insert(out, v) end
+  end
   return out
 end
 
