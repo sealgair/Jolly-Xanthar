@@ -57,31 +57,28 @@ end
 
 Galaxy = Menu:extend("Galaxy")
 
-function Galaxy:init(fsm)
+function Galaxy:init(fsm, opts)
   Galaxy.super.init(self, {
     fsm = fsm,
     itemGrid = {
+      {'back', 'telescope'},
+      {'near', 'telescope'},
+      {'size', 'telescope'},
+      {'bright', 'telescope'},
+      {'metal', 'telescope'},
+      {'galaxy', 'telescope'},
     },
-    navMaps = {
-      left = {
-        up = Point(2, 1),
-        down = Point(2, 6),
-      },
-      right = {
-        up = Point(5, 1),
-        down = Point(5, 6),
-      },
-      up = {
-        left = Point(1, 2),
-        right = Point(6, 2),
-      },
-      down = {
-        left = Point(1, 5),
-        right = Point(6, 5),
-      },
-    },
-    initialItem = Point(2, 1)
+    initialItem = Point(1, 2)
   })
+  self.itemDescriptions = {
+    back = "Exit NavCom",
+    near = "Nearest Stars",
+    size = "Biggest Stars",
+    bright = "Brightest Stars",
+    metal = "Most Metallic Stars",
+    galaxy = "Galactic Features",
+  }
+  self.fsmOpts = opts
   self.seed = 1000
   self.sector = Sector(Point(0,0,0), 0.14, self.seed)
   self.camera = Camera(self.sector.box:center(), Orientations.front, Size(GameSize))
@@ -91,24 +88,40 @@ function Galaxy:init(fsm)
 
   self.background = love.graphics.newImage('assets/galaxy.png')
   local sw, sh = self.background:getDimensions()
-  self.menuQuads = {
-    up = love.graphics.newQuad(113, 3, 30, 8, sw, sh),
-    down = love.graphics.newQuad(113, 229, 30, 8, sw, sh),
-    left = love.graphics.newQuad(2, 105, 8, 30, sw, sh),
-    right = love.graphics.newQuad(245, 105, 8, 30, sw, sh),
-  }
+  self.menuQuads = {}
+  local w, h = 14, 14
+  for r, row in ipairs(self.itemGrid) do
+    local item = row[1]
+    local x = 0
+    local y = (r - 1) * 16
+    self.menuQuads[item] = love.graphics.newQuad(x, y, w, h, sw, sh)
+  end
 end
 
 function Galaxy:chooseItem(item)
-  -- #TODO
+  if item == 'back' then
+    self.fsm:advance('back', self.fsmOpts)
+  elseif item == 'telescope' then
+    self.orienting = true
+  end
+end
+
+function Galaxy:cancelItem(item)
+  if item == 'telescope' then
+    self.orienting = false
+  end
 end
 
 function Galaxy:setDirection(direction)
-  self.rot = Point(
-    -direction.y * math.pi/2,
-    direction.x * math.pi/2,
-    0
-  )
+  if self.orienting then
+    self.rot = Point(
+      -direction.y * math.pi/2,
+      direction.x * math.pi/2,
+      0
+    )
+  else
+    Galaxy.super.setDirection(self, direction)
+  end
 end
 
 function Galaxy:update(dt)
@@ -168,11 +181,25 @@ function Galaxy:draw()
   love.graphics.draw(self.canvas, r.x, r.y)
 
   love.graphics.draw(self.background)
+  local sel = self:selectedItem()
   local quad = self.menuQuads[sel]
   if quad then
     graphicsContext({color = Colors.red}, function()
       local x, y, w, h = quad:getViewport( )
       love.graphics.draw(self.background, quad, x, y)
+    end)
+  elseif sel == 'telescope' and not self.orienting then
+    graphicsContext({color = Colors.red, lineWidth=1}, function()
+      local r = Rect(15, 15, 225, 209)
+      r:draw('line')
+      love.graphics.setColor(colorWithAlpha(Colors.red, 128))
+      r:inset(1):draw('line')
+    end)
+  end
+  local desc = self.itemDescriptions[sel]
+  if desc then
+    graphicsContext({color = Colors.menuBlue, font = Fonts.medium}, function()
+      love.graphics.print(desc, 18, 5)
     end)
   end
 end

@@ -17,14 +17,14 @@ Fonts = {}
 math.randomseed( os.time() )
 
 Colors = {
-  red      = { 255, 0, 0 },
-  yellow   = { 255, 255, 0 },
-  white    = { 255, 255, 255 },
+  red =      { 255, 0, 0 },
+  yellow =   { 255, 255, 0 },
+  white =    { 255, 255, 255 },
   menuBlue = { 0, 128, 255 },
   halfGray = { 128, 128, 128 },
   menuGray = { 128, 128, 128 },
-  menuRed  = { 128, 0, 0 },
-  menuBack = { 0, 0, 0, 128}
+  menuRed =  { 128, 0, 0 },
+  menuBack = { 0, 0, 0, 128 }
 }
 PlayerColors = {
   { 255, 0, 0 },
@@ -32,6 +32,10 @@ PlayerColors = {
   { 0, 255, 0 },
   { 255, 255, 0 },
 }
+
+function colorWithAlpha(c, a)
+  return { c[1], c[2], c[3], a }
+end
 
 local StateMachine = {
   states = {},
@@ -108,6 +112,9 @@ function love.load(arg)
       land = World,
       quit = Splash,
       navigate = Galaxy,
+    },
+    [Galaxy] = {
+      back = Ship,
     },
     [Keyboard] = {
       done = Recruit,

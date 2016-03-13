@@ -16,7 +16,6 @@ function Splash:init(fsm)
   self.items = {
     'continue',
     'new',
-    'galaxy',
     'controls',
     'quit',
   }

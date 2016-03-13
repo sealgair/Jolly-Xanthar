@@ -60,10 +60,15 @@ end
 function Menu:controlStop(action)
   if action == 'a' or action == 'start' then
     self:chooseItem(self:selectedItem())
+  elseif action == 'b' then
+    self:cancelItem(self:selectedItem())
   end
 end
 
 function Menu:chooseItem(item)
+end
+
+function Menu:cancelItem(item)
 end
 
 function Menu:draw(fsm)
