@@ -5,7 +5,7 @@ require 'camera'
 require 'utils'
 
 local SectorSize = 50
-local FilterLimit = 1000
+local FilterLimit = 5000
 
 function seedFromPoint(p)
   local seedStr = "0"
