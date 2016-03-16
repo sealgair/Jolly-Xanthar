@@ -109,6 +109,14 @@ function Point:magnitude()
   return math.sqrt(self:magSquared())
 end
 
+function Point:distanceToSquared(other)
+  return (self - other):magSquared()
+end
+
+function Point:distanceTo(other)
+  return (self - other):magnitude()
+end
+
 function Point:normalize()
   return self / self:magnitude()
 end
@@ -365,8 +373,8 @@ function Rect:parts()
   return self.x, self.y, self.w, self.h
 end
 
-function Rect:round()
-  return Rect(round(self.x), round(self.y), round(self.w), round(self.h))
+function Rect:round(idp)
+  return Rect(round(self.x, idp), round(self.y, idp), round(self.w, idp), round(self.h, idp))
 end
 
 function Rect:__add(other)

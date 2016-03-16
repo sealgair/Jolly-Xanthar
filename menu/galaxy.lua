@@ -5,7 +5,7 @@ require 'camera'
 require 'utils'
 
 local SectorSize = 50
-local FilterLimit = 5000
+local FilterLimit = 3000
 
 function seedFromPoint(p)
   local seedStr = "0"
@@ -27,6 +27,15 @@ function Star:init(pos, seed)
   self.metalicity = math.random()
 
   self.cache = {}
+end
+
+function Star:details(viewpoint)
+  local p = self.pos:round(3)
+  local details = "SC "..p.x.."-"..p.y.."-"..p.z.."\n"
+  details = details .. "Dst: "..round(self:distance(viewpoint), 1).."  "
+  details = details .. "Lum: "..round(self.luminosity, 2).."  "
+  details = details .. "Mtl: "..round(self.metalicity, 4).."  "
+  return details
 end
 
 function Star:cached(key, fn)
@@ -174,10 +183,16 @@ function Galaxy:cancelItem(item)
 end
 
 function Galaxy:setDirection(direction)
+
   if self.orienting then
+    local speed = math.pi/8
+    if direction:isDiagonal() then
+      -- diagonal, use pythagoras
+      speed = speed / 1.414
+    end
     self.rotationDir = Point(
-      -direction.y * math.pi/2,
-      direction.x * math.pi/2
+      -direction.y * speed,
+      direction.x * speed
     )
   else
     Galaxy.super.setDirection(self, direction)
@@ -195,12 +210,16 @@ end
 function Galaxy:drawCanvas()
   local size = self.galaxyRect:size()
   if not self.canvas then
-    self.canvas = love.graphics.newCanvas(size.w, size.h)
+    self.canvas = love.graphics.newCanvas(size.w, size.h + 20)
   end
   local r = Rect(Point(), size)
-  graphicsContext({canvas=self.canvas, color=Colors.white, origin=true}, function()
+  graphicsContext({canvas=self.canvas, color=Colors.white, origin=true, font=Fonts.small}, function()
     love.graphics.clear()
     local v, d = 0, 0
+    local centerPoint = self.galaxyRect:center() - self.galaxyRect:origin()
+    local centerStarPoint = Point(0, 0)
+    centerStarPoint.dist = 10000
+    local centerStar
     for s, star in ipairs(self.filteredStars) do
       v = v + 1
       local point = self.camera:project(star.pos)
@@ -208,8 +227,27 @@ function Galaxy:drawCanvas()
         d = d + 1
         point = point:round() + Point(0.5, 0.5)
         self:drawStar(point, star:apparentMagnitude(self.camera.position))
+
+        local dist = centerPoint:distanceToSquared(point)
+        if dist < centerStarPoint.dist then
+          centerStarPoint = point
+          centerStarPoint.dist = dist
+          centerStar = star
+        end
       end
     end
+
+    love.graphics.setColor({0, 255, 0, 128})
+    love.graphics.circle("line", centerStarPoint.x, centerStarPoint.y, 2, 8)
+    love.graphics.setColor({64, 128, 255, 200})
+    local cp = centerPoint + Point(0.5, 0.5)
+    local cr = 2
+    love.graphics.line(cp.x - cr, cp.y, cp.x + cr, cp.y)
+    love.graphics.line(cp.x, cp.y - cr, cp.x, cp.y + cr)
+
+    love.graphics.setColor({0, 128, 0})
+    love.graphics.print(centerStar:details(), 2, size.h + 2)
+    print(centerStar:details())
   end)
 end
 
