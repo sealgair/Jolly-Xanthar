@@ -177,8 +177,7 @@ function Galaxy:setDirection(direction)
   if self.orienting then
     self.rotationDir = Point(
       -direction.y * math.pi/2,
-      direction.x * math.pi/2,
-      0
+      direction.x * math.pi/2
     )
   else
     Galaxy.super.setDirection(self, direction)
@@ -187,7 +186,8 @@ end
 
 function Galaxy:update(dt)
   if self.rotationDir.x ~= 0 or self.rotationDir.y ~= 0 then
-    self.camera.orientation = self.camera.orientation:rotate(self.rotationDir * dt)
+    local rot = self.rotationDir * dt
+    self.camera:rotate(rot.x, rot.y)
     self:drawCanvas()
   end
 end

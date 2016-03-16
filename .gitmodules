@@ -16,3 +16,6 @@
 [submodule "lib/rotLove"]
 	path = lib/rotLove
 	url = https://github.com/paulofmandown/rotLove.git
+[submodule "lib/carbon"]
+	path = lib/carbon
+	url = https://github.com/lua-carbon/carbon.git

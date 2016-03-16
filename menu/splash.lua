@@ -17,6 +17,7 @@ function Splash:init(fsm)
     'continue',
     'new',
     'controls',
+    'galaxy',
     'quit',
   }
   self.opts = {
