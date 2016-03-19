@@ -27,9 +27,6 @@ end
 -- https://en.wikipedia.org/wiki/3D_projection#Perspective_projection
 function Camera:project(point)
   local p = point - self.position
-  if p.z < 0 then
-    return nil
-  end
   local vec = Vec3(p.x, p.y, p.z)
   local d = self.orientation:TransformVector(vec)
   local x, y, z = d[1], d[2], d[3]

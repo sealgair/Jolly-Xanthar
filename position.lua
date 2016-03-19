@@ -4,7 +4,7 @@ require 'utils'
 Point = class('Point')
 
 function Point:init(x, y, z)
-  if type(x) == "table" and tonumber(x.x) and tonumber(x.y) then
+  if x and type(x) ~= "number" and tonumber(x.x) and tonumber(x.y) then
     self:init(x.x, x.y, x.z)
   else
     if x == nil then x = 0 end

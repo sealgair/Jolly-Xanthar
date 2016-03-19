@@ -19,6 +19,7 @@ Star = class("Star")
 
 function Star:init(pos, seed)
   self.pos = pos
+  self.seed = seed
   local seed = coalesce(seed, 0) + seedFromPoint(pos)
   math.randomseed(seed)
   local r = math.random()
@@ -29,12 +30,16 @@ function Star:init(pos, seed)
   self.cache = {}
 end
 
+function Star:name()
+  local p = self.pos:round(2)
+  return "SC-"..p.x.."-"..p.y.."-"..p.z
+end
+
 function Star:details(viewpoint)
-  local p = self.pos:round(3)
-  local details = "SC "..p.x.."-"..p.y.."-"..p.z.."\n"
+  local details = self:name().."\n"
   details = details .. "Dst: "..round(self:distance(viewpoint), 1).."pc  "
   details = details .. "Lum: "..round(self.luminosity, 2).."⊙  "
-  details = details .. "Mtl: "..round(self.metalicity, 4).."⊙  "
+  details = details .. "Mtl: "..round(self.metalicity, 4).."  "
   return details
 end
 
@@ -69,6 +74,13 @@ function Star:apparentMagnitude(viewpoint)
   return self:cached("magnitude:" .. tostring(viewpoint), function()
     return 1.7 * math.log10(self:apparentLuminosity(viewpoint))
   end)
+end
+
+function Star:tripTime(viewpoint, idp)
+  idp = coalesce(idp, 1)
+  local parsecs = self:distance(viewpoint)
+  local ly = parsecs * 3.26163344
+  return round(ly, idp)
 end
 
 function safeAlpha(a)
@@ -131,10 +143,14 @@ function Galaxy:init(fsm, opts)
   }
   self.currentFilterKey = "near"
 
-  self.fsmOpts = opts
   self.seed = 1000
   self.sector = Sector(Point(0,0,0), 0.14, self.seed)
-  self.camera = Camera(self.sector.box:center(), Orientations.front, Size(GameSize))
+
+  self.fsmOpts = opts
+  self.ship = coalesce(self.fsmOpts.ship, Save:shipNames()[1])
+  self.shipStar = coalesce(Save:shipStar(self.ship), Star(self.sector.box:center(), self.seed))
+
+  self.camera = Camera(self.shipStar.pos, Orientations.front, Size(GameSize))
   self.galaxyRect = Rect(0, 0, Size(GameSize)):inset(16)
   self.rotationDir = Point(0, 0, 0)
   self:filterStars()
@@ -167,10 +183,18 @@ function Galaxy:filterStars()
 end
 
 function Galaxy:chooseItem(item)
+  if self.confirmTravel then
+    Save:saveShip(self.ship, nil, self.selectedStar)
+    self.fsm:advance('back', self.fsmOpts)
+  end
   if item == 'back' then
     self.fsm:advance('back', self.fsmOpts)
   elseif item == 'telescope' then
-    self.orienting = true
+    if self.orienting then
+      self.confirmTravel = true
+    else
+      self.orienting = true
+    end
   elseif self.starFilters[item] then
     self.currentFilterKey = item
     self:filterStars()
@@ -178,13 +202,16 @@ function Galaxy:chooseItem(item)
 end
 
 function Galaxy:cancelItem(item)
-  if item == 'telescope' then
+  if self.confirmTravel then
+    self.confirmTravel = false
+  elseif item == 'telescope' then
     self.orienting = false
   end
 end
 
 function Galaxy:setDirection(direction)
   if self.orienting then
+    if self.confirmTravel then return end
     local speed = math.pi/16
     if direction:isDiagonal() then
       -- diagonal, use pythagoras
@@ -213,7 +240,7 @@ function Galaxy:drawCanvas()
     self.canvas = love.graphics.newCanvas(size.w, size.h + 20)
   end
   local r = Rect(Point(), size)
-  graphicsContext({canvas=self.canvas, color=Colors.white, origin=true, font=Fonts.small}, function()
+  graphicsContext({canvas=self.canvas, color=Colors.white, origin=true, font=Fonts.small, lineWidth=1}, function()
     love.graphics.clear()
     local v, d = 0, 0
     local centerPoint = self.galaxyRect:center() - self.galaxyRect:origin()
@@ -236,18 +263,15 @@ function Galaxy:drawCanvas()
         end
       end
     end
+    self.selectedStar = centerStar
 
     love.graphics.setColor({0, 255, 0, 128})
-    love.graphics.circle("line", centerStarPoint.x, centerStarPoint.y, 2, 8)
+    love.graphics.circle("fill", centerStarPoint.x, centerStarPoint.y, 2.75, 8)
     love.graphics.setColor({64, 128, 255, 200})
     local cp = centerPoint + Point(0.5, 0.5)
     local cr = 2
     love.graphics.line(cp.x - cr, cp.y, cp.x + cr, cp.y)
     love.graphics.line(cp.x, cp.y - cr, cp.x, cp.y + cr)
-
-    love.graphics.setColor({0, 128, 0})
-    love.graphics.print(centerStar:details(), 2, size.h + 2)
-    print(centerStar:details())
   end)
 end
 
@@ -301,11 +325,43 @@ function Galaxy:draw()
   end
   local desc = self.itemDescriptions[sel]
   if self.orienting then
-    desc = "A: travel\tB: cancel"
+    desc = "A: Travel   B: Cancel"
   end
-  if desc then
-    graphicsContext({color = Colors.menuBlue, font = Fonts.medium}, function()
+  graphicsContext({color = Colors.menuBlue, font = Fonts.medium}, function()
+    if desc then
       love.graphics.print(desc, 18, 5)
+    end
+
+    local detailStar
+    if self.orienting then
+      detailStar = self.selectedStar
+    else
+      detailStar = self.shipStar
+    end
+    if detailStar then
+      love.graphics.setColor({0, 128, 0})
+      love.graphics.setFont(Fonts.small)
+      love.graphics.print(detailStar:details(self.shipStar.pos), self.galaxyRect.x + 2, self.galaxyRect:bottom() + 2)
+    end
+  end)
+
+  if self.confirmTravel then
+    graphicsContext({ color = colorWithAlpha(Colors.black, 128), font = Fonts.medium }, function()
+      local r = Rect(Point(), GameSize)
+      r:draw("fill")
+
+      local c = r:center()
+      r = Rect(Point(), GameSize.w / 2, GameSize.h / 4)
+      r:setCenter(c)
+      love.graphics.setColor(Colors.black)
+      r:draw("fill")
+      love.graphics.setColor(Colors.white)
+      r:draw("line")
+      r = r:inset(4)
+      local travelmsg = "Travel to new system? Trip will take "..self.selectedStar:tripTime(self.shipStar.pos).." years."
+      travelmsg = travelmsg .. "\nA: Go  B: Stay"
+      local x, y, w, h = r:parts()
+      love.graphics.printf(travelmsg, x, y, w, "center")
     end)
   end
 end

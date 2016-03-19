@@ -30,6 +30,7 @@ Colors = {
   yellow =   { 255, 255, 0 },
   green =    { 0, 255, 0 },
   white =    { 255, 255, 255 },
+  black =    { 0, 0, 0 },
   menuBlue = { 0, 128, 255 },
   halfGray = { 128, 128, 128 },
   menuGray = { 128, 128, 128 },

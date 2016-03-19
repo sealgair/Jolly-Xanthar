@@ -17,7 +17,6 @@ function Splash:init(fsm)
     'continue',
     'new',
     'controls',
-    'galaxy',
     'quit',
   }
   self.opts = {
@@ -61,13 +60,14 @@ function Splash:draw()
 
   graphicsContext({color=Colors.white, font=Fonts.large}, function()
     for i, item in ipairs(self.items) do
-      if item == "continue" and not canContinue() then
-        love.graphics.setColor(Colors.menuGray)
-      end
       if self.activeItem == i then
         love.graphics.setColor(Colors.red)
       else
-        love.graphics.setColor(Colors.white)
+        if item == "continue" and not canContinue() then
+          love.graphics.setColor(Colors.menuGray)
+        else
+          love.graphics.setColor(Colors.white)
+        end
       end
       i = i - 1
       local y = 48 + (i * 16)
