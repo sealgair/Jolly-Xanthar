@@ -5,7 +5,7 @@ require 'camera'
 require 'utils'
 
 local SectorSize = 50
-local FilterLimit = 3000
+local FilterLimit = 1000
 
 function seedFromPoint(p)
   local seedStr = "0"
@@ -32,9 +32,9 @@ end
 function Star:details(viewpoint)
   local p = self.pos:round(3)
   local details = "SC "..p.x.."-"..p.y.."-"..p.z.."\n"
-  details = details .. "Dst: "..round(self:distance(viewpoint), 1).."  "
-  details = details .. "Lum: "..round(self.luminosity, 2).."  "
-  details = details .. "Mtl: "..round(self.metalicity, 4).."  "
+  details = details .. "Dst: "..round(self:distance(viewpoint), 1).."pc  "
+  details = details .. "Lum: "..round(self.luminosity, 2).."⊙  "
+  details = details .. "Mtl: "..round(self.metalicity, 4).."⊙  "
   return details
 end
 
@@ -119,6 +119,7 @@ function Galaxy:init(fsm, opts)
     size = "Biggest Stars",
     bright = "Hottest Stars",
     galaxy = "Galactic Features",
+    telescope = "Navigate",
   }
 
   self.starFilters = {
@@ -183,9 +184,8 @@ function Galaxy:cancelItem(item)
 end
 
 function Galaxy:setDirection(direction)
-
   if self.orienting then
-    local speed = math.pi/8
+    local speed = math.pi/16
     if direction:isDiagonal() then
       -- diagonal, use pythagoras
       speed = speed / 1.414
@@ -300,6 +300,9 @@ function Galaxy:draw()
     end)
   end
   local desc = self.itemDescriptions[sel]
+  if self.orienting then
+    desc = "A: travel\tB: cancel"
+  end
   if desc then
     graphicsContext({color = Colors.menuBlue, font = Fonts.medium}, function()
       love.graphics.print(desc, 18, 5)
