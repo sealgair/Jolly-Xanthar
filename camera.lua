@@ -24,12 +24,12 @@ function Camera:__tostring()
   return "Camera at "..tostring(self.position).." facing "..tostring(self.orientation)
 end
 
--- https://en.wikipedia.org/wiki/3D_projection#Perspective_projection
 function Camera:project(point)
   local p = point - self.position
   local vec = Vec3(p.x, p.y, p.z)
   local d = self.orientation:TransformVector(vec)
   local x, y, z = d[1], d[2], d[3]
+  -- https://en.wikipedia.org/wiki/3D_projection#Perspective_projection
   local b = Point(
     x / -z,
     y / -z

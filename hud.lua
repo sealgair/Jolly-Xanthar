@@ -257,7 +257,7 @@ function HUD:draw()
   else
     love.graphics.setColor(255, 255, 255)
     love.graphics.setFont(self.font)
-    love.graphics.printf("Press Start", x, y, w, "center")
+    love.graphics.printf("PRESS START", x, y, w, "center")
   end
   love.graphics.setColor(255, 255, 255)
 
