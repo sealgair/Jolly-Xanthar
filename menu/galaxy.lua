@@ -142,6 +142,7 @@ function Galaxy:init(fsm, opts)
     galaxy = function(star) return 1/star:squaredDistance(self.camera.position) end,
   }
   self.currentFilterKey = "near"
+  self.currentFilterLimit = 1000
 
   self.seed = 1000
   self.sector = Sector(Point(0,0,0), 0.14, self.seed)
@@ -167,16 +168,20 @@ function Galaxy:init(fsm, opts)
   end
 end
 
-function Galaxy:filterStars()
-  self.filteredStars = {}
-  local stars = table.ifilter(self.sector.stars, function(star)
+function Galaxy:allStars()
+  return table.ifilter(self.sector.stars, function(star)
     return star:apparentLuminosity(self.camera.position) > 1
   end)
+end
+
+function Galaxy:filterStars()
+  self.filteredStars = {}
+  local stars = self:allStars()
   local f = self.starFilters[self.currentFilterKey]
   table.sort(stars, function(a, b)
     return f(a) < f(b)
   end)
-  for i = 1, FilterLimit do
+  for i = 1, self.currentFilterLimit do
     self.filteredStars[i] = stars[i]
   end
   self:drawCanvas()
@@ -234,10 +239,28 @@ function Galaxy:update(dt)
   end
 end
 
+function Galaxy:drawBackground(canvas)
+  if canvas == nil then
+    canvas = love.graphics.newCanvas(GameSize.w, GameSize.h)
+  end
+  local r = Rect(Point(), GameSize)
+
+  graphicsContext({canvas=canvas, color=Colors.white, origin=true}, function()
+    for s, star in ipairs(self:allStars()) do
+      local point = self.camera:project(star.pos)
+      if point and r:contains(point) then
+        point = point:round() + Point(0.5, 0.5)
+        self:drawStar(point, star:apparentMagnitude(self.camera.position))
+      end
+    end
+  end)
+  return canvas
+end
+
 function Galaxy:drawCanvas()
   local size = self.galaxyRect:size()
   if not self.canvas then
-    self.canvas = love.graphics.newCanvas(size.w, size.h + 20)
+    self.canvas = love.graphics.newCanvas(size.w, size.h)
   end
   local r = Rect(Point(), size)
   graphicsContext({canvas=self.canvas, color=Colors.white, origin=true, font=Fonts.small, lineWidth=1}, function()

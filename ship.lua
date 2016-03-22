@@ -54,7 +54,8 @@ function Ship:init(fsm, fsmOpts)
     "assets/worlds/navigation.world",
   })
 
-  self.background = love.graphics.newImage("assets/stars.png")
+  local galaxy = Galaxy(nil, {ship = self.ship})
+  self.background = galaxy:drawBackground()
   self.switchToImg = love.graphics.newImage("assets/switchTo.png")
   self.transportImg = love.graphics.newImage("assets/transport.png")
   self.onTransporter = {}
