@@ -85,6 +85,10 @@ function Point:__div(s)
   return self * s
 end
 
+function Point:parts()
+  return self.x, self.y
+end
+
 function Point:round(idp)
   local z = self.z
   if self.z then z = round(z, idp) end

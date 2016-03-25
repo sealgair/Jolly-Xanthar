@@ -1,23 +1,13 @@
 require 'position'
 require 'utils'
 
-function seedFromPoint(p)
-  local seedStr = "0"
-  for i in values({p.x, p.y, coalesce(p.z)}) do
-    seedStr = seedStr..string.format("%07d", round(i * 100))
-  end
-  return tonumber(seedStr)
-end
-
 Star = class("Star")
 
 function Star:init(pos, seed)
   self.pos = pos
-  self.seed = seed
-  local seed = coalesce(seed, 0) + seedFromPoint(pos)
-  math.randomseed(seed)
-  local r = math.random()
-  self.luminosity = r^5 * 1000
+  self.seed = coalesce(seed, 0) .. tostring(pos:round(5))
+  randomSeed(self.seed)
+  self.luminosity = math.random()^5 * 1000
   self.mass = math.random()
   self.metalicity = math.random()
 
@@ -81,4 +71,59 @@ function Star:tripTime(viewpoint, idp)
   local parsecs = self:distance(viewpoint)
   local ly = parsecs * 3.26163344
   return round(ly, idp)
+end
+
+function Star:drawPoint(point, origin)
+  local mag = self:apparentMagnitude(origin)
+  local a = math.min(mag, 1)
+  local color = self:color()
+  love.graphics.setColor(colorWithAlpha(color, 255*a))
+  love.graphics.points(point.x, point.y)
+  if mag > 1 then
+    local cm = math.ceil(mag)
+    for l = 1, cm do
+      a = ((cm - l)/mag)^2.5
+      a = math.min(a, 1)
+      love.graphics.setColor(colorWithAlpha(color, 255*a))
+      love.graphics.points(
+        point.x+l, point.y,
+        point.x-l, point.y,
+        point.x, point.y+l,
+        point.x, point.y-l
+      )
+    end
+  end
+end
+
+function Star:drawClose(c, radius)
+  graphicsContext({ color = Colors.white }, function()
+    local color = self:color()
+    for i = 1, 5 do
+      local a = 255 * (i/5)
+      love.graphics.setColor(colorWithAlpha(color, a))
+      love.graphics.circle("fill", c.x, c.y, radius - (i - 1), 20)
+    end
+  end)
+end
+
+function Star:planets()
+  if self.planets == nil then
+    self.planets = {}
+    randomSeed(self.seed)
+    local pcount = round(math.random() * self.mass * 20)
+    for i = 1, pcount do
+      table.insert(self.planets, Planet(self.seed .. "p" .. i))
+    end
+  end
+  return self.planets
+end
+
+
+Planet = class('Planet')
+
+function Planet:init(seed)
+  self.seed = seed
+  randomSeed(self.seed)
+  self.mass = math.random() ^ 3 * 100
+  self.dist = math.random() ^ 3 * 100
 end
