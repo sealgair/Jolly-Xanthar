@@ -20,15 +20,17 @@ function Star:name()
 end
 
 function Star:color()
-  local g = math.min(self.luminosity * .5, 255)
-  local b = math.min(self.luminosity * .5 - g, 255)
-  return {255, g, b}
+  local y = math.min((self.luminosity - 2400) / 3600, 1) * 255
+  local w = math.min((self.luminosity - 6000) / 4000, 1) * 255
+  local b = math.min(math.min(self.luminosity, 10000) / 30000, 1)
+  b = math.max(1-b)
+  return {255 * b, y * b, w}
 end
 
 function Star:details(viewpoint)
   local details = self:name().."\n"
   details = details .. "Dst: "..round(self:distance(viewpoint), 1).."pc  "
-  details = details .. "Lum: "..round(self.luminosity, 2).."⊙  "
+  details = details .. "Tmp: "..round(self.luminosity, 2).."°  "
   details = details .. "Mtl: "..round(self.metalicity, 4).."  "
   return details
 end
@@ -62,7 +64,7 @@ end
 
 function Star:apparentMagnitude(viewpoint)
   return self:cached("magnitude:" .. tostring(viewpoint), function()
-    return 1.7 * math.log10(self:apparentLuminosity(viewpoint))
+    return .4 * math.log10(self:apparentLuminosity(viewpoint))
   end)
 end
 
@@ -110,7 +112,7 @@ function Star:planets()
   if self.planets == nil then
     self.planets = {}
     randomSeed(self.seed)
-    local pcount = round(math.random() * self.mass * 20)
+    local pcount = round(math.random() * self.metalicity * 20)
     for i = 1, pcount do
       table.insert(self.planets, Planet(self.seed .. "p" .. i))
     end

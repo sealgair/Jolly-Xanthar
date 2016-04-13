@@ -95,7 +95,7 @@ function love.load(arg)
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ"..
   "1234567890"..
   ".,!?-+/():;%&`'*#=[]\\\"_|Ø"..
-  "←↑→↓⊙"
+  "←↑→↓⊙°"
   for fontFile in values(love.filesystem.getDirectoryItems("assets/fonts")) do
     if fontFile:find(".png$") then
       local fontName = fontFile:gsub(".png", "")

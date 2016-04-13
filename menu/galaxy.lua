@@ -6,7 +6,6 @@ require 'utils'
 require 'star'
 
 local SectorSize = 50
-local FilterLimit = 1000
 
 function safeAlpha(a)
   return math.max(math.min(a, 255), 0)
@@ -61,10 +60,10 @@ function Galaxy:init(fsm, opts)
 
   self.starFilters = {
     near = function(star) return star:squaredDistance(self.camera.position) end,
-    size = function(star) return star.mass end,
-    bright = function(star) return star.luminosity end,
-    metal = function(star) return star.metalicity end,
-    galaxy = function(star) return 1/star:squaredDistance(self.camera.position) end,
+    size = function(star) return -star.mass end,
+    bright = function(star) return -star.luminosity end,
+    metal = function(star) return -star.metalicity end,
+    galaxy = function(star) return -star:squaredDistance(self.camera.position) end,
   }
   self.currentFilterKey = "near"
   self.currentFilterLimit = 1000
