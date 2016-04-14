@@ -335,3 +335,15 @@ function randomSeed(seed)
   end
   math.randomseed(seed)
 end
+
+function list_max(list)
+  local max
+  for v in values(list) do
+    if max == nil then
+      max = v
+    elseif v > max then
+      max = v
+    end
+  end
+  return max
+end

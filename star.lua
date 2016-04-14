@@ -98,7 +98,7 @@ function Star:drawPoint(point, origin)
 end
 
 function Star:drawClose(c, radius)
-  graphicsContext({ color = Colors.white }, function()
+  graphicsContext({ color = Colors.white, lineWidth = 1.5 }, function()
     local color = self:color()
     for i = 1, 5 do
       local a = 255 * (i/5)
@@ -109,15 +109,15 @@ function Star:drawClose(c, radius)
 end
 
 function Star:planets()
-  if self.planets == nil then
-    self.planets = {}
+  if self._cachedPlanets == nil then
+    self._cachedPlanets = {}
     randomSeed(self.seed)
     local pcount = round(math.random() * self.metalicity * 20)
     for i = 1, pcount do
-      table.insert(self.planets, Planet(self.seed .. "p" .. i))
+      table.insert(self._cachedPlanets, Planet(self.seed .. "p" .. i))
     end
   end
-  return self.planets
+  return self._cachedPlanets
 end
 
 
@@ -126,6 +126,8 @@ Planet = class('Planet')
 function Planet:init(seed)
   self.seed = seed
   randomSeed(self.seed)
-  self.mass = math.random() ^ 3 * 100
-  self.dist = math.random() ^ 3 * 100
+  self.mass = math.random() ^ 2 * 100
+  self.radius = self.mass
+  self.dist = math.random() ^ 2 * 100
+  self.rot = math.random() * 2 * math.pi
 end

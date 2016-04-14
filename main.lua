@@ -18,6 +18,7 @@ require 'menu.splash'
 require 'menu.keyboard'
 require 'menu.controls'
 require 'menu.galaxy'
+require 'menu.starsystem'
 
 GameSize = Size{ w = 256, h = 240 }
 GameScale = Point(3, 3)
@@ -122,7 +123,11 @@ function love.load(arg)
     [Ship] = {
       land = World,
       quit = Splash,
-      navigate = Galaxy,
+      navigate = StarSystem,
+    },
+    [StarSystem] = {
+      back = StarSystem,
+      galaxy = Galaxy,
     },
     [Galaxy] = {
       back = Ship,
