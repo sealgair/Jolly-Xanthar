@@ -10,6 +10,7 @@ function Star:init(pos, seed)
   self.luminosity = math.random()^5 * 1000
   self.mass = math.random()
   self.metalicity = math.random()
+  self.rot = math.random() * 2 * math.pi
 
   self.cache = {}
 end
@@ -98,13 +99,13 @@ function Star:drawPoint(point, origin)
 end
 
 function Star:drawClose(c, radius)
-  graphicsContext({ color = Colors.white, lineWidth = 1.5 }, function()
-    local color = self:color()
-    for i = 1, 5 do
-      local a = 255 * (i/5)
-      love.graphics.setColor(colorWithAlpha(color, a))
-      love.graphics.circle("fill", c.x, c.y, radius - (i - 1), 20)
-    end
+  local w = radius * 2 - 1
+  local image = love.graphics.newImage('assets/stars/star1.png')
+  local iw = image:getWidth()
+  local s = w / iw
+
+  graphicsContext({ color = self:color(), lineWidth = 1.5 }, function()
+    love.graphics.draw(image, c.x, c.y, self.rot, s, s, radius, radius)
   end)
 end
 
