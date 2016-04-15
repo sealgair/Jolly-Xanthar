@@ -78,18 +78,21 @@ function Ship:init(fsm, fsmOpts)
   end
 
   local top = {}
-  local w = 0
+  local wt = 0
   for room in values(topRooms) do
-    w = w + room.w
+    wt = wt + room.w
     room:heighten(th)
     gridStitch(top, room.data)
   end
 
   local bottom = rowOf({}, bh)
+  local wb = 0
   for room in values(bottomRooms) do
+    wb = wb + room.w
     room:heighten(bh)
     gridStitch(bottom, room.data)
   end
+  local w = math.max(wt, wb)
 
   local data = {}
   table.extend(data, top)
