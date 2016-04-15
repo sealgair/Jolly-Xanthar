@@ -31,10 +31,12 @@ function StarSystem:drawScreenCanvas()
       love.graphics.setColor({255, 255, 255, 128})
       local radius = (planet.dist / maxDist) * ((r.h / 2) - 15) + 12
       love.graphics.circle("line", sc.x, sc.y, radius, 50)
-      local pc = sc + (Point(math.cos(planet.rot), math.sin(planet.rot)) * radius)
+    end
 
-      love.graphics.setColor({255, 255, 0})
-      love.graphics.circle("fill", pc.x, pc.y, math.log10(planet.radius) * 3 + 2, 10)
+    for planet in values(self.shipStar:planets()) do
+      local radius = (planet.dist / maxDist) * ((r.h / 2) - 15) + 12
+      local pc = sc + (Point(math.cos(planet.rot), math.sin(planet.rot)) * radius)
+      planet:draw(pc)
     end
   end)
 end

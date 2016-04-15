@@ -3,6 +3,18 @@ require 'utils'
 
 Star = class("Star")
 
+function drawGlobe(c, radius, image, gctx)
+  local w = radius * 2
+  local iw = image:getWidth()
+  local s = w / iw
+  local off = radius / s
+  local rot = math.random() * 2 * math.pi
+
+  graphicsContext(gctx, function()
+    love.graphics.draw(image, c.x, c.y, rot, s, s, off, off)
+  end)
+end
+
 function Star:init(pos, seed)
   self.pos = pos
   self.seed = coalesce(seed, 0) .. tostring(pos:round(5))
@@ -99,16 +111,7 @@ function Star:drawPoint(point, origin)
 end
 
 function Star:drawClose(c, radius)
-  local w = radius * 2 -- 1
-  local image = love.graphics.newImage('assets/stars/star1.png')
-  local iw = image:getWidth()
-  local s = w / iw
-  local off = radius / s
-
---  self.rot = 0
-  graphicsContext({ color = self:color(), lineWidth = 1.5 }, function()
-    love.graphics.draw(image, c.x, c.y, self.rot, s, s, off, off)
-  end)
+  drawGlobe(c, radius, love.graphics.newImage('assets/stars/star1.png'), { color = self:color(), lineWidth = 1.5 })
 end
 
 function Star:planets()
@@ -133,4 +136,9 @@ function Planet:init(seed)
   self.radius = self.mass
   self.dist = math.random() ^ 2 * 100
   self.rot = math.random() * 2 * math.pi
+end
+
+function Planet:draw(c, radius)
+  local image = love.graphics.newImage('assets/planets/life1.png')
+  drawGlobe(c, math.log10(self.radius) * 3 + 2, image, {color = Colors.white})
 end
