@@ -99,13 +99,15 @@ function Star:drawPoint(point, origin)
 end
 
 function Star:drawClose(c, radius)
-  local w = radius * 2 - 1
+  local w = radius * 2 -- 1
   local image = love.graphics.newImage('assets/stars/star1.png')
   local iw = image:getWidth()
   local s = w / iw
+  local off = radius / s
 
+--  self.rot = 0
   graphicsContext({ color = self:color(), lineWidth = 1.5 }, function()
-    love.graphics.draw(image, c.x, c.y, self.rot, s, s, radius, radius)
+    love.graphics.draw(image, c.x, c.y, self.rot, s, s, off, off)
   end)
 end
 
