@@ -36,7 +36,7 @@ function StarSystem:drawScreenCanvas()
     for planet in values(self.shipStar:planets()) do
       local radius = (planet.dist / maxDist) * ((r.h / 2) - 15) + 12
       local pc = sc + (Point(math.cos(planet.rot), math.sin(planet.rot)) * radius)
-      planet:draw(pc)
+      planet:draw(pc, radius)
     end
   end)
 end

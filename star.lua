@@ -139,6 +139,12 @@ function Planet:init(seed)
 end
 
 function Planet:draw(c, radius)
-  local image = love.graphics.newImage('assets/planets/life1.png')
+  local filename
+  if radius > 8 then
+    filename = 'assets/planets/life2.png'
+  else
+    filename = 'assets/planets/life2_sm.png'
+  end
+  local image = love.graphics.newImage(filename)
   drawGlobe(c, math.log10(self.radius) * 3 + 2, image, {color = Colors.white})
 end
