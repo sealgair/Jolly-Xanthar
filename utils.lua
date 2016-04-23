@@ -129,6 +129,17 @@ function table.extend(t, other)
   end
 end
 
+function table.iconcat(...)
+  local new = {}
+  for i = 1, select('#', ...) do
+    local t = select(i, ...)
+    for _, v in ipairs(t) do
+      table.insert(new, v)
+    end
+  end
+  return new
+end
+
 function coalesce(...)
   for i = 1, select('#', ...) do
     local v = select(i, ...)

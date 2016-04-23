@@ -134,7 +134,7 @@ function Planet:init(seed)
   randomSeed(self.seed)
   self.mass = math.random() ^ 2 * 100
   self.radius = self.mass
-  self.drawRadius = math.log10(self.radius) * 3 + 2
+  self.drawRadius = math.log10(self.radius) * 10
   self.dist = math.random() ^ 2 * 100
   self.rot = math.random() * 2 * math.pi
   self.orient = math.random() * 2 * math.pi
@@ -153,4 +153,8 @@ function Planet:draw(c)
   filename = 'assets/planets/'..filename..'.png'
   local image = love.graphics.newImage(filename)
   drawGlobe(c, self.drawRadius, image, self.rot, {color = Colors.white})
+end
+
+function Planet:__eq(rhs)
+  return self.seed == rhs.seed
 end
