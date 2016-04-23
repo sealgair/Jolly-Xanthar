@@ -3,15 +3,14 @@ require 'utils'
 
 Star = class("Star")
 
-function drawGlobe(c, radius, image, gctx)
+function drawGlobe(c, radius, image, orient, gctx)
   local w = radius * 2
   local iw = image:getWidth()
   local s = w / iw
   local off = radius / s
-  local rot = math.random() * 2 * math.pi
 
   graphicsContext(gctx, function()
-    love.graphics.draw(image, c.x, c.y, rot, s, s, off, off)
+    love.graphics.draw(image, c.x, c.y, orient, s, s, off, off)
   end)
 end
 
@@ -111,7 +110,8 @@ function Star:drawPoint(point, origin)
 end
 
 function Star:drawClose(c, radius)
-  drawGlobe(c, radius, love.graphics.newImage('assets/stars/star1.png'), { color = self:color(), lineWidth = 1.5 })
+  drawGlobe(c, radius, love.graphics.newImage('assets/stars/star1.png'), self.rot,
+            { color = self:color(), lineWidth = 1.5 })
 end
 
 function Star:planets()
@@ -134,8 +134,10 @@ function Planet:init(seed)
   randomSeed(self.seed)
   self.mass = math.random() ^ 2 * 100
   self.radius = self.mass
+  self.drawRadius = math.log10(self.radius) * 3 + 2
   self.dist = math.random() ^ 2 * 100
   self.rot = math.random() * 2 * math.pi
+  self.orient = math.random() * 2 * math.pi
 
   self.imageName = randomChoice({
     "life2",
@@ -143,12 +145,12 @@ function Planet:init(seed)
   })
 end
 
-function Planet:draw(c, radius)
+function Planet:draw(c)
   local filename = self.imageName
-  if radius <= 8 then
+  if self.drawRadius <= 8 then
     filename = filename .. '_sm'
   end
   filename = 'assets/planets/'..filename..'.png'
   local image = love.graphics.newImage(filename)
-  drawGlobe(c, math.log10(self.radius) * 3 + 2, image, {color = Colors.white})
+  drawGlobe(c, self.drawRadius, image, self.rot, {color = Colors.white})
 end

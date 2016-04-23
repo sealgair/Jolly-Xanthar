@@ -45,15 +45,20 @@ function Menu:setDirection(direction)
       end
     end
 
-    self.selected.y = wrapping(self.selected.y + direction.y, #self.itemGrid)
-    local row = self.itemGrid[self.selected.y]
-    if row then
-      self.selected.x = wrapping(self.selected.x + direction.x, #row)
-    end
+    self:changeMenuItem(direction)
+
     if self:selectedItem() == '' then
       self.direction = Direction()
       self:setDirection(direction)
     end
+  end
+end
+
+function Menu:changeMenuItem(direction)
+  self.selected.y = wrapping(self.selected.y + direction.y, #self.itemGrid)
+  local row = self.itemGrid[self.selected.y]
+  if row then
+    self.selected.x = wrapping(self.selected.x + direction.x, #row)
   end
 end
 
