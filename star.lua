@@ -118,9 +118,10 @@ function Star:planets()
   if self._cachedPlanets == nil then
     self._cachedPlanets = {}
     randomSeed(self.seed)
-    local pcount = round(math.random() * self.metalicity * 20)
+    local r = math.random()
+    local pcount = round(r * self.metalicity * 20)
     for i = 1, pcount do
-      table.insert(self._cachedPlanets, Planet(self.seed .. "p" .. i))
+      table.insert(self._cachedPlanets, Planet(self, self.seed .. "p" .. i, i))
     end
   end
   return self._cachedPlanets
@@ -129,8 +130,10 @@ end
 
 Planet = class('Planet')
 
-function Planet:init(seed)
+function Planet:init(star, seed, index)
+  self.star = star
   self.seed = seed
+  if index then self.index = index end
   randomSeed(self.seed)
   self.mass = math.random() ^ 2 * 100
   self.radius = self.mass
@@ -145,14 +148,20 @@ function Planet:init(seed)
   })
 end
 
-function Planet:draw(c)
+function Planet:name()
+  local chars = {
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+    'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+  }
+  return self.star:name() .. ' ' .. chars[self.index]
+end
+
+function Planet:draw(c, drawScale)
+  local dr = self.drawRadius * coalesce(drawScale, 1)
   local filename = self.imageName
-  if self.drawRadius <= 8 then
-    filename = filename .. '_sm'
-  end
   filename = 'assets/planets/'..filename..'.png'
   local image = love.graphics.newImage(filename)
-  drawGlobe(c, self.drawRadius, image, self.rot, {color = Colors.white})
+  drawGlobe(c, dr, image, self.rot, {color = Colors.white})
 end
 
 function Planet:__eq(rhs)

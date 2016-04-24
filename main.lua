@@ -30,6 +30,7 @@ Colors = {
   red =      { 255, 0, 0 },
   yellow =   { 255, 255, 0 },
   green =    { 0, 255, 0 },
+  blue =     { 0, 0, 255 },
   white =    { 255, 255, 255 },
   black =    { 0, 0, 0 },
   menuBlue = { 0, 128, 255 },
@@ -123,10 +124,11 @@ function love.load(arg)
     [Ship] = {
       land = World,
       quit = Splash,
-      navigate = StarSystem,
+      navPlanet = StarSystem,
+      navStar = Galaxy,
     },
     [StarSystem] = {
-      back = StarSystem,
+      back = Ship,
       galaxy = Galaxy,
     },
     [Galaxy] = {

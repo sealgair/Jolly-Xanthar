@@ -25,18 +25,34 @@ function Save:deserializeStar(starData)
   return Star(Point(starData.pos), starData.seed)
 end
 
-function Save:saveShip(shipName, roster, star)
+function Save:serializePlanet(planet)
+  return {
+    star = self:serializeStar(planet.star),
+    seed = planet.seed,
+    index = planet.index
+  }
+end
+
+function Save:deserializePlanet(planetData)
+  local star = self:deserializeStar(planetData.star)
+  return Planet(star, planetData.seed, planetData.index)
+end
+
+function Save:saveShip(shipName, roster, star, planet)
   if star then star = self:serializeStar(star) end
+  if planet then planet = self:serializePlanet(planet) end
   local oldData = self.data[shipName]
   if oldData then
     roster = coalesce(roster, oldData.roster)
     star = coalesce(star, oldData.star)
+    planet = coalesce(planet, oldData.planet)
   end
   self.data[shipName] = {
     name = shipName,
     roster = roster,
     saved = os.time(),
     star = star,
+    planet = planet,
   }
   love.filesystem.write(self.filename, serialize(self.data))
 end
@@ -46,9 +62,16 @@ function Save:shipRoster(shipName)
 end
 
 function Save:shipStar(shipName)
-  local sd = self.data[shipName].star
-  if sd then
-    return Save:deserializeStar(sd)
+  local data = self.data[shipName].star
+  if data then
+    return Save:deserializeStar(data)
+  end
+end
+
+function Save:shipPlanet(shipName)
+  local data = self.data[shipName].planet
+  if data then
+    return Save:deserializePlanet(data)
   end
 end
 

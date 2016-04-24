@@ -73,9 +73,15 @@ function Galaxy:init(fsm, opts)
 
   self.fsmOpts = opts
   self.ship = coalesce(self.fsmOpts.ship, Save:shipNames()[1])
-  self.shipStar = coalesce(Save:shipStar(self.ship), Star(self.sector.box:center(), self.seed))
+  self.shipStar = Save:shipStar(self.ship)
+  self.shipPlanet = Save:shipPlanet(self.ship)
 
-  self.camera = Camera(self.shipStar.pos, Orientations.front, Size(GameSize))
+  if self.shipStar then
+    self.shipPos = self.shipStar.pos
+  else
+    self.shipPos = self.sector.box:center()
+  end
+  self.camera = Camera(self.shipPos, Orientations.front, Size(GameSize))
   self.galaxyRect = Rect(0, 0, Size(GameSize)):inset(16)
   self.rotationDir = Point(0, 0, 0)
   self:filterStars()
@@ -177,7 +183,12 @@ function Galaxy:drawBackground(canvas)
         star:drawPoint(point, self.camera.position)
       end
     end
-    self.shipStar:drawClose(r:center(), 45)
+    local c = r:center() - Point(16, 16)
+    if self.shipPlanet then
+      self.shipPlanet:draw(c, 2)
+    elseif self.shipStar then
+      self.shipStar:drawClose(c, 45)
+    end
   end)
   return canvas
 end
@@ -293,7 +304,7 @@ function Galaxy:draw()
     if detailStar then
       love.graphics.setColor({0, 128, 0})
       love.graphics.setFont(Fonts.small)
-      love.graphics.print(detailStar:details(self.shipStar.pos), self.galaxyRect.x + 2, self.galaxyRect:bottom() + 2)
+      love.graphics.print(detailStar:details(self.shipPos), self.galaxyRect.x + 2, self.galaxyRect:bottom() + 2)
     end
   end)
 end

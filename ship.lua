@@ -46,6 +46,9 @@ Ship = World:extend('Ship')
 function Ship:init(fsm, fsmOpts)
   self.shipFile = "myship.world"
   self.ship = coalesce(fsmOpts.ship, Save:shipNames()[1])
+  self.shipStar = Save:shipStar(self.ship)
+  self.shipPlanet = Save:shipPlanet(self.ship)
+
   randomSeed(self.ship)
   local roomFiles = randomize({
     "assets/worlds/barracks.world",
@@ -143,7 +146,11 @@ function Ship:controlStop(player, action)
     end
 
     if #self.inNavCom > 0 then
-      Ship.super.travel(self, self.inNavCom[1], "navigate")
+      local nav = "navStar"
+      if self.shipStar then
+        nav = "navPlanet"
+      end
+      Ship.super.travel(self, self.inNavCom[1], nav)
     end
   elseif action == 'b' then
     if self.inTransporter[player.playerIndex] then
