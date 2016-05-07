@@ -358,3 +358,20 @@ function list_max(list)
   end
   return max
 end
+
+function animateOffset(current, target, step)
+  for coord in values({'x', 'y'}) do
+    if current[coord] > target[coord] then
+      current[coord] = math.max(
+        current[coord] - step,
+        target[coord]
+      )
+    elseif current[coord] < target[coord] then
+      current[coord] = math.min(
+        current[coord] + step,
+        target[coord]
+      )
+    end
+  end
+  return current
+end

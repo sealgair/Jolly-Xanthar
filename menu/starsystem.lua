@@ -18,6 +18,7 @@ function StarSystem:init(fsm, opts)
 
   self.screenRect = Rect(0, 0, Size(GameSize)):inset(16)
   self.windowCanvas = love.graphics.newCanvas(self.screenRect:size():parts())
+  self.canvasAnimOffset = Point()
 
   StarSystem.super.init(self, {
     fsm = fsm,
@@ -88,10 +89,14 @@ function StarSystem:drawScreenCanvas()
   end)
 end
 
+function StarSystem:update(dt)
+  self.canvasAnimOffset = animateOffset(self.canvasAnimOffset, self.canvasOffset, dt * 200)
+end
+
 function StarSystem:draw()
   graphicsContext({canvas = self.windowCanvas, origin = true}, function()
     love.graphics.clear()
-    love.graphics.translate((-self.canvasOffset):parts())
+    love.graphics.translate((-self.canvasAnimOffset):parts())
     love.graphics.draw(self.screenCanvas)
   end)
   love.graphics.draw(self.windowCanvas, self.screenRect:origin():parts())
