@@ -56,7 +56,6 @@ local StateMachine = {
 }
 
 function StateMachine:advance(input, options)
-
   local nextState
   if self.currentState then
     local transition = self.transitions[self.currentState.class]

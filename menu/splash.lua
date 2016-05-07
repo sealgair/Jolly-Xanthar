@@ -18,11 +18,11 @@ function Splash:init(fsm)
     'new',
     'controls',
     'quit',
+    'galaxy',
     'planets',
   }
   self.opts = {
     new = "Name Your Ship",
-    galaxy = 123456,  -- TODO: generate static seed
   }
 
   if canContinue() then

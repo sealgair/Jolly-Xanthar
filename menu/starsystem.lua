@@ -14,6 +14,11 @@ function StarSystem:init(fsm, opts)
   self.shipStar = Save:shipStar(self.ship)
   self.shipPlanet = Save:shipPlanet(self.ship)
   self.planets = self.shipStar:planets()
+  for p, planet in ipairs(self.planets) do
+    if planet == self.shipPlanet then
+      self.selectedPlanet = p
+    end
+  end
   self.background = love.graphics.newImage('assets/starsystem.png')
 
   self.screenRect = Rect(0, 0, Size(GameSize)):inset(16)
@@ -22,8 +27,8 @@ function StarSystem:init(fsm, opts)
   StarSystem.super.init(self, {
     fsm = fsm,
     itemGrid = {
-      table.iconcat({'back'}, self.planets),
-      table.iconcat({'galaxy'}, self.planets),
+      {'back', 'planets'},
+      {'galaxy', 'planets'},
     },
   })
 
@@ -38,14 +43,30 @@ function StarSystem:init(fsm, opts)
 end
 
 function StarSystem:changeMenuItem(direction)
-  StarSystem.super.changeMenuItem(self, direction)
+  if self:selectedItem() == 'planets' then
+    if direction == Direction.up then
+      self.selected = Point(1, 1)
+    elseif direction == Direction.down then
+      self.selected = Point(1, 2)
+    else
+      local next = self.selectedPlanet + direction.x
+      if next < 1 or next > #self.planets then
+        StarSystem.super.changeMenuItem(self, direction)
+      else
+        self.selectedPlanet = next
+      end
+    end
+  else
+    StarSystem.super.changeMenuItem(self, direction)
+  end
   self:drawScreenCanvas()
 end
 
 function StarSystem:chooseItem(item)
-  if class.isInstance(item, Planet) then
-    self.shipPlanet = item
+  if item == 'planets' then
+    self.shipPlanet = self.planets[self.selectedPlanet]
     Save:saveShip(self.ship, nil, nil, self.shipPlanet)
+    self.selected.x = 1
     self:drawScreenCanvas()
   else
     self.fsm:advance(item, self.fsmOpts)
@@ -61,7 +82,7 @@ function StarSystem:drawScreenCanvas()
     p = p + Point(64, 0)
     local planetPos = 0
     local selPlanetPos = 0
-    for planet in values(self.planets) do
+    for pi, planet in ipairs(self.planets) do
       p = p + Point(planet.drawRadius * 1.5, 0)
 
       if planet == self.shipPlanet then
@@ -71,9 +92,11 @@ function StarSystem:drawScreenCanvas()
         love.graphics.circle("fill", p.x, p.y, radius, 20)
       end
 
-      if planet == self:selectedItem() then
-        love.graphics.setColor(Colors.red)
-        love.graphics.circle("fill", p.x, p.y, planet.drawRadius + 2.5, 20)
+      if pi == self.selectedPlanet then
+        if self:selectedItem() == 'planets' then
+          love.graphics.setColor(Colors.red)
+          love.graphics.circle("fill", p.x, p.y, planet.drawRadius + 2.5, 20)
+        end
         planetPos = p.x
       end
 
@@ -84,7 +107,6 @@ function StarSystem:drawScreenCanvas()
     local centerX = self.screenRect.w / 2
     if planetPos > centerX then
       self.canvasOffset = Point(planetPos - centerX, 0)
-      print("offset", planetPos, centerX, self.canvasOffset)
     end
   end)
 end

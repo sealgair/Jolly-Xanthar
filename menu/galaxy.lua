@@ -72,7 +72,11 @@ function Galaxy:init(fsm, opts)
   self.sector = Sector(Point(0,0,0), 0.14, self.seed)
 
   self.fsmOpts = opts
-  self.ship = coalesce(self.fsmOpts.ship, Save:shipNames()[1])
+  if self.fsmOpts and self.fsmOpts.ship then
+    self.ship = self.fsmOpts.ship
+  else
+    self.ship = Save:shipNames()[1]
+  end
   self.shipStar = Save:shipStar(self.ship)
   self.shipPlanet = Save:shipPlanet(self.ship)
 

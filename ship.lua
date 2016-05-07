@@ -45,7 +45,11 @@ Ship = World:extend('Ship')
 
 function Ship:init(fsm, fsmOpts)
   self.shipFile = "myship.world"
-  self.ship = coalesce(fsmOpts.ship, Save:shipNames()[1])
+  if fsmOpts and fsmOpts.ship then
+    self.ship = fsmOpts.ship
+  else
+    self.ship = Save:shipNames()[1]
+  end
   self.shipStar = Save:shipStar(self.ship)
   self.shipPlanet = Save:shipPlanet(self.ship)
 
