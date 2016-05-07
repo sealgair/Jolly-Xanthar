@@ -18,7 +18,6 @@ function StarSystem:init(fsm, opts)
 
   self.screenRect = Rect(0, 0, Size(GameSize)):inset(16)
   self.windowCanvas = love.graphics.newCanvas(self.screenRect:size():parts())
-  self.canvasAnimOffset = Point()
 
   StarSystem.super.init(self, {
     fsm = fsm,
@@ -35,6 +34,7 @@ function StarSystem:init(fsm, opts)
   }
 
   self:drawScreenCanvas()
+  self.canvasAnimOffset = self.canvasOffset
 end
 
 function StarSystem:changeMenuItem(direction)
