@@ -115,6 +115,7 @@ function love.load(arg)
       continue = ShipMenu,
       new = Keyboard,
       galaxy = Galaxy,
+      planets = StarSystem,
       controls = Controls,
       quit = function() love.event.quit(); return {} end,
     },

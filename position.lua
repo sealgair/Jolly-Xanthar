@@ -148,6 +148,10 @@ function Size:init(w, h, d)
   end
 end
 
+function Size:parts()
+  return self.w, self.h
+end
+
 function Size:__tostring()
   local s = self.w.."X"..self.h
   if self.d then s = s.."X"..self.d end

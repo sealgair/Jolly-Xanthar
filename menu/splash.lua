@@ -18,6 +18,7 @@ function Splash:init(fsm)
     'new',
     'controls',
     'quit',
+    'planets',
   }
   self.opts = {
     new = "Name Your Ship",
