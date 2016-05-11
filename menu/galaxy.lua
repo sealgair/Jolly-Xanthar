@@ -85,6 +85,7 @@ function Galaxy:init(fsm, opts)
   else
     self.shipPos = self.sector.box:center()
   end
+  self.starShader = love.graphics.newShader("shaders/stars.glsl")
   self.camera = Camera(self.shipPos, Orientations.front, Size(GameSize))
   self.galaxyRect = Rect(0, 0, Size(GameSize)):inset(16)
   self.rotationDir = Point(0, 0, 0)
@@ -115,9 +116,23 @@ function Galaxy:filterStars()
   table.sort(stars, function(a, b)
     return f(a) < f(b)
   end)
+  local starVerts = {}
   for i = 1, self.currentFilterLimit do
-    self.filteredStars[i] = stars[i]
+    local star = stars[i]
+    self.filteredStars[i] = star
+    local p = star.pos - self.camera.position
+    table.insert(starVerts, {
+      p.x, p.y, p.z,
+      255, 255, 255, 255
+    })
   end
+  local vertexFormat = {
+    {"VertexPosition", "float", 2},
+    {"VertexZPosition", "float", 1},
+    {"VertexColor", "byte", 4},
+  }
+
+  self.starsMesh = love.graphics.newMesh(vertexFormat, starVerts, "points", "static")
   self:drawCanvas()
 end
 
@@ -179,14 +194,8 @@ function Galaxy:drawBackground(canvas)
   end
   local r = Rect(Point(), GameSize)
 
+  self:drawStars(canvas)
   graphicsContext({canvas=canvas, color=Colors.white, origin=true}, function()
-    for s, star in ipairs(self:allStars()) do
-      local point = self.camera:project(star.pos)
-      if point and r:contains(point) then
-        point = point:round() + Point(0.5, 0.5)
-        star:drawPoint(point, self.camera.position)
-      end
-    end
     local c = r:center() - Point(16, 16)
     if self.shipPlanet then
       self.shipPlanet:draw(c, 2)
@@ -202,39 +211,14 @@ function Galaxy:drawCanvas()
   if not self.canvas then
     self.canvas = love.graphics.newCanvas(size.w, size.h)
   end
-  local r = Rect(Point(), size)
-  graphicsContext({canvas=self.canvas, color=Colors.white, origin=true, font=Fonts.small, lineWidth=1}, function()
+  self:drawStars(self.canvas)
+end
+
+function Galaxy:drawStars(canvas)
+  self.starShader:send("quatAngle", self.camera.orientation)
+  graphicsContext({canvas=canvas, shader=self.starShader, color=Colors.white, origin=true}, function()
     love.graphics.clear()
-    local v, d = 0, 0
-    local centerPoint = self.galaxyRect:center() - self.galaxyRect:origin()
-    local centerStarPoint = Point(0, 0)
-    centerStarPoint.dist = 10000
-    local centerStar
-    for s, star in ipairs(self.filteredStars) do
-      v = v + 1
-      local point = self.camera:project(star.pos)
-      if point and r:contains(point) then
-        d = d + 1
-        point = point:round() + Point(0.5, 0.5)
-        star:drawPoint(point, self.camera.position)
-
-        local dist = centerPoint:distanceToSquared(point)
-        if dist < centerStarPoint.dist then
-          centerStarPoint = point
-          centerStarPoint.dist = dist
-          centerStar = star
-        end
-      end
-    end
-    self.selectedStar = centerStar
-
-    love.graphics.setColor({0, 255, 0, 128})
-    love.graphics.circle("fill", centerStarPoint.x, centerStarPoint.y, 2.75, 8)
-    love.graphics.setColor({64, 128, 255, 200})
-    local cp = centerPoint + Point(0.5, 0.5)
-    local cr = 2
-    love.graphics.line(cp.x - cr, cp.y, cp.x + cr, cp.y)
-    love.graphics.line(cp.x, cp.y - cr, cp.x, cp.y + cr)
+    love.graphics.draw(self.starsMesh)
   end)
 end
 

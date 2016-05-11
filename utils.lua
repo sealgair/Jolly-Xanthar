@@ -311,7 +311,7 @@ function graphicsContext(context, graphics)
   if context.canvas then
     love.graphics.setCanvas(old.canvas)
   end
-  if old.shader then
+  if context.shader then
     love.graphics.setShader(old.shader)
   end
   love.graphics.pop()
