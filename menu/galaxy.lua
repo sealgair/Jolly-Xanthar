@@ -66,7 +66,7 @@ function Galaxy:init(fsm, opts)
     galaxy = function(star) return -star:squaredDistance(self.camera.position) end,
   }
   self.currentFilterKey = "near"
-  self.currentFilterLimit = 1000
+  self.currentFilterLimit = 2000
 
   self.seed = 1000
   self.sector = Sector(Point(0,0,0), 0.14, self.seed)
@@ -86,6 +86,7 @@ function Galaxy:init(fsm, opts)
     self.shipPos = self.sector.box:center()
   end
   self.starShader = love.graphics.newShader("shaders/stars.glsl")
+  self.starLegsShader = love.graphics.newShader("shaders/starlegs.glsl")
   self.camera = Camera(self.shipPos, Orientations.front, Size(GameSize))
   self.galaxyRect = Rect(0, 0, Size(GameSize)):inset(16)
   self.rotationDir = Point(0, 0, 0)
@@ -117,13 +118,15 @@ function Galaxy:filterStars()
     return f(a) < f(b)
   end)
   local starVerts = {}
-  for i = 1, self.currentFilterLimit do
+  for i = 1, math.min(self.currentFilterLimit, #stars) do
     local star = stars[i]
     self.filteredStars[i] = star
     local p = star.pos - self.camera.position
+    local c = star:color()
+    c[4] = star:apparentBrightness(self.camera.position) * 255
     table.insert(starVerts, {
       p.x, p.y, p.z,
-      255, 255, 255, 255
+      c[1], c[2], c[3], c[4]
     })
   end
   local vertexFormat = {
@@ -216,7 +219,7 @@ end
 
 function Galaxy:drawStars(canvas)
   self.starShader:send("quatAngle", self.camera.orientation)
-  graphicsContext({canvas=canvas, shader=self.starShader, color=Colors.white, origin=true}, function()
+  graphicsContext({canvas=canvas, shader=self.starShader, origin=true}, function()
     love.graphics.clear()
     love.graphics.draw(self.starsMesh)
   end)

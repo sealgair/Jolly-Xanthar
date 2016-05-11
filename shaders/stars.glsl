@@ -1,5 +1,4 @@
 extern vec4 quatAngle;
-
 attribute vec2 VertexZPosition;
 
 vec4 quat_conj(vec4 q) {

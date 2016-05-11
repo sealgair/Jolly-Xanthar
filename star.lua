@@ -32,9 +32,10 @@ function Star:name()
 end
 
 function Star:color()
-  local y = math.min((self.luminosity - 2400) / 3600, 1) * 255
-  local w = math.min((self.luminosity - 6000) / 4000, 1) * 255
-  local b = math.min(math.min(self.luminosity, 10000) / 30000, 1)
+  local l = self.luminosity * 10
+  local y = math.min((l - 2400) / 3600, 1) * 255
+  local w = math.min((l - 6000) / 4000, 1) * 255
+  local b = math.min(math.min(l, 10000) / 30000, 1)
   b = math.max(1-b)
   return {255 * b, y * b, w}
 end
@@ -74,9 +75,10 @@ function Star:apparentLuminosity(viewpoint)
   end)
 end
 
-function Star:apparentMagnitude(viewpoint)
-  return self:cached("magnitude:" .. tostring(viewpoint), function()
-    return .4 * math.log10(self:apparentLuminosity(viewpoint))
+function Star:apparentBrightness(viewpoint)
+  return self:cached("brightness:" .. tostring(viewpoint), function()
+    local b = math.log10(self:apparentLuminosity(viewpoint))
+    return b
   end)
 end
 
@@ -85,28 +87,6 @@ function Star:tripTime(viewpoint, idp)
   local parsecs = self:distance(viewpoint)
   local ly = parsecs * 3.26163344
   return round(ly, idp)
-end
-
-function Star:drawPoint(point, origin)
-  local mag = self:apparentMagnitude(origin)
-  local a = math.min(mag, 1)
-  local color = self:color()
-  love.graphics.setColor(colorWithAlpha(color, 255*a))
-  love.graphics.points(point.x, point.y)
-  if mag > 1 then
-    local cm = math.ceil(mag)
-    for l = 1, cm do
-      a = ((cm - l)/mag)^2.5
-      a = math.min(a, 1)
-      love.graphics.setColor(colorWithAlpha(color, 255*a))
-      love.graphics.points(
-        point.x+l, point.y,
-        point.x-l, point.y,
-        point.x, point.y+l,
-        point.x, point.y-l
-      )
-    end
-  end
 end
 
 function Star:drawClose(c, radius)
