@@ -215,6 +215,12 @@ function Galaxy:drawCanvas()
     self.canvas = love.graphics.newCanvas(size.w, size.h)
   end
   self:drawStars(self.canvas)
+  local c = Rect(Point(), size):center() - Point(0.5, 0.5)
+  graphicsContext({canvas=self.canvas, origin=true, color={0, 255, 0, 200}}, function()
+    local r = 3
+    love.graphics.line(c.x, c.y - r, c.x, c.y + r)
+    love.graphics.line(c.x - r, c.y, c.x + r, c.y)
+  end)
 end
 
 function Galaxy:drawStars(canvas)
