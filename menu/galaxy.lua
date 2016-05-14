@@ -123,10 +123,10 @@ function Galaxy:filterStars()
     self.filteredStars[i] = star
     local p = star.pos - self.camera.position
     local c = star:color()
-    c[4] = star:apparentBrightness(self.camera.position) * 255
+    local b = star:apparentBrightness(self.camera.position) * 255
     table.insert(starVerts, {
       p.x, p.y, p.z,
-      c[1], c[2], c[3], c[4]
+      c[1], c[2], c[3], b
     })
   end
   local vertexFormat = {
@@ -218,10 +218,14 @@ function Galaxy:drawCanvas()
 end
 
 function Galaxy:drawStars(canvas)
+  local tmpCanvas = love.graphics.newCanvas(canvas:getDimensions())
   self.starShader:send("quatAngle", self.camera.orientation)
-  graphicsContext({canvas=canvas, shader=self.starShader, origin=true}, function()
-    love.graphics.clear()
+  graphicsContext({canvas=tmpCanvas, shader=self.starShader, origin=true}, function()
     love.graphics.draw(self.starsMesh)
+  end)
+  graphicsContext({canvas=canvas, shader=self.starLegsShader, origin=true}, function()
+    love.graphics.clear()
+    love.graphics.draw(tmpCanvas)
   end)
 end
 
