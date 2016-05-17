@@ -1,6 +1,8 @@
 require 'position'
 require 'utils'
 
+local SectorSize = 50
+
 Star = class("Star")
 
 function drawGlobe(c, radius, image, orient, gctx)
@@ -146,4 +148,26 @@ end
 
 function Planet:__eq(rhs)
   return self.seed == rhs.seed
+end
+
+Sector = class("Sector")
+
+function Sector:init(pos, density, seed)
+  self.box = Rect(pos, Size(SectorSize, SectorSize, SectorSize))
+  self.seed = coalesce(seed, os.time()) .. tostring(pos:round(5))
+  local starCount = self.box:area() * density
+  local variance = .25
+
+  randomSeed(self.seed)
+  local starFactor = math.random() * .25 + (1 - variance/2)
+  starCount = round(starFactor * starCount)
+  self.stars = {}
+  for i=1,starCount do
+    local star = Star(Point(
+      self.box.x + math.random() * self.box.w,
+      self.box.y + math.random() * self.box.h,
+      self.box.z + math.random() * self.box.d
+    ), self.seed)
+    table.insert(self.stars, star)
+  end
 end
