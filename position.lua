@@ -152,6 +152,10 @@ function Size:parts()
   return self.w, self.h
 end
 
+function Size:center()
+  return Point(self.w / 2, self.h / 2)
+end
+
 function Size:__tostring()
   local s = self.w.."X"..self.h
   if self.d then s = s.."X"..self.d end

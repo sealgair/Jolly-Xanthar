@@ -1,4 +1,5 @@
 class = require 'lib/30log/30log'
+bit32 = require('lib.numberlua')
 require 'menu.abstractMenu'
 require 'position'
 require 'camera'
@@ -86,6 +87,18 @@ function Galaxy:allStars()
   end)
 end
 
+function intToPixel(id)
+  return {
+    bit32.band(id, 255),
+    bit32.band(bit32.rshift(id, 8), 255),
+    bit32.band(bit32.rshift(id, 16), 255),
+  }
+end
+
+function pixelToInt(p)
+  return bit32.bor(p[1], bit32.lshift(p[2], 8), bit32.lshift(p[3], 16))
+end
+
 function Galaxy:filterStars()
   self.filteredStars = {}
   local stars = self:allStars()
@@ -94,6 +107,7 @@ function Galaxy:filterStars()
     return f(a) < f(b)
   end)
   local starVerts = {}
+  local starIdVerts = {}
   for i = 1, math.min(self.currentFilterLimit, #stars) do
     local star = stars[i]
     self.filteredStars[i] = star
@@ -104,6 +118,11 @@ function Galaxy:filterStars()
       p.x, p.y, p.z,
       c[1], c[2], c[3], b
     })
+    local px = intToPixel(i)
+    table.insert(starIdVerts, {
+      p.x, p.y, p.z,
+      px[1], px[2], px[3], 255
+    })
   end
   local vertexFormat = {
     {"VertexPosition", "float", 2},
@@ -112,6 +131,7 @@ function Galaxy:filterStars()
   }
 
   self.starsMesh = love.graphics.newMesh(vertexFormat, starVerts, "points", "static")
+  self.starIdsMesh = love.graphics.newMesh(vertexFormat, starIdVerts, "points", "static")
   self:drawCanvas()
 end
 
@@ -163,6 +183,7 @@ function Galaxy:update(dt)
   if self.rotationDir.x ~= 0 or self.rotationDir.y ~= 0 then
     local rot = self.rotationDir * dt
     self.camera:rotate(rot.x, rot.y)
+    self:centerStar()
     self:drawCanvas()
   end
 end
@@ -196,7 +217,50 @@ function Galaxy:drawCanvas()
     local r = 3
     love.graphics.line(c.x, c.y - r, c.x, c.y + r)
     love.graphics.line(c.x - r, c.y, c.x + r, c.y)
+
+    if self.selectedStar then
+      local s = self.selectedStarCoord
+      love.graphics.circle("line", s.x, s.y, 3, 4)
+    end
   end)
+end
+
+function Galaxy:centerStar()
+  local size = self.galaxyRect:size()
+  if self.centerStarCanvas == nil then
+    self.centerStarCanvas = love.graphics.newCanvas(size:parts())
+  end
+  graphicsContext({canvas=self.centerStarCanvas, shader=self.starShader, origin=true}, function()
+    love.graphics.clear()
+    love.graphics.draw(self.starIdsMesh)
+  end)
+  local w, h = size:parts()
+  local prect = Rect(0, 0, 8, 8)
+  prect:setCenter(size:center())
+  local pixels = self.centerStarCanvas:newImageData(prect:parts())
+  local minDist = 10^10
+  local pixel
+  local coord
+  local c = prect:size():center()
+  pixels:mapPixel(function(x, y, r, g, b, a)
+    if a > 0 then
+      local d = c:distanceToSquared(Point(x, y))
+      if d < minDist then
+        minDist = d
+        pixel = {r, g, b }
+        coord = Point(x, y)
+      end
+    end
+    return r, g, b, a
+  end)
+  if pixel ~= nil then
+    local starID = pixelToInt(pixel)
+    self.selectedStar = self.filteredStars[starID]
+    self.selectedStarCoord = coord + prect:origin()
+  else
+    self.selectedStar = nil
+    self.selectedStarCoord = nil
+  end
 end
 
 function Galaxy:drawStars(canvas)
@@ -282,6 +346,7 @@ function Galaxy:draw()
       love.graphics.setColor({0, 128, 0})
       love.graphics.setFont(Fonts.small)
       love.graphics.print(detailStar:details(self.shipPos), self.galaxyRect.x + 2, self.galaxyRect:bottom() + 2)
+      detailStar:drawClose(Point(self.galaxyRect:right() - 8, self.galaxyRect:bottom() + 8), 6)
     end
   end)
 end
