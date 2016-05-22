@@ -14,6 +14,7 @@ function StarSystem:init(fsm, opts)
   self.shipStar = Save:shipStar(self.ship)
   self.shipPlanet = Save:shipPlanet(self.ship)
   self.planets = self.shipStar:planets()
+  self.selectedPlanet = 0
   for p, planet in ipairs(self.planets) do
     if planet == self.shipPlanet then
       self.selectedPlanet = p
