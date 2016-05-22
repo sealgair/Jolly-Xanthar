@@ -91,6 +91,8 @@ function love.load(arg)
   love.graphics.setDefaultFilter("nearest", "nearest")
   love.mouse.setVisible(false)
 
+  GameCanvas = love.graphics.newCanvas(GameSize:parts())
+
   local glyphs = " "..
   "abcdefghijklmnopqrstuvwxyz"..
   "ABCDEFGHIJKLMNOPQRSTUVWXYZ"..
@@ -161,12 +163,17 @@ function love.update(dt)
 end
 
 function love.draw()
-  love.graphics.translate(GameOffset.x, GameOffset.y)
-  love.graphics.scale(GameScale.x, GameScale.y)
+  love.graphics.setCanvas(GameCanvas)
+  love.graphics.clear()
   local state = StateMachine.currentState
   if state and state.draw then
     state:draw()
   end
+  love.graphics.setCanvas(nil)
+
+  love.graphics.translate(GameOffset.x, GameOffset.y)
+  love.graphics.scale(GameScale.x, GameScale.y)
+  love.graphics.draw(GameCanvas)
 end
 
 function love.keypressed(key)

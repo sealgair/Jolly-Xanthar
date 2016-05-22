@@ -91,8 +91,9 @@ function Star:tripTime(viewpoint, idp)
   return round(ly, idp)
 end
 
+local StarImage = love.graphics.newImage('assets/stars/star1.png')
 function Star:drawClose(c, radius)
-  drawGlobe(c, radius, love.graphics.newImage('assets/stars/star1.png'), self.rot,
+  drawGlobe(c, radius, StarImage, self.rot,
             { color = self:color(), lineWidth = 1.5 })
 end
 

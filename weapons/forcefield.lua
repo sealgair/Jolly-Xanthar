@@ -101,19 +101,14 @@ end
 
 function Bubble:draw()
   if scale ~= 1 then
-    local oldCavnas = love.graphics.getCanvas()
-
-    love.graphics.push()
-      love.graphics.setCanvas(self.scaleCanvas)
+    graphicsContext({canvas=self.scaleCanvas}, function()
       love.graphics.clear()
 
       local translate = Point(self.position) * -self.scale
       love.graphics.translate(translate.x, translate.y)
       love.graphics.scale(self.scale)
       Bubble.super.draw(self)
-
-      love.graphics.setCanvas(oldCavnas)
-    love.graphics.pop()
+    end)
 
     local offset = (Point(self.w, self.h) / 2) * (1-self.scale)
     local scaledPos = Point(self.position) + offset

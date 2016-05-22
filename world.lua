@@ -386,22 +386,18 @@ function World:drawGob(dude)
 end
 
 function World:draw()
-  love.graphics.push()
-  love.graphics.origin()
-  love.graphics.setCanvas(self.worldCanvas)
-  love.graphics.clear()
-  self.map:draw()
+  graphicsContext({canvas = self.worldCanvas, origin=true}, function()
+    love.graphics.clear()
+    self.map:draw()
 
-  table.sort(self.gobs, function(a, b)
-    return a.position.y < b.position.y
+    table.sort(self.gobs, function(a, b)
+      return a.position.y < b.position.y
+    end)
+
+    for i, dude in ipairs(self.gobs) do
+      self:drawGob(dude)
+    end
   end)
-
-  for i, dude in ipairs(self.gobs) do
-    self:drawGob(dude)
-  end
-
-  love.graphics.pop()
-  love.graphics.setCanvas()
 
   local screens = { self.mainScreen }
   table.extend(screens, self.extraScreens)

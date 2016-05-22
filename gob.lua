@@ -57,13 +57,10 @@ function Gob:init(opts)
       love.graphics.push()
       love.graphics.origin()
       local canvas = love.graphics.newCanvas(tw, th)
-      love.graphics.setCanvas(canvas)
-      love.graphics.setShader(opts.shader)
-      love.graphics.draw(self.image)
-      love.graphics.setShader()
-      love.graphics.setCanvas()
+      graphicsContext({canvas=canvas, shader=opts.shader, origin=true}, function()
+        love.graphics.draw(self.image)
+      end)
       self.image = canvas
-      love.graphics.pop()
     end
 
     self.quads = opts.quads
