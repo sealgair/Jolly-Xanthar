@@ -1,7 +1,7 @@
 class = require 'lib.30log.30log'
 md5 = require 'lib.md5.md5'
 json = require 'lib.json4lua.json.json'
-rot = require 'lib.rotlove.rotlove.rotlove'
+rot = require 'lib.rotLove.rotLove.rotLove'
 require 'tile'
 require 'utils'
 
