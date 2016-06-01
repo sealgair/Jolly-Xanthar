@@ -64,7 +64,7 @@ function Galaxy:init(fsm, opts)
   end
   self.starShader = love.graphics.newShader("shaders/stars.glsl")
   self.starLegsShader = love.graphics.newShader("shaders/starlegs.glsl")
-  self.camera = Camera(self.shipPos, Orientations.front, Size(GameSize))
+  self.camera = Camera(self.shipPos, Size(GameSize))
   self.galaxyRect = Rect(0, 0, Size(GameSize)):inset(16)
   self.rotationDir = Point(0, 0, 0)
   self:filterStars()
@@ -265,7 +265,7 @@ end
 
 function Galaxy:drawStars(canvas)
   local tmpCanvas = love.graphics.newCanvas(canvas:getDimensions())
-  self.starShader:send("quatAngle", self.camera.orientation)
+  self.starShader:send("quatAngle", self.camera.orientation:raw())
   graphicsContext({canvas=tmpCanvas, shader=self.starShader, origin=true}, function()
     love.graphics.draw(self.starsMesh)
   end)
