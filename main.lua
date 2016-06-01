@@ -1,12 +1,3 @@
--- Initialize Graphene
-local MyGame = require("graphene")
-
--- Let Graphene know that 'Carbon' is a standalone library
-MyGame:AddGrapheneSubmodule("Carbon")
-
--- You can now reference Carbon as MyGame.Carbon!
-local Carbon = MyGame.Carbon
-
 require 'controller'
 require 'utils'
 require 'world'
