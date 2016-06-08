@@ -85,8 +85,20 @@ function Point:__div(s)
   return self * s
 end
 
+function Point:table()
+  return {
+    x = self.x,
+    y = self.y,
+    z = self.z
+  }
+end
+
 function Point:parts()
-  return self.x, self.y
+  if self.z then
+    return self.x, self.y, self.z
+  else
+    return self.x, self.y
+  end
 end
 
 function Point:round(idp)

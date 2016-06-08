@@ -18,7 +18,8 @@ end
 
 function Star:init(pos, seed)
   self.pos = pos
-  self.seed = coalesce(seed, 0) .. tostring(pos:round(5))
+  self.parentSeed = seed
+  self.seed = seed .. tostring(pos:round(5))
   randomSeed(self.seed)
   self.luminosity = math.random()^5 * 1000
   self.mass = math.random()
@@ -26,6 +27,17 @@ function Star:init(pos, seed)
   self.rot = math.random() * 2 * math.pi
 
   self.cache = {}
+end
+
+function Star:serialize()
+  return {
+    pos = self.pos:table(),
+    seed = self.parentSeed,
+  }
+end
+
+function Star.deserialze(opts)
+  return Star(Point(opts.pos), opts.seed)
 end
 
 function Star:name()
@@ -131,6 +143,18 @@ function Planet:init(star, seed, index)
   })
 end
 
+function Planet:serialize()
+  return {
+    star = self.star:serialze(),
+    seed = self.seed,
+    index = self.index,
+  }
+end
+
+function Planet.deserialize(opts)
+  return Planet(Star.deserialize(opts.star), opts.seed, opts.index)
+end
+
 function Planet:name()
   local chars = {
     'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
@@ -154,21 +178,44 @@ end
 Sector = class("Sector")
 
 function Sector:init(pos, density, seed)
+  self.pos = pos
   self.box = Rect(pos, Size(SectorSize, SectorSize, SectorSize))
-  self.seed = coalesce(seed, os.time()) .. tostring(pos:round(5))
+  self.density = density
+  self.parentSeed = seed
+  self.seed = seed .. tostring(pos:round(5))
   local starCount = self.box:area() * density
   local variance = .25
 
   randomSeed(self.seed)
   local starFactor = math.random() * .25 + (1 - variance/2)
-  starCount = round(starFactor * starCount)
+  self.starCount = round(starFactor * starCount)
   self.stars = {}
-  for i=1,starCount do
+  self:makeStars()
+end
+
+function Sector:serialize()
+  return {
+    pos = self.pos:table(),
+    density = self.density,
+    seed = self.parentSeed
+  }
+end
+
+function Sector.deserialze(opts)
+  return Sector(Point(opts.pos), opts.density, opts.seed, true)
+end
+
+function Sector:makeStars(callback)
+  randomSeed(self.seed)
+  for i=1, self.starCount do
     local star = Star(Point(
       self.box.x + math.random() * self.box.w,
       self.box.y + math.random() * self.box.h,
       self.box.z + math.random() * self.box.d
     ), self.seed)
     table.insert(self.stars, star)
+    if callback then
+      callback(i, star)
+    end
   end
 end

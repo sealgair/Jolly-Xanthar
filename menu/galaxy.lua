@@ -219,7 +219,7 @@ function Galaxy:drawCanvas()
     love.graphics.line(c.x - r, c.y, c.x + r, c.y)
 
     if self.selectedStar then
-      local s = self.selectedStarCoord + Point(0.5, 0.5)
+      local s = self.selectedStarCoord
       love.graphics.circle("line", s.x, s.y, 3, 4)
     end
   end)

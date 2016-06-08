@@ -14,33 +14,9 @@ function Save:load()
   end
 end
 
-function Save:serializeStar(star)
-  return {
-    pos = {x = star.pos.x, y = star.pos.y, z = star.pos.z},
-    seed = star.seed
-  }
-end
-
-function Save:deserializeStar(starData)
-  return Star(Point(starData.pos), starData.seed)
-end
-
-function Save:serializePlanet(planet)
-  return {
-    star = self:serializeStar(planet.star),
-    seed = planet.seed,
-    index = planet.index
-  }
-end
-
-function Save:deserializePlanet(planetData)
-  local star = self:deserializeStar(planetData.star)
-  return Planet(star, planetData.seed, planetData.index)
-end
-
 function Save:saveShip(shipName, roster, star, planet)
-  if star then star = self:serializeStar(star) end
-  if planet then planet = self:serializePlanet(planet) end
+  if star then star = star:serialize() end
+  if planet then planet = planet:serialize() end
   local oldData = self.data[shipName]
   if oldData then
     roster = coalesce(roster, oldData.roster)
@@ -66,14 +42,14 @@ end
 function Save:shipStar(shipName)
   local data = self.data[shipName].star
   if data then
-    return Save:deserializeStar(data)
+    return Star.deserialze(data)
   end
 end
 
 function Save:shipPlanet(shipName)
   local data = self.data[shipName].planet
   if data then
-    return Save:deserializePlanet(data)
+    return Planet.deserialize(data)
   end
 end
 
