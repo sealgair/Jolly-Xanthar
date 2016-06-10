@@ -17,10 +17,11 @@ function World:init(fsm, fsmOpts, worldfile, tileset)
   self.ship = coalesce(fsmOpts.ship, Save:shipNames()[1])
   self.planet = fsmOpts.planet
   self.depth = coalesce(fsmOpts.depth, 0)
-  if self.planet then
-    self.seed = self.planet .. self.depth
-  else
-    self.seed = self.ship
+
+  if fsmOpts.seed then
+    self.seed = fsmOpts.seed
+  elseif self.planet then
+    self.seed = self.planet.seed
   end
 
   self.mainScreen = Rect(Point(), GameSize)
@@ -37,6 +38,7 @@ function World:init(fsm, fsmOpts, worldfile, tileset)
   -- load the map
   self.bumpWorld = bump.newWorld(16)
   tileset = coalesce(tileset, "assets/worlds/forest.png")
+  randomSeed(self.seed)
   local monsterCount = math.random(8, 12) * self.depth
   self.map = WorldMap(worldfile, tileset, self.bumpWorld, monsterCount, self.seed)
   local cw, ch = self.map:getDimensions()

@@ -21,9 +21,10 @@ function Save:saveShip(shipName, roster, star, planet)
   if oldData then
     roster = coalesce(roster, oldData.roster)
     if star then
-      planet = coalesce(planet, oldData.planet)
+      oldData.planet = nil
     end
     star = coalesce(star, oldData.star)
+    planet = coalesce(planet, oldData.planet)
   end
   self.data[shipName] = {
     name = shipName,
@@ -42,7 +43,7 @@ end
 function Save:shipStar(shipName)
   local data = self.data[shipName].star
   if data then
-    return Star.deserialze(data)
+    return Star.deserialize(data)
   end
 end
 

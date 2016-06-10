@@ -112,7 +112,7 @@ function Ship:init(fsm, fsmOpts)
   self:writeShip(data)
   self.allPlayers = {}
 
-  local fsmOpts = {ship=self.ship, planet="blah", activeRoster = fsmOpts.activeRoster}
+  local fsmOpts = {ship=self.ship, planet=self.shipPlanet, seed=self.ship, activeRoster = fsmOpts.activeRoster }
   Ship.super.init(self, fsm, fsmOpts, self.shipFile, "assets/worlds/ship.png")
 
   self.playerSwitchers = {}
@@ -154,7 +154,7 @@ function Ship:controlStop(player, action)
       if self.shipStar then
         nav = "navPlanet"
       end
-      Ship.super.travel(self, self.inNavCom[1], nav)
+      self:travel(self.inNavCom[1], nav)
     end
   elseif action == 'b' then
     if self.inTransporter[player.playerIndex] then
@@ -248,12 +248,12 @@ function Ship:update(dt)
     allIn = allIn and self.inTransporter[player.playerIndex]
   end
   if allIn then
-    Ship.super.travel(self, self.players[1], "land")
+    self:travel(self.players[1], "land")
   end
 end
 
 function Ship:travel(gob, verb)
-  if verb ~= "land" then
+  if verb ~= "step" then
     Ship.super.travel(self, gob, verb)
   end
 end

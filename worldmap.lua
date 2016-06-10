@@ -76,6 +76,11 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount, seed)
   local potentialMonsters = {}
   self.transporters = {}
 
+  if self.seed then
+    randomSeed(self.seed)
+  end
+  self.hue = math.random()
+
   local tiles = {}
   for y, row in ipairs(blocks) do
     mw = math.max(mw, #row)
@@ -120,10 +125,7 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount, seed)
 
   -- draw quads to canvas
   local hueShifter = love.graphics.newShader("shaders/hueShift.glsl")
-  if self.seed then
-    randomSeed(self.seed)
-  end
-  hueShifter:send("shift", math.random())
+  hueShifter:send("shift", self.hue)
 
   self.mapCanvas = love.graphics.newCanvas(mw * qw, mh * qh)
   graphicsContext({origin=true, shader=hueShifter, canvas=self.mapCanvas}, function()

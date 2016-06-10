@@ -36,13 +36,17 @@ function Star:serialize()
   }
 end
 
-function Star.deserialze(opts)
+function Star.deserialize(opts)
   return Star(Point(opts.pos), opts.seed)
 end
 
 function Star:name()
   local p = self.pos:round(2)
   return "SC-"..p.x.."-"..p.y.."-"..p.z
+end
+
+function Star:__str()
+  return self:name()
 end
 
 function Star:color()
@@ -145,7 +149,7 @@ end
 
 function Planet:serialize()
   return {
-    star = self.star:serialze(),
+    star = self.star:serialize(),
     seed = self.seed,
     index = self.index,
   }
@@ -161,6 +165,10 @@ function Planet:name()
     'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
   }
   return self.star:name() .. ' ' .. chars[self.index]
+end
+
+function Planet:__str()
+  return self:name()
 end
 
 function Planet:draw(c, drawScale)
@@ -201,7 +209,7 @@ function Sector:serialize()
   }
 end
 
-function Sector.deserialze(opts)
+function Sector.deserialize(opts)
   return Sector(Point(opts.pos), opts.density, opts.seed, true)
 end
 

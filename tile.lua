@@ -181,7 +181,7 @@ end
 function Teleporter:collide(cols)
   for col in values(cols) do
     if col.other.travel then
-      col.other:travel('land')
+      col.other:travel('step')
     end
   end
 end
