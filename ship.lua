@@ -54,6 +54,7 @@ function Ship:init(fsm, fsmOpts)
   self.shipPlanet = Save:shipPlanet(self.ship)
 
   randomSeed(self.ship)
+  self.hue = math.random()
   local roomFiles = randomize({
     "assets/worlds/barracks.world",
     "assets/worlds/observation.world",
@@ -112,7 +113,7 @@ function Ship:init(fsm, fsmOpts)
   self:writeShip(data)
   self.allPlayers = {}
 
-  local fsmOpts = {ship=self.ship, planet=self.shipPlanet, seed=self.ship, activeRoster = fsmOpts.activeRoster }
+  local fsmOpts = {ship=self.ship, planet=self.shipPlanet, seed=self.ship, hue=self.hue, activeRoster = fsmOpts.activeRoster }
   Ship.super.init(self, fsm, fsmOpts, self.shipFile, "assets/worlds/ship.png")
 
   self.playerSwitchers = {}

@@ -17,6 +17,11 @@ function World:init(fsm, fsmOpts, worldfile, tileset)
   self.ship = coalesce(fsmOpts.ship, Save:shipNames()[1])
   self.planet = fsmOpts.planet
   self.depth = coalesce(fsmOpts.depth, 0)
+  if fsmOpts.hue then
+    self.hue = fsmOpts.hue
+  elseif self.planet then
+    self.hue = self.planet.hue
+  end
 
   if fsmOpts.seed then
     self.seed = fsmOpts.seed
@@ -40,7 +45,7 @@ function World:init(fsm, fsmOpts, worldfile, tileset)
   tileset = coalesce(tileset, "assets/worlds/forest.png")
   randomSeed(self.seed)
   local monsterCount = math.random(8, 12) * self.depth
-  self.map = WorldMap(worldfile, tileset, self.bumpWorld, monsterCount, self.seed)
+  self.map = WorldMap(worldfile, tileset, self.bumpWorld, monsterCount, self.seed, self.hue)
   local cw, ch = self.map:getDimensions()
   self.worldCanvas = love.graphics.newCanvas(cw, ch)
 

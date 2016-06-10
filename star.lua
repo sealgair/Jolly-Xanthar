@@ -140,6 +140,7 @@ function Planet:init(star, seed, index)
   self.dist = math.random() ^ 2 * 100
   self.rot = math.random() * 2 * math.pi
   self.orient = math.random() * 2 * math.pi
+  self.hue = math.random()
 
   self.imageName = randomChoice({
     "life2",
@@ -171,12 +172,14 @@ function Planet:__str()
   return self:name()
 end
 
+local hueShifter = love.graphics.newShader("shaders/hueShift.glsl")
 function Planet:draw(c, drawScale)
   local dr = self.drawRadius * coalesce(drawScale, 1)
   local filename = self.imageName
   filename = 'assets/planets/'..filename..'.png'
   local image = love.graphics.newImage(filename)
-  drawGlobe(c, dr, image, self.rot, {color = Colors.white})
+  hueShifter:send("shift", self.hue)
+  drawGlobe(c, dr, image, self.rot, {color = Colors.white, shader = hueShifter})
 end
 
 function Planet:__eq(rhs)

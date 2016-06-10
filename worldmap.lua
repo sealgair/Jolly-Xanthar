@@ -53,9 +53,9 @@ function WorldMap:random(min, max)
   end
 end
 
-function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount, seed)
+function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount, seed, hue)
   local templateImg = love.graphics.newImage(imagefile)
-
+  self.hue = hue
   self.seed = seed
 
   -- create our tiles
@@ -79,7 +79,7 @@ function WorldMap:init(mapfile, imagefile, bumpWorld, monsterCount, seed)
   if self.seed then
     randomSeed(self.seed)
   end
-  self.hue = math.random()
+  self.hue = coalesce(self.hue, math.random())
 
   local tiles = {}
   for y, row in ipairs(blocks) do
