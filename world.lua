@@ -45,7 +45,7 @@ function World:init(fsm, fsmOpts, worldfile, tileset)
   tileset = coalesce(tileset, "assets/worlds/forest.png")
   randomSeed(self.seed)
   local monsterCount = math.random(8, 12) * self.depth
-  self.map = WorldMap(worldfile, tileset, self.bumpWorld, monsterCount, self.seed, self.hue)
+  self.map = WorldMap(worldfile, tileset, self.bumpWorld, monsterCount, self.seed .. self.depth, self.hue)
   local cw, ch = self.map:getDimensions()
   self.worldCanvas = love.graphics.newCanvas(cw, ch)
 
