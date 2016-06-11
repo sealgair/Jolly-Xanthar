@@ -1,7 +1,7 @@
 require 'controller'
 require 'utils'
 require 'world'
-require 'ship'
+require 'shipworld'
 require 'save'
 require 'menu.ships'
 require 'menu.recruit'
@@ -112,20 +112,20 @@ function love.load(arg)
       quit = function() love.event.quit(); return {} end,
     },
     [ShipMenu] = {
-      done = Ship,
+      done = ShipWorld,
     },
-    [Ship] = {
+    [ShipWorld] = {
       land = World,
       quit = Splash,
       navPlanet = StarSystem,
       navStar = Galaxy,
     },
     [StarSystem] = {
-      back = Ship,
+      back = ShipWorld,
       galaxy = Galaxy,
     },
     [Galaxy] = {
-      back = Ship,
+      back = ShipWorld,
     },
     [Keyboard] = {
       done = Recruit,
@@ -134,11 +134,11 @@ function love.load(arg)
       done = Splash,
     },
     [Recruit] = {
-      done = Ship,
+      done = ShipWorld,
     },
     [World] = {
       descend = World,
-      disembark = Ship,
+      disembark = ShipWorld,
       quit = Splash,
     },
   }

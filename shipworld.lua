@@ -41,9 +41,9 @@ function Room:heighten(height)
   end
 end
 
-Ship = World:extend('Ship')
+ShipWorld = World:extend('ShipWorld')
 
-function Ship:init(fsm, fsmOpts)
+function ShipWorld:init(fsm, fsmOpts)
   self.shipFile = "myship.world"
   if fsmOpts and fsmOpts.ship then
     self.ship = fsmOpts.ship
@@ -114,7 +114,7 @@ function Ship:init(fsm, fsmOpts)
   self.allPlayers = {}
 
   local fsmOpts = {ship=self.ship, planet=self.shipPlanet, seed=self.ship, hue=self.hue, activeRoster = fsmOpts.activeRoster }
-  Ship.super.init(self, fsm, fsmOpts, self.shipFile, "assets/worlds/ship.png")
+  ShipWorld.super.init(self, fsm, fsmOpts, self.shipFile, "assets/worlds/ship.png")
 
   self.playerSwitchers = {}
   for i, coord in ipairs(self.map.playerCoords) do
@@ -129,10 +129,10 @@ function Ship:init(fsm, fsmOpts)
   end
 end
 
-function Ship:controlStart(player, action)
+function ShipWorld:controlStart(player, action)
 end
 
-function Ship:controlStop(player, action)
+function ShipWorld:controlStop(player, action)
   if action == 'a' then
     local switchTo = self.playerSwitchOptions[player.playerIndex]
     if switchTo then
@@ -165,7 +165,7 @@ function Ship:controlStop(player, action)
   end
 end
 
-function Ship:addPlayer(rosterData, index, coords)
+function ShipWorld:addPlayer(rosterData, index, coords)
   local player
   for p in values(self.allPlayers) do
     if p.name == rosterData.name then
@@ -174,7 +174,7 @@ function Ship:addPlayer(rosterData, index, coords)
     end
   end
   if player == nil then
-    player = Ship.super.addPlayer(self, rosterData, index, coords)
+    player = ShipWorld.super.addPlayer(self, rosterData, index, coords)
     self.allPlayers[index] = player
   else
     Controller:register(player, index)
@@ -187,7 +187,7 @@ function Ship:addPlayer(rosterData, index, coords)
   return player
 end
 
-function Ship:removePlayer(index, keepBody)
+function ShipWorld:removePlayer(index, keepBody)
   local player = self.players[index]
   Controller:unregister(player, index)
   self.players[index] = nil
@@ -196,7 +196,7 @@ function Ship:removePlayer(index, keepBody)
   player.playerIndex = nil
 end
 
-function Ship:writeShip(data)
+function ShipWorld:writeShip(data)
   local text = ""
   for row in values(data) do
     for tile in values(row) do
@@ -207,8 +207,8 @@ function Ship:writeShip(data)
   love.filesystem.write(self.shipFile, text)
 end
 
-function Ship:update(dt)
-  Ship.super.update(self, dt)
+function ShipWorld:update(dt)
+  ShipWorld.super.update(self, dt)
   self.playerSwitchOptions = {}
 
   for switcher in values(self.playerSwitchers) do
@@ -253,13 +253,13 @@ function Ship:update(dt)
   end
 end
 
-function Ship:travel(gob, verb)
+function ShipWorld:travel(gob, verb)
   if verb ~= "step" then
-    Ship.super.travel(self, gob, verb)
+    ShipWorld.super.travel(self, gob, verb)
   end
 end
 
-function Ship:drawGob(gob)
+function ShipWorld:drawGob(gob)
   local switchTo = self.playerSwitchOptions[gob.playerIndex]
 
   if switchTo then
@@ -285,7 +285,7 @@ function Ship:drawGob(gob)
     if inTransporter then
       love.graphics.setColor(Colors.halfGray)
     end
-    Ship.super.drawGob(self, gob)
+    ShipWorld.super.drawGob(self, gob)
 
     if onTransporter and not inTransporter then
       love.graphics.setColor(PlayerColors[gob.playerIndex])

@@ -47,7 +47,7 @@ function HUD:init(world, playerIndex)
 end
 
 function HUD:inShip()
-  return class.isInstance(self.world, Ship)
+  return class.isInstance(self.world, ShipWorld)
 end
 
 function HUD:drawBase()
