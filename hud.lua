@@ -88,6 +88,7 @@ function HUD:drawMenuCanvas()
 
   graphicsContext({canvas=self.menuCanvas, origin=true, font=font}, function()
     love.graphics.clear(Colors.menuBack)
+    print("drawing hud for", self.player)
     for r, row in ipairs(self.itemGrid) do
       local item = row[1]
 
@@ -102,7 +103,7 @@ function HUD:drawMenuCanvas()
       love.graphics.printf(item.name, 0, y, w, "center")
       y = y + rowHeight + 1
     end
-    self.menuHeight = math.min(y, self.menuHeight)
+    self.menuHeight = math.min(y, self.maxMenuHeight)
   end)
   self.newMenuOffset = math.min(offset, y - self.menuHeight)
 end
