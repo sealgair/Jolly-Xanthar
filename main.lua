@@ -67,7 +67,7 @@ end
 
 function love.load(arg)
   love.graphics.setDefaultFilter("nearest", "nearest", 0)
-  Save:load()
+  loadSaveData()
 
   if arg[#arg] == "-debug" then require("mobdebug").start() end
   local w, h = love.graphics.getDimensions()

@@ -60,7 +60,9 @@ function Human:init(coord, opts)
     self.weapons.a = allWeapons[a]
     self.weapons.b = allWeapons[b]
   end
-  self.weapons = map(self.weapons, function(w) return Weapons[w](self) end)
+  self.weapons = map(self.weapons, function(w)
+    return Weapons[w](self)
+  end)
 
   if opts.name == nil then
     local forename = randomLine("assets/names/forenames.txt")

@@ -59,8 +59,8 @@ function Keyboard:controlStop(action)
   elseif action == 'select' then
     self.text = ""
   elseif action == 'start' then
-    if Save:nameIsValid(self.text) then
-      self.fsm:advance('done', self.text)
+    if Ship:nameIsValid(self.text) then
+      self.fsm:advance('done', Ship({name=self.text}))
     else
       self.warning = "This name is already registered"
     end

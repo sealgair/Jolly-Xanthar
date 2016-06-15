@@ -9,11 +9,9 @@ function StarSystem:init(fsm, opts)
   if self.fsmOpts and self.fsmOpts.ship then
     self.ship = self.fsmOpts.ship
   else
-    self.ship = Save:shipNames()[1]
+    self.ship = Ship.firstShip()
   end
-  self.shipStar = Save:shipStar(self.ship)
-  self.shipPlanet = Save:shipPlanet(self.ship)
-  self.planets = self.shipStar:planets()
+  self.planets = self.ship.star:planets()
   self.selectedPlanet = 0
   for p, planet in ipairs(self.planets) do
     if planet == self.shipPlanet then
@@ -65,8 +63,8 @@ end
 
 function StarSystem:chooseItem(item)
   if item == 'planets' then
-    self.shipPlanet = self.planets[self.selectedPlanet]
-    Save:saveShip(self.ship, nil, nil, self.shipPlanet)
+    self.ship.planet = self.planets[self.selectedPlanet]
+    self.ship:save()
     self.selected.x = 1
     self:drawScreenCanvas()
   else
@@ -79,14 +77,14 @@ function StarSystem:drawScreenCanvas()
   self.screenCanvas = love.graphics.newCanvas()
   graphicsContext({canvas=self.screenCanvas, origin=true, color=Colors.white, lineWidth=0.5}, function()
     local p = Point(-32, 32)
-    self.shipStar:drawClose(p, 64)
+    self.ship.star:drawClose(p, 64)
     p = p + Point(64, 0)
     local planetPos = 0
     local selPlanetPos = 0
     for pi, planet in ipairs(self.planets) do
       p = p + Point(planet.drawRadius * 1.5, 0)
 
-      if planet == self.shipPlanet then
+      if planet == self.ship.planet then
         selPlanetPos = p.x
         local radius = planet.drawRadius + 4.5
         love.graphics.setColor(Colors.blue)
@@ -136,10 +134,10 @@ function StarSystem:draw()
 
   graphicsContext({color = {0, 128, 0}, font = Fonts.small}, function()
     local details
-    if self.shipPlanet then
-      details = self.shipPlanet:name()
+    if self.ship.planet then
+      details = self.ship.planet:name()
     else
-      details = self.shipStar:name()
+      details = self.ship.star:name()
     end
     love.graphics.print(details, self.screenRect.x + 2, self.screenRect:bottom() + 2)
   end)

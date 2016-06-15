@@ -1,74 +1,117 @@
 require 'utils'
 local serialize = require "lib/Ser/ser"
+class = require 'lib/30log/30log'
+require 'star'
 
-Save = {
-  filename = "savegame.lua",
-}
+local SaveFile = "savegame.lua"
+local SaveData = {}
 
-function Save:load()
-  local data = love.filesystem.load(self.filename)
+function loadSaveData()
+  local data = love.filesystem.load(SaveFile)
   if data then
-    self.data = data()
+    SaveData = data()
   else
-    self.data = {}
+    SaveData = {}
   end
 end
 
-function Save:saveShip(shipName, roster, star, planet)
-  if star then star = star:serialize() end
-  if planet then planet = planet:serialize() end
-  local oldData = self.data[shipName]
-  if oldData then
-    roster = coalesce(roster, oldData.roster)
-    if star then
-      oldData.planet = nil
-    end
-    star = coalesce(star, oldData.star)
-    planet = coalesce(planet, oldData.planet)
-  end
-  self.data[shipName] = {
-    name = shipName,
-    roster = roster,
-    saved = os.time(),
-    star = star,
-    planet = planet,
-  }
-  love.filesystem.write(self.filename, serialize(self.data))
-end
+Ship = class("Ship")
 
-function Save:shipRoster(shipName)
-  return self.data[shipName].roster
-end
-
-function Save:shipStar(shipName)
-  local data = self.data[shipName].star
-  if data then
-    return Star.deserialize(data)
-  end
-end
-
-function Save:shipPlanet(shipName)
-  local data = self.data[shipName].planet
-  if data then
-    return Planet.deserialize(data)
-  end
-end
-
-function Save:ships()
+function Ship.allShips()
   local ships = {}
-  for ship in values(self.data) do
-    table.insert(ships, ship)
+  for shipdata in values(SaveData) do
+    table.insert(ships, Ship(shipdata))
   end
   table.sort(ships, function(a, b) return a.saved > b.saved end)
   return ships
 end
 
-function Save:shipNames()
-  local names = map(self:ships(), function(v) return v.name end)
+function Ship.shipNames()
+  local names = {}
+  for name in keys(SaveData) do
+    table.insert(names, name)
+  end
   return names
 end
 
-function Save:nameIsValid(shipName)
-  local nameSet = invert(self:shipNames())
-  return nameSet[shipName] == nil
+function Ship.firstShip()
+  return Ship.allShips()[1]
+end
+
+function Ship.nameIsValid(name)
+  return SaveData[name] == nil
+end
+
+function Ship:init(data)
+  self.name = data.name
+  if data.roster then
+    self.roster = map(data.roster, function(d)
+      local p = Human(Point(), d)
+      p.activePlayer = d.activePlayer
+      return p
+    end)
+  end
+
+  self.saved = coalesce(data.saved, os.time())
+  if data.star then
+    self.star = Star.deserialize(data.star)
+  end
+  if data.planet then
+    self.planet = Planet.deserialize(data.planet)
+  end
+end
+
+function Ship:activeRoster()
+  local players = {}
+  local rostered = false
+  for i, player in ipairs(self.roster) do
+    if player.activePlayer then
+      players[player.activePlayer] = player
+      rostered = true
+    end
+  end
+  if not rostered then
+    table.insert(players, self.roster[1])
+  end
+  return players
+end
+
+function Ship:activatePlayer(active, index)
+  for i, player in ipairs(self.roster) do
+    if player.name == active.name then
+      player.activePlayer = index
+    elseif player.activePlayer == index then
+      player.activePlayer = nil
+    end
+  end
+  self:save()
+end
+
+function Ship:serialize()
+  local data = {
+    name = self.name,
+    roster = map(self.roster, function(p)
+      local d = p:serialize()
+      d.activePlayer = p.activePlayer
+      return d
+    end),
+    saved = self.saved,
+  }
+  if self.star then
+    data.star = self.star:serialize()
+  end
+  if self.planet then
+    data.planet = self.planet:serialize()
+  end
+
+  return data
+end
+
+function Ship:__str()
+  return self.name
+end
+
+function Ship:save()
+  SaveData[self.name] = self:serialize()
+  love.filesystem.write(SaveFile, serialize(SaveData))
 end

@@ -14,18 +14,15 @@ function ShipMenu:init(fsm)
 end
 
 function ShipMenu:loadSaved()
-  self.itemGrid = {} map(Save:ships(), function(s) return {s} end)
-  for ship in values(Save:ships()) do
-    ship = shallowCopy(ship)
-    ship.roster = map(reverseCopy(ship.roster), function(p)
-      return Human(Point(0,0), p)
-    end)
+  local ships = Ship.allShips()
+  self.itemGrid = {} map(ships, function(s) return {s} end)
+  for ship in values(ships) do
     table.insert(self.itemGrid, {ship})
   end
 end
 
 function ShipMenu:chooseItem(item)
-  self.fsm:advance("done", {ship = item.name})
+  self.fsm:advance("done", {ship = item})
 end
 
 function ShipMenu:update(dt)

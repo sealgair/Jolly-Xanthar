@@ -8,7 +8,7 @@ function Room:init(filename, direction)
   self.data = {}
   for line in love.filesystem.lines(filename) do
     local row = {}
-    for tile in line:gmatch"." do table.insert(row, tile) end
+    for tile in line:gmatch "." do table.insert(row, tile) end
     table.insert(self.data, row)
   end
 
@@ -48,12 +48,10 @@ function ShipWorld:init(fsm, fsmOpts)
   if fsmOpts and fsmOpts.ship then
     self.ship = fsmOpts.ship
   else
-    self.ship = Save:shipNames()[1]
+    self.ship = Ship.firstShip()
   end
-  self.shipStar = Save:shipStar(self.ship)
-  self.shipPlanet = Save:shipPlanet(self.ship)
 
-  randomSeed(self.ship)
+  randomSeed(self.ship.name)
   self.hue = math.random()
   local roomFiles = randomize({
     "assets/worlds/barracks.world",
@@ -62,7 +60,7 @@ function ShipWorld:init(fsm, fsmOpts)
     "assets/worlds/navigation.world",
   })
 
-  local galaxy = Galaxy(nil, {ship = self.ship})
+  local galaxy = Galaxy(nil, { ship = self.ship })
   self.background = galaxy:drawBackground()
   self.switchToImg = love.graphics.newImage("assets/switchTo.png")
   self.transportImg = love.graphics.newImage("assets/transport.png")
@@ -113,14 +111,19 @@ function ShipWorld:init(fsm, fsmOpts)
   self:writeShip(data)
   self.allPlayers = {}
 
-  local fsmOpts = {ship=self.ship, planet=self.shipPlanet, seed=self.ship, hue=self.hue, activeRoster = fsmOpts.activeRoster }
+  local fsmOpts = {
+    ship = self.ship,
+    planet = self.ship.planet,
+    seed = self.ship.name,
+    hue = self.hue,
+  }
   ShipWorld.super.init(self, fsm, fsmOpts, self.shipFile, "assets/worlds/ship.png")
 
   self.playerSwitchers = {}
   for i, coord in ipairs(self.map.playerCoords) do
     local player = self.players[i]
     if player == nil then
-      player = Human(coord, self.roster[i])
+      player = Human(coord, self.ship.roster[i]:serialize())
       self:spawn(player)
     end
     self.allPlayers[i] = player
@@ -152,7 +155,7 @@ function ShipWorld:controlStop(player, action)
 
     if #self.inNavCom > 0 then
       local nav = "navStar"
-      if self.shipStar then
+      if self.ship.star then
         nav = "navPlanet"
       end
       self:travel(self.inNavCom[1], nav)
@@ -214,8 +217,8 @@ function ShipWorld:update(dt)
   for switcher in values(self.playerSwitchers) do
     switcher:update(dt)
     if switcher.player.playerIndex == nil then
-      local l,t,w,h = switcher.hitbox:parts()
-      local items, len = self.bumpWorld:queryRect(l,t,w,h, function(item)
+      local l, t, w, h = switcher.hitbox:parts()
+      local items, len = self.bumpWorld:queryRect(l, t, w, h, function(item)
         return item.playerIndex ~= nil
       end)
       for item in values(items) do
@@ -226,8 +229,8 @@ function ShipWorld:update(dt)
 
   self.onTransporter = {}
   for transporter in values(self.map.transporters) do
-    local l,t,w,h = transporter.hitbox:parts()
-    local items, len = self.bumpWorld:queryRect(l,t,w,h, function(item)
+    local l, t, w, h = transporter.hitbox:parts()
+    local items, len = self.bumpWorld:queryRect(l, t, w, h, function(item)
       return item.playerIndex ~= nil
     end)
     for item in values(items) do
@@ -236,8 +239,8 @@ function ShipWorld:update(dt)
   end
 
   self.inNavCom = {}
-  local l,t,w,h = self.map.navCom:parts()
-  local items, len = self.bumpWorld:queryRect(l,t,w,h, function(item)
+  local l, t, w, h = self.map.navCom:parts()
+  local items, len = self.bumpWorld:queryRect(l, t, w, h, function(item)
     return item.playerIndex ~= nil
   end)
   for item in values(items) do
@@ -263,7 +266,7 @@ function ShipWorld:drawGob(gob)
   local switchTo = self.playerSwitchOptions[gob.playerIndex]
 
   if switchTo then
-    graphicsContext({color=PlayerColors[gob.playerIndex]}, function()
+    graphicsContext({ color = PlayerColors[gob.playerIndex] }, function()
       local imgRect = Rect(0, 0, self.switchToImg:getDimensions())
       imgRect:setCenter(switchTo:center())
       imgRect.y = switchTo.position.y - imgRect.h - 2
@@ -272,14 +275,14 @@ function ShipWorld:drawGob(gob)
   end
 
   if #self.inNavCom > 0 then
-    graphicsContext({color=PlayerColors[self.inNavCom[1].playerIndex]}, function()
+    graphicsContext({ color = PlayerColors[self.inNavCom[1].playerIndex] }, function()
       local imgRect = Rect(0, 0, self.switchToImg:getDimensions())
       imgRect:setCenter(self.map.navCom:center())
       love.graphics.draw(self.switchToImg, imgRect.x, imgRect.y)
     end)
   end
 
-  graphicsContext({color=Colors.white}, function()
+  graphicsContext({ color = Colors.white }, function()
     local onTransporter = self.onTransporter[gob.playerIndex]
     local inTransporter = self.inTransporter[gob.playerIndex]
     if inTransporter then

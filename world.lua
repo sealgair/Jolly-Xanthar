@@ -14,7 +14,7 @@ World = class("World")
 
 function World:init(fsm, fsmOpts, worldfile, tileset)
   self.fsm = fsm
-  self.ship = coalesce(fsmOpts.ship, Save:shipNames()[1])
+  self.ship = coalesce(fsmOpts.ship, Ship:firstShip())
   self.planet = fsmOpts.planet
   self.depth = coalesce(fsmOpts.depth, 0)
   if fsmOpts.hue then
@@ -57,17 +57,16 @@ function World:init(fsm, fsmOpts, worldfile, tileset)
   end
 
   -- add players
-  self.roster = Save:shipRoster(self.ship)
   local center = Point()
   local c = 0
-  local activeRoster = coalesce(fsmOpts.activeRoster, {self.roster[1]})
+  local activeRoster = self.ship:activeRoster()
   for i, coord in ipairs(self.map.playerCoords) do
     if i <= 4 then
       local hud = HUD(self, i)
       self.huds[i] = hud
     end
 
-    if activeRoster[i] then
+    if activeRoster[i] ~= nil then
       local player = self:addPlayer(activeRoster[i], i, coord)
       center = center + player:center()
       c = c + 1
@@ -87,7 +86,7 @@ function World:activate()
 end
 
 function World:deactivate()
-  Save:saveShip(self.ship, self.roster)
+  self.ship:save()
   for player in values(self.players) do
     player.active = false
   end
@@ -102,7 +101,7 @@ function World:remainingRoster()
     activeNames[player.name] = 1
   end
   local remaining = {}
-  for player in values(self.roster) do
+  for player in values(self.ship.roster) do
     if activeNames[player.name] == nil then
       table.insert(remaining, player)
     end
@@ -110,12 +109,12 @@ function World:remainingRoster()
   return remaining
 end
 
-function World:addPlayer(rosterData, index, coords)
+function World:addPlayer(player, index, coords)
   if coords == nil then
     coords = self.mainScreen:center()
   end
-  rosterData.activePlayer = index
-  local player = Human(coords, rosterData)
+  player = Human(coords, player:serialize())
+  self.ship:activatePlayer(player, index)
   player.active = self.active
   Controller:register(player, index)
   self:spawn(player)
@@ -198,14 +197,14 @@ function World:update(dt)
     end
     if player:dead() then
       local rosterIndex
-      for r, data in ipairs(self.roster) do
+      for r, data in ipairs(self.ship.roster) do
         if data.name == player.name then
           rosterIndex = r
           break
         end
       end
-      table.remove(self.roster, rosterIndex)
-      Save:saveShip(self.ship, self.roster)
+      table.remove(self.ship.roster, rosterIndex)
+      self.ship:save()
       self:removePlayer(p, true)
     end
   end
@@ -333,11 +332,9 @@ function World:travel(gob, verb)
   if gob.playerIndex == nil then return end
 
   verb = coalesce(verb, "descend")
-  local activeRoster = map(self.players, function(v) return v:serialize() end)
   self.fsm:advance(verb, {
     ship = self.ship,
     planet = self.planet,
-    activeRoster = activeRoster,
     depth = self.depth + 1,
   })
 end

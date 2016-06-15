@@ -52,13 +52,11 @@ function Galaxy:init(fsm, opts)
   if self.fsmOpts and self.fsmOpts.ship then
     self.ship = self.fsmOpts.ship
   else
-    self.ship = Save:shipNames()[1]
+    self.ship = Ship.firstShip()
   end
-  self.shipStar = Save:shipStar(self.ship)
-  self.shipPlanet = Save:shipPlanet(self.ship)
 
-  if self.shipStar then
-    self.shipPos = self.shipStar.pos
+  if self.ship.star then
+    self.shipPos = self.ship.star.pos
   else
     self.shipPos = self.sector.box:center()
   end
@@ -137,7 +135,9 @@ end
 
 function Galaxy:chooseItem(item)
   if self.starDetails then
-    Save:saveShip(self.ship, nil, self.selectedStar)
+    self.ship.star = self.selectedStar
+    self.ship.planet = nil
+    self.ship:save()
     self.fsm:advance('back', self.fsmOpts)
   end
   if item == 'back' then
@@ -197,10 +197,10 @@ function Galaxy:drawBackground(canvas)
   self:drawStars(canvas)
   graphicsContext({canvas=canvas, color=Colors.white, origin=true}, function()
     local c = r:center() - Point(16, 16)
-    if self.shipPlanet then
-      self.shipPlanet:draw(c, 2)
-    elseif self.shipStar then
-      self.shipStar:drawClose(c, 45)
+    if self.ship.planet then
+      self.ship.planet:draw(c, 2)
+    elseif self.ship.star then
+      self.ship.star:drawClose(c, 45)
     end
   end)
   return canvas
@@ -340,7 +340,7 @@ function Galaxy:draw()
     if self.orienting then
       detailStar = self.selectedStar
     else
-      detailStar = self.shipStar
+      detailStar = self.ship.star
     end
     if detailStar then
       love.graphics.setColor({0, 128, 0})

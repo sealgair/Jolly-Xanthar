@@ -7,7 +7,7 @@ require "utils"
 Splash = class("Splash")
 
 function canContinue()
-  return #Save:shipNames() > 0
+  return #Ship.shipNames() > 0
 end
 
 function Splash:init(fsm)
@@ -17,9 +17,9 @@ function Splash:init(fsm)
     'continue',
     'new',
     'controls',
-    'quit',
     'galaxy',
     'planets',
+    'quit',
   }
   self.opts = {
     new = "Name Your Ship",

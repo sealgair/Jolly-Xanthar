@@ -118,12 +118,13 @@ function Recruit:save()
   for slotRow in values(self.slots) do
     for slot in values(slotRow) do
       if slot.recruited then
-        table.insert(roster, slot.lifeForm:serialize())
+        table.insert(roster, slot.lifeForm)
       end
     end
   end
-  Save:saveShip(self.ship, roster)
-  self.fsm:advance('done', self.ship)
+  self.ship.roster = roster
+  self.ship:save()
+  self.fsm:advance('done', {ship=self.ship})
 end
 
 function Recruit:update(dt)
@@ -158,7 +159,7 @@ function Recruit:draw()
   end
 
   love.graphics.setFont(Fonts.large)
-  love.graphics.printf(self.ship .. ": " ..self.recruitCount .. "/" .. self.total, 0, 6, 256, "center")
+  love.graphics.printf(self.ship.name .. ": " ..self.recruitCount .. "/" .. self.total, 0, 6, 256, "center")
 
   if self:done() then
     love.graphics.setColor(0, 0, 0)
