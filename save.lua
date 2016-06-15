@@ -87,12 +87,25 @@ function Ship:activatePlayer(active, index)
   self:save()
 end
 
+function Ship:deactivatePlayer(deact)
+  print("deactivating", deact)
+  for i, player in ipairs(self.roster) do
+    if player.name == deact.name then
+      print("deactivated player", player, player.activePlayer)
+      player.activePlayer = nil
+    end
+  end
+  self:save()
+end
+
 function Ship:serialize()
+  print("serializing", self.name)
   local data = {
     name = self.name,
     roster = map(self.roster, function(p)
       local d = p:serialize()
       d.activePlayer = p.activePlayer
+      if d.activePlayer then print(d.name, "is active at", d.activePlayer) end
       return d
     end),
     saved = self.saved,
@@ -114,4 +127,5 @@ end
 function Ship:save()
   SaveData[self.name] = self:serialize()
   love.filesystem.write(SaveFile, serialize(SaveData))
+  print("saved", self.name)
 end

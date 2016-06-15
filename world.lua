@@ -132,6 +132,7 @@ function World:removePlayer(index, keepBody)
   if keepBody ~= true then
     self:despawn(player)
   end
+  self.ship:deactivatePlayer(player)
   self.players[index] = nil
   self.huds[index].player = nil
   self.indicators[index] = nil

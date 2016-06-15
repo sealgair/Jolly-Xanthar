@@ -193,6 +193,7 @@ end
 function ShipWorld:removePlayer(index, keepBody)
   local player = self.players[index]
   Controller:unregister(player, index)
+  self.ship:deactivatePlayer(player)
   self.players[index] = nil
   self.huds[index].player = nil
   self.indicators[index] = nil

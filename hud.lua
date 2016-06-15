@@ -88,7 +88,6 @@ function HUD:drawMenuCanvas()
 
   graphicsContext({canvas=self.menuCanvas, origin=true, font=font}, function()
     love.graphics.clear(Colors.menuBack)
-    print("drawing hud for", self.player)
     for r, row in ipairs(self.itemGrid) do
       local item = row[1]
 
