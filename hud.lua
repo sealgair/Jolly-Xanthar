@@ -141,13 +141,15 @@ function HUD:controlStop(action)
     else
       self.selected.y = 1
       if self.player then
-        local quit = "Quit"
-        if #self.world.players > 1 then quit = "Drop Out" end
         self.itemGrid = {
           { { name = "Cancel", action = "cancel" } },
-          { { name = quit, action = quit:lower() } },
+          { { name = "Quit", action = "quit" } },
           --{{name = "Controls"}}, TODO
         }
+        if #self.world.players > 1 then
+          local drop = { { name = "Drop Out", action = "drop out" } }
+          table.insert(self.itemGrid, 2, drop)
+        end
         if not self:inShip() then
           local paused = "Pause"
           if self.world.paused then paused = "Resume" end
