@@ -12,6 +12,9 @@ function StarSystem:init(fsm, opts)
     self.ship = Ship.firstShip()
   end
   self.planets = self.ship.star:planets()
+  table.sort(self.planets, function(a, b)
+    return a.dist > b.dist
+  end)
   self.selectedPlanet = 0
   for p, planet in ipairs(self.planets) do
     if planet == self.shipPlanet then

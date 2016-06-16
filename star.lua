@@ -136,7 +136,7 @@ function Planet:init(star, seed, index)
   randomSeed(self.seed)
   self.mass = math.random() ^ 2 * 100
   self.radius = self.mass
-  self.drawRadius = math.log10(self.radius) * 10
+  self.drawRadius = math.log10(self.radius + 1) * 10
   self.dist = math.random() ^ 2 * 100
   self.rot = math.random() * 2 * math.pi
   self.orient = math.random() * 2 * math.pi
