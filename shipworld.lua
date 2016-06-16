@@ -120,10 +120,11 @@ function ShipWorld:init(fsm, fsmOpts)
   ShipWorld.super.init(self, fsm, fsmOpts, self.shipFile, "assets/worlds/ship.png")
 
   self.playerSwitchers = {}
+  local inactiveRoster = self.ship:inactiveRoster()
   for i, coord in ipairs(self.map.playerCoords) do
     local player = self.players[i]
     if player == nil then
-      player = Human(coord, self.ship.roster[i]:serialize())
+      player = Human(coord, table.remove(inactiveRoster, 1):serialize())
       self:spawn(player)
     end
     self.allPlayers[i] = player
@@ -181,6 +182,7 @@ function ShipWorld:addPlayer(rosterData, index, coords)
     self.allPlayers[index] = player
   else
     Controller:register(player, index)
+    self.ship:activatePlayer(player, index)
     self.huds[index].player = player
     player.active = self.active
     self.indicators[index] = Indicator(index)
